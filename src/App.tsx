@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 // Pages - lazy load to identify issues
 import { lazy, Suspense } from 'react';
@@ -16,10 +17,12 @@ const EventDetail = lazy(() => import('./pages/EventDetail'));
 const Volunteer = lazy(() => import('./pages/Volunteer'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Donate = lazy(() => import('./pages/Donate'));
+const UIComponents = lazy(() => import('./pages/UIComponents'));
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route
@@ -121,6 +124,14 @@ function App() {
             element={
               <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
                 <Donate />
+              </Suspense>
+            }
+          />
+          <Route
+            path="ui-components"
+            element={
+              <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+                <UIComponents />
               </Suspense>
             }
           />
