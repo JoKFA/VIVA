@@ -97,7 +97,7 @@ export default function Home() {
   return (
     <div>
       {/* ── HERO (Layout B: Split dark + photo) ── */}
-      <section className="min-h-screen bg-warm-900 flex flex-col">
+      <section className="min-h-screen bg-warm-900 flex flex-col -mt-20">
         <div className="flex-1 flex items-center max-w-7xl mx-auto w-full px-8 pt-28 pb-16 gap-16
                         lg:grid lg:grid-cols-2">
 
