@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, Heart } from 'lucide-react';
 
@@ -19,9 +19,8 @@ const navigation = [
     name: 'Events',
     href: '/events',
     children: [
-      { name: 'Upcoming Events', href: '/events' },
+      { name: 'All Events', href: '/events' },
       { name: 'Calendar View', href: '/events/calendar' },
-      { name: 'Past Events', href: '/events/past' },
     ],
   },
   { name: 'Volunteer', href: '/volunteer' },
@@ -32,15 +31,23 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const location = useLocation();
+
+  // Homepage gets transparent header that reveals on scroll
+  const isHome = location.pathname === '/';
+  const isDark = isHome && !isScrolled;
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setOpenDropdown(null);
+  }, [location.pathname]);
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
@@ -50,27 +57,28 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-soft'
-          : 'bg-transparent'
+        isDark
+          ? 'bg-transparent'
+          : 'bg-white/96 backdrop-blur-md shadow-soft border-b border-warm-200/60'
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[72px]">
+
           {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-2 group"
-            onClick={closeMobileMenu}
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-xl">V</span>
+          <Link to="/" className="flex items-center gap-2.5 group" onClick={closeMobileMenu}>
+            <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
+              <span className="font-impact text-white text-xl leading-none tracking-wide">V</span>
             </div>
-            <span className="text-2xl font-bold text-gray-900">VIVA</span>
+            <span className={`font-display font-extrabold text-xl tracking-tight transition-colors ${
+              isDark ? 'text-white' : 'text-warm-900'
+            }`}>
+              VIVA
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center gap-0.5">
             {navigation.map((item) => (
               <div
                 key={item.name}
@@ -80,19 +88,27 @@ export default function Header() {
               >
                 {item.children ? (
                   <button
-                    className="flex items-center px-4 py-2 text-gray-700 hover:text-primary-600 font-medium transition-colors rounded-lg hover:bg-primary-50"
+                    className={`flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      isDark
+                        ? 'text-white/85 hover:text-white hover:bg-white/10'
+                        : 'text-warm-700 hover:text-primary-600 hover:bg-primary-50'
+                    }`}
                   >
                     {item.name}
-                    <ChevronDown className="ml-1 w-4 h-4" />
+                    <ChevronDown className="w-3.5 h-3.5 opacity-60" />
                   </button>
                 ) : (
                   <NavLink
                     to={item.href}
                     className={({ isActive }) =>
-                      `px-4 py-2 font-medium transition-colors rounded-lg ${
-                        isActive
-                          ? 'text-primary-600 bg-primary-50'
-                          : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                      `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isDark
+                          ? isActive
+                            ? 'text-white bg-white/15'
+                            : 'text-white/85 hover:text-white hover:bg-white/10'
+                          : isActive
+                            ? 'text-primary-600 bg-primary-50'
+                            : 'text-warm-700 hover:text-primary-600 hover:bg-primary-50'
                       }`
                     }
                   >
@@ -100,25 +116,25 @@ export default function Header() {
                   </NavLink>
                 )}
 
-                {/* Dropdown Menu */}
+                {/* Dropdown */}
                 <AnimatePresence>
                   {item.children && openDropdown === item.name && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 6 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute left-0 mt-1 w-56 bg-white rounded-xl shadow-soft-lg border border-gray-100 py-2 z-50"
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute left-0 mt-1 w-52 bg-white rounded-xl shadow-soft-lg border border-warm-200 py-1.5 z-50"
                     >
                       {item.children.map((child) => (
                         <NavLink
                           key={child.name}
                           to={child.href}
                           className={({ isActive }) =>
-                            `block px-4 py-2 text-sm ${
+                            `block px-4 py-2.5 text-sm transition-colors ${
                               isActive
-                                ? 'text-primary-600 bg-primary-50'
-                                : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                                ? 'text-primary-600 bg-primary-50 font-medium'
+                                : 'text-warm-700 hover:text-primary-600 hover:bg-warm-50'
                             }`
                           }
                         >
@@ -133,27 +149,29 @@ export default function Header() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center gap-3">
             <Link
               to="/donate"
-              className="btn-accent flex items-center space-x-2"
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                isDark
+                  ? 'bg-white text-primary-600 hover:bg-warm-100'
+                  : 'bg-primary-600 text-white hover:bg-primary-700 shadow-warm'
+              }`}
             >
-              <Heart className="w-4 h-4" />
-              <span>Donate</span>
+              <Heart className="w-3.5 h-3.5" />
+              Donate
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <button
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className={`lg:hidden p-2 rounded-lg transition-colors ${
+              isDark ? 'text-white hover:bg-white/10' : 'text-warm-700 hover:bg-warm-100'
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </nav>
@@ -165,28 +183,20 @@ export default function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden bg-white border-t border-gray-100"
+            transition={{ duration: 0.25 }}
+            className="lg:hidden bg-white border-t border-warm-200"
           >
-            <div className="max-w-7xl mx-auto px-4 py-4 space-y-2">
+            <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
               {navigation.map((item) => (
                 <div key={item.name}>
                   {item.children ? (
                     <>
                       <button
-                        onClick={() =>
-                          setOpenDropdown(
-                            openDropdown === item.name ? null : item.name
-                          )
-                        }
-                        className="flex items-center justify-between w-full px-4 py-3 text-gray-700 font-medium rounded-lg hover:bg-primary-50"
+                        onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                        className="flex items-center justify-between w-full px-4 py-3 text-warm-700 font-medium rounded-lg hover:bg-warm-50 text-sm"
                       >
                         {item.name}
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform ${
-                            openDropdown === item.name ? 'rotate-180' : ''
-                          }`}
-                        />
+                        <ChevronDown className={`w-4 h-4 opacity-60 transition-transform ${openDropdown === item.name ? 'rotate-180' : ''}`} />
                       </button>
                       <AnimatePresence>
                         {openDropdown === item.name && (
@@ -194,7 +204,7 @@ export default function Header() {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="pl-4 space-y-1"
+                            className="pl-4 space-y-0.5"
                           >
                             {item.children.map((child) => (
                               <NavLink
@@ -202,10 +212,10 @@ export default function Header() {
                                 to={child.href}
                                 onClick={closeMobileMenu}
                                 className={({ isActive }) =>
-                                  `block px-4 py-2 text-sm rounded-lg ${
+                                  `block px-4 py-2.5 text-sm rounded-lg ${
                                     isActive
-                                      ? 'text-primary-600 bg-primary-50'
-                                      : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
+                                      ? 'text-primary-600 bg-primary-50 font-medium'
+                                      : 'text-warm-600 hover:text-primary-600 hover:bg-warm-50'
                                   }`
                                 }
                               >
@@ -221,10 +231,10 @@ export default function Header() {
                       to={item.href}
                       onClick={closeMobileMenu}
                       className={({ isActive }) =>
-                        `block px-4 py-3 font-medium rounded-lg ${
+                        `block px-4 py-3 font-medium rounded-lg text-sm ${
                           isActive
                             ? 'text-primary-600 bg-primary-50'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                            : 'text-warm-700 hover:text-primary-600 hover:bg-warm-50'
                         }`
                       }
                     >
@@ -234,14 +244,14 @@ export default function Header() {
                 </div>
               ))}
 
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-3 border-t border-warm-100">
                 <Link
                   to="/donate"
                   onClick={closeMobileMenu}
-                  className="btn-accent w-full flex items-center justify-center space-x-2"
+                  className="btn-primary w-full flex items-center justify-center gap-2"
                 >
                   <Heart className="w-4 h-4" />
-                  <span>Donate</span>
+                  Donate
                 </Link>
               </div>
             </div>

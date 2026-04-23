@@ -1,221 +1,192 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Heart, Eye, Target, Users, Shield, Sparkles, HandHeart, Globe } from 'lucide-react';
-import SectionHeader from '../components/ui/SectionHeader';
-import Card from '../components/ui/Card';
-import { Hero } from '../components/blocks/Hero';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { ArrowRight } from 'lucide-react';
 
-const values = [
+const timeline = [
+  { year: '2018', label: 'Founded', body: 'VIVA established in Burnaby, BC with a founding team of 12 volunteers.' },
+  { year: '2019', label: 'First Cohort', body: 'Launched Youth Mentorship program — 40 students in the inaugural cohort.' },
+  { year: '2021', label: 'VIVA EG', body: 'Environmental Group branch formed; first shoreline cleanup draws 200+ volunteers.' },
+  { year: '2023', label: 'UBC Partnership', body: 'Formalized VIVA × UBC CLP partnership for the annual Career Fair.' },
+  { year: '2026', label: 'Today', body: '2,500+ active volunteers, 120+ events annually, recognized by federal and provincial governments.' },
+];
+
+const honours = [
   {
-    icon: Heart,
-    title: 'Compassion',
-    description: 'We approach every interaction with empathy and understanding, recognizing the dignity and worth of every individual.',
+    name: 'Mark Carney',
+    role: 'Prime Minister of Canada',
+    tier: 'Federal · 2025',
+    accent: '#c1272d',
+    quote: '"VIVA\'s dedication to strengthening communities through volunteer service exemplifies the spirit of Canadian civic engagement."',
+    img: 'https://picsum.photos/56/56?grayscale&random=60',
   },
   {
-    icon: Users,
-    title: 'Community',
-    description: 'We believe in the power of collective action and foster connections that strengthen our neighborhoods.',
+    name: 'Premier of British Columbia',
+    role: 'Province of British Columbia',
+    tier: 'Provincial · 2025',
+    accent: '#1a5c9e',
+    quote: '"British Columbia is proud to recognize VIVA for their outstanding contributions to youth development and community building."',
+    img: 'https://picsum.photos/56/56?grayscale&random=61',
   },
   {
-    icon: Shield,
-    title: 'Integrity',
-    description: 'We maintain the highest standards of honesty, transparency, and accountability in all our work.',
+    name: 'Mayor of Burnaby',
+    role: 'City of Burnaby',
+    tier: 'Municipal · 2024',
+    accent: '#15803d',
+    quote: '"VIVA has become an essential part of our city\'s volunteer ecosystem — connecting thousands of residents with meaningful community work."',
+    img: 'https://picsum.photos/56/56?grayscale&random=62',
   },
   {
-    icon: Sparkles,
-    title: 'Excellence',
-    description: 'We strive for continuous improvement and deliver programs that create meaningful, measurable impact.',
-  },
-  {
-    icon: HandHeart,
-    title: 'Service',
-    description: 'We are committed to selfless service, putting the needs of our community at the center of everything we do.',
-  },
-  {
-    icon: Globe,
-    title: 'Inclusion',
-    description: 'We celebrate diversity and create welcoming spaces where everyone belongs and can contribute.',
+    name: 'UBC Student Affairs',
+    role: 'University of British Columbia',
+    tier: 'Academic · 2025',
+    accent: '#002145',
+    quote: '"The VIVA × UBC partnership has given hundreds of international students a real pathway into Canadian professional life."',
+    img: 'https://picsum.photos/56/56?grayscale&random=63',
   },
 ];
 
 export default function About() {
-  const prefersReducedMotion = useReducedMotion();
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-  };
-
-  const staggerChildren = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
   return (
     <div>
-      <Hero
-        title="About VIVA"
-        subtitle="Our Story"
-        description="Volunteer Impact & Vitality Alliance is dedicated to empowering communities through meaningful volunteer engagement and creating lasting positive change across the Greater Toronto Area."
-        ctaButtons={[
-          { label: 'Meet Our Team', href: '/about/board', variant: 'primary' },
-          { label: 'View Our Impact', href: '/about/reports', variant: 'secondary' },
-        ]}
-      />
+      {/* Page Header — Option 2 */}
+      <div className="page-header pt-28">
+        <div className="page-header-inner">
+          <div className="page-header-bar" />
+          <div>
+            <p className="eyebrow">Since 2018</p>
+            <h1 className="font-display font-extrabold text-[clamp(2rem,4vw,3rem)] text-warm-900 leading-tight">
+              Our Story
+            </h1>
+          </div>
+        </div>
+      </div>
 
-      {/* Mission & Vision Section */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-7xl mx-auto">
-          <motion.div
-            className="grid grid-cols-1 lg:grid-cols-2 gap-12"
-            initial={prefersReducedMotion ? {} : { opacity: 0 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Mission */}
-            <motion.div
-              variants={prefersReducedMotion ? {} : fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true, margin: '-100px' }}
-            >
-              <Card variant="elevated" className="p-8 h-full">
-                <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Target className="w-8 h-8 text-primary-600" />
+      {/* Mission pull quote */}
+      <section className="bg-warm-900 py-16 px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="font-impact text-[clamp(1.5rem,3vw,2.25rem)] text-white leading-relaxed tracking-wide">
+            "We exist to connect passionate people with meaningful work — and to prove that community is built one volunteer at a time."
+          </p>
+          <p className="text-warm-500 text-sm mt-6 tracking-widest uppercase font-semibold">VIVA Founding Principle</p>
+        </div>
+      </section>
+
+      {/* Mission + Vision — split, NOT equal floating cards */}
+      <section className="bg-white py-20 px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-0 border border-warm-200">
+          <div className="p-12 border-b lg:border-b-0 lg:border-r border-warm-200">
+            <p className="eyebrow">Mission</p>
+            <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-5">Why We Exist</h2>
+            <p className="text-warm-600 text-[0.9375rem] leading-relaxed">
+              To connect passionate volunteers with meaningful opportunities that address critical community
+              needs, foster personal growth, and build stronger, more resilient neighbourhoods across
+              Metro Vancouver and British Columbia.
+            </p>
+          </div>
+          <div className="p-12">
+            <p className="eyebrow">Vision</p>
+            <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-5">Where We're Going</h2>
+            <p className="text-warm-600 text-[0.9375rem] leading-relaxed">
+              A thriving, inclusive community where every person has the opportunity to contribute their
+              unique talents — where newcomers are welcomed, youth are empowered, and collective action
+              drives sustainable change for generations to come.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Timeline — horizontal on desktop, vertical on mobile */}
+      <section className="bg-warm-50 py-20 px-8">
+        <div className="max-w-7xl mx-auto">
+          <p className="eyebrow">Our Journey</p>
+          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-12">
+            Eight Years of Impact
+          </h2>
+
+          {/* Desktop: horizontal */}
+          <div className="hidden md:flex items-start gap-0 relative">
+            {/* connecting line */}
+            <div className="absolute top-[28px] left-[5%] right-[5%] h-px bg-warm-300" />
+            {timeline.map((item, i) => (
+              <div key={item.year} className="flex-1 relative px-4 text-center">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10 border-2
+                  ${i === timeline.length - 1 ? 'bg-primary-600 border-primary-600' : 'bg-white border-warm-300'}`}>
+                  <span className={`font-impact text-sm tracking-wide ${i === timeline.length - 1 ? 'text-white' : 'text-warm-600'}`}>
+                    {item.year}
+                  </span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-                <p className="text-gray-600 leading-relaxed text-lg">
-                  To connect passionate volunteers with meaningful opportunities that address critical community needs, foster personal growth, and build stronger, more resilient neighborhoods. We empower individuals to make a difference while developing skills, forming connections, and creating lasting positive change in the Greater Toronto Area.
-                </p>
-              </Card>
-            </motion.div>
+                <p className="font-display font-bold text-[0.875rem] text-warm-900 mb-1">{item.label}</p>
+                <p className="text-xs text-warm-500 leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
 
-            {/* Vision */}
-            <motion.div
-              variants={prefersReducedMotion ? {} : fadeInUp}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true, margin: '-100px' }}
-            >
-              <Card variant="elevated" className="p-8 h-full">
-                <div className="w-16 h-16 bg-accent-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Eye className="w-8 h-8 text-accent-600" />
+          {/* Mobile: vertical */}
+          <div className="md:hidden space-y-0 border-l-2 border-warm-300 ml-6">
+            {timeline.map((item, i) => (
+              <div key={item.year} className="relative pl-8 pb-10">
+                <div className={`absolute -left-[17px] w-8 h-8 rounded-full flex items-center justify-center
+                  ${i === timeline.length - 1 ? 'bg-primary-600' : 'bg-white border-2 border-warm-300'}`}>
+                  <span className={`font-impact text-[10px] ${i === timeline.length - 1 ? 'text-white' : 'text-warm-600'}`}>
+                    {item.year.slice(2)}
+                  </span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-                <p className="text-gray-600 leading-relaxed text-lg">
-                  A thriving, inclusive community where every person has the opportunity to contribute their unique talents, where newcomers are welcomed and supported, where youth are empowered to lead, and where collective action drives sustainable positive change for generations to come.
-                </p>
-              </Card>
-            </motion.div>
-          </motion.div>
+                <p className="font-impact text-warm-400 text-2xl leading-none mb-1">{item.year}</p>
+                <p className="font-display font-bold text-warm-900 mb-1">{item.label}</p>
+                <p className="text-sm text-warm-500 leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Our Values Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Our Core Values"
-            subtitle="The principles that guide our work and define who we are as an organization"
-          />
+      {/* Honours — same carousel as home */}
+      <section className="bg-white py-20 px-8">
+        <div className="max-w-7xl mx-auto">
+          <p className="eyebrow">Recognition</p>
+          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-3">
+            Recognized by Canada's Leaders
+          </h2>
+          <p className="text-warm-600 text-[0.9375rem] mb-8 max-w-lg">
+            VIVA's impact has been acknowledged at the highest levels of government and academia.
+          </p>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {values.map((value, index) => {
-              const IconComponent = value.icon;
-              return (
-                <motion.div
-                  key={index}
-                  variants={prefersReducedMotion ? {} : fadeInUp}
-                >
-                  <Card variant="default" hover className="p-6 h-full">
-                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                      <IconComponent className="w-6 h-6 text-primary-600" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-3">
-                      {value.title}
-                    </h4>
-                    <p className="text-gray-600 leading-relaxed">
-                      {value.description}
-                    </p>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          <div className="honours-track">
+            {honours.map((h) => (
+              <div
+                key={h.name}
+                className="honours-card bg-warm-50 border border-warm-200 border-l-4 p-8"
+                style={{ borderLeftColor: h.accent }}
+              >
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-warm-200">
+                    <img src={h.img} alt={h.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className="font-display font-extrabold text-[0.9375rem] text-warm-900">{h.name}</p>
+                    <p className="text-sm text-warm-600">{h.role}</p>
+                    <p className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: h.accent }}>{h.tier}</p>
+                  </div>
+                </div>
+                <p className="text-warm-700 text-[0.9375rem] leading-relaxed italic">{h.quote}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Inclusion Statement Section */}
-      <section className="section-padding gradient-hero">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
+      {/* Board CTA */}
+      <section className="bg-warm-50 py-16 px-8 border-t border-warm-200">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-1">Meet the People Behind VIVA</h2>
+            <p className="text-warm-600">Our board of executives and volunteer leadership team.</p>
+          </div>
+          <Link
+            to="/about/board"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold text-sm hover:bg-primary-700 transition-colors flex-shrink-0"
           >
-            <Globe className="w-16 h-16 text-white/90 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Our Commitment to Inclusion
-            </h2>
-            <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-8">
-              VIVA is committed to creating an inclusive environment where diversity is celebrated and all individuals are treated with dignity and respect. We believe that our differences make us stronger and that everyone deserves the opportunity to contribute their unique perspectives and talents.
-            </p>
-            <p className="text-lg text-white/90 leading-relaxed">
-              We actively work to remove barriers to participation, ensure accessibility in all our programs, and create welcoming spaces for people of all backgrounds, abilities, ages, genders, sexual orientations, religions, and ethnicities. Our community is enriched by the diverse voices that come together to volunteer and serve.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Learn More About Us
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Discover the people behind our mission and the impact we've made together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/about/board"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-soft-lg transition-all duration-300 transform hover:scale-105"
-              >
-                Meet Our Board
-              </Link>
-              <Link
-                to="/about/awards"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl bg-white text-primary-600 border-2 border-primary-600 hover:bg-primary-50 shadow-soft transition-all duration-300 transform hover:scale-105"
-              >
-                Awards & Scholarships
-              </Link>
-              <Link
-                to="/about/reports"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl bg-accent-500 text-white hover:bg-accent-600 shadow-soft-lg transition-all duration-300 transform hover:scale-105"
-              >
-                Annual Reports
-              </Link>
-            </div>
-          </motion.div>
+            Board of Executives <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
     </div>

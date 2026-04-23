@@ -1,416 +1,387 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Users, GraduationCap, Calendar, Leaf, ArrowRight, Mail, MapPin, Clock } from 'lucide-react';
-import SectionHeader from '../components/ui/SectionHeader';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
+import { motion } from 'framer-motion';
+import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { events, stats, programs, partners } from '../data/mockData';
+import { events, stats } from '../data/mockData';
 
-const iconMap = {
-  Users,
-  GraduationCap,
-  Calendar,
-  Leaf,
-};
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] },
+});
+
+const programs = [
+  {
+    num: '01',
+    title: 'Youth Mentorship',
+    body: 'Empower the next generation through educational support, career guidance, and personal development programs tailored for students and young professionals.',
+    cta: 'Become a mentor',
+    href: '/volunteer',
+    img: 'https://picsum.photos/640/400?grayscale&random=51',
+    imgAlt: 'Youth mentorship',
+  },
+  {
+    num: '02',
+    title: 'Community Events',
+    body: "From small career talks to the Vancouver Career Fair — we organize events that connect people, create opportunities, and strengthen Vancouver's neighborhood bonds.",
+    cta: 'View upcoming events',
+    href: '/events',
+    img: 'https://picsum.photos/640/400?grayscale&random=52',
+    imgAlt: 'Community event',
+  },
+  {
+    num: '03',
+    title: 'Environmental Action',
+    body: "VIVA EG leads shoreline cleanups, tree planting, and sustainability initiatives that preserve Vancouver's natural spaces for future generations.",
+    cta: 'Join a cleanup',
+    href: '/volunteer',
+    img: 'https://picsum.photos/640/400?grayscale&random=53',
+    imgAlt: 'Shoreline cleanup',
+  },
+];
+
+const honours = [
+  {
+    name: 'Mark Carney',
+    role: 'Prime Minister of Canada',
+    tier: 'Federal · 2025',
+    accent: '#c1272d',
+    quote:
+      '"VIVA\'s dedication to strengthening communities through volunteer service exemplifies the spirit of Canadian civic engagement."',
+    img: 'https://picsum.photos/56/56?grayscale&random=60',
+  },
+  {
+    name: 'Premier of British Columbia',
+    role: 'Province of British Columbia',
+    tier: 'Provincial · 2025',
+    accent: '#1a5c9e',
+    quote:
+      '"British Columbia is proud to recognize VIVA for their outstanding contributions to youth development and community building."',
+    img: 'https://picsum.photos/56/56?grayscale&random=61',
+  },
+  {
+    name: 'Mayor of Burnaby',
+    role: 'City of Burnaby',
+    tier: 'Municipal · 2024',
+    accent: '#15803d',
+    quote:
+      '"VIVA has become an essential part of our city\'s volunteer ecosystem — connecting thousands of residents with meaningful community work."',
+    img: 'https://picsum.photos/56/56?grayscale&random=62',
+  },
+  {
+    name: 'UBC Student Affairs',
+    role: 'University of British Columbia',
+    tier: 'Academic · 2025',
+    accent: '#002145',
+    quote:
+      '"The VIVA × UBC partnership has given hundreds of international students a real pathway into Canadian professional life."',
+    img: 'https://picsum.photos/56/56?grayscale&random=63',
+  },
+];
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function parseEventDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return {
+    day: d.getUTCDate(),
+    month: MONTHS[d.getUTCMonth()],
+    year: d.getUTCFullYear(),
+  };
+}
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const upcomingEvents = events.filter((event) => !event.isPast).slice(0, 6);
-  const pastEventsWithRecaps = events
-    .filter((event) => event.isPast && event.recap)
-    .slice(0, 3);
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubscribed(true);
-    setEmail('');
-  };
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-  };
-
-  const staggerChildren = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  const upcoming = events.filter((e) => !e.isPast).slice(0, 4);
 
   return (
     <div>
-      {/* Impact Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden gradient-hero">
-        {/* Animated decorative circles */}
-        {!prefersReducedMotion && (
-          <>
+      {/* ── HERO (Layout B: Split dark + photo) ── */}
+      <section className="min-h-screen bg-warm-900 flex flex-col">
+        <div className="flex-1 flex items-center max-w-7xl mx-auto w-full px-8 pt-28 pb-16 gap-16
+                        lg:grid lg:grid-cols-2">
+
+          {/* Left: text */}
+          <div>
+            <motion.p
+              {...(prefersReducedMotion ? {} : fadeUp(0.1))}
+              className="text-xs font-bold tracking-widest uppercase text-accent-500 mb-6"
+            >
+              Vancouver · Since 2018
+            </motion.p>
+
+            <motion.h1
+              {...(prefersReducedMotion ? {} : fadeUp(0.2))}
+              className="font-impact text-[clamp(4.5rem,9vw,7.5rem)] text-white leading-[0.88] tracking-wide mb-7"
+            >
+              EMPOWER<br />
+              <span className="text-accent-500">CONNECT</span><br />
+              SERVE
+            </motion.h1>
+
+            <motion.p
+              {...(prefersReducedMotion ? {} : fadeUp(0.3))}
+              className="text-warm-400 text-[1.0625rem] leading-relaxed max-w-md mb-10"
+            >
+              VIVA brings together passionate volunteers and community members across
+              Vancouver — from shoreline cleanups to career fairs, senior care to youth mentorship.
+            </motion.p>
+
             <motion.div
-              className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"
-              animate={{
-                x: [0, 30, 0],
-                y: [0, -20, 0],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-            <motion.div
-              className="absolute bottom-20 right-10 w-96 h-96 bg-accent-500/20 rounded-full blur-3xl"
-              animate={{
-                x: [0, -40, 0],
-                y: [0, 30, 0],
-              }}
-              transition={{
-                duration: 10,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-            <motion.div
-              className="absolute top-1/2 left-1/3 w-64 h-64 bg-primary-300/20 rounded-full blur-3xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          </>
-        )}
-
-        <div className="relative z-10 container-padding max-w-5xl mx-auto text-center">
-          <motion.h1
-            className="text-4xl md:text-5xl lg:text-display-md font-display font-bold text-white mb-6"
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            Empowering Communities Through Volunteer Action
-          </motion.h1>
-
-          <motion.p
-            className="text-lg md:text-xl lg:text-2xl text-white/90 mb-10 max-w-3xl mx-auto leading-relaxed"
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            VIVA connects passionate volunteers with meaningful opportunities to create lasting positive change in our communities. Together, we build stronger neighborhoods, support newcomers, and empower the next generation.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            <Button href="/volunteer" size="lg" variant="primary">
-              Become a Volunteer
-            </Button>
-            <Button href="/donate" size="lg" variant="accent">
-              Donate Now
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* What We Do Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="What We Do"
-            subtitle="Our programs address critical community needs through dedicated volunteer service"
-          />
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {programs.map((program) => {
-              const IconComponent = iconMap[program.icon as keyof typeof iconMap];
-              return (
-                <motion.div
-                  key={program.id}
-                  variants={prefersReducedMotion ? {} : fadeInUp}
-                >
-                  <Card variant="elevated" hover className="p-6 h-full">
-                    <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                      {IconComponent && (
-                        <IconComponent className="w-7 h-7 text-primary-600" />
-                      )}
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      {program.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      {program.description}
-                    </p>
-                    <Link
-                      to={program.link}
-                      className="inline-flex items-center text-primary-600 font-semibold hover:text-primary-700 transition-colors"
-                    >
-                      Learn More
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Upcoming Events Section */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Upcoming Events"
-            subtitle="Join us at our upcoming volunteer opportunities and community gatherings"
-          />
-
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {upcomingEvents.map((event) => (
-              <motion.div
-                key={event.id}
-                variants={prefersReducedMotion ? {} : fadeInUp}
+              {...(prefersReducedMotion ? {} : fadeUp(0.4))}
+              className="flex gap-3 flex-wrap"
+            >
+              <Link
+                to="/volunteer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold text-sm hover:bg-primary-700 transition-colors shadow-warm"
               >
-                <Card variant="default" hover className="overflow-hidden h-full flex flex-col">
-                  <div className="h-48 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-                    <Calendar className="w-16 h-16 text-primary-400" />
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(event.date).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {event.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3 flex-1">
-                      {event.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <Clock className="w-4 h-4" />
-                      <span>{event.time}</span>
-                    </div>
-                    <Link
-                      to={`/events/${event.slug}`}
-                      className="inline-flex items-center text-primary-600 font-semibold hover:text-primary-700 transition-colors mt-auto"
-                    >
-                      View Details
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+                Become a Volunteer
+              </Link>
+              <Link
+                to="/events"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm text-white border border-white/25 bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                View Events <ChevronRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          </div>
 
-          <div className="text-center mt-12">
-            <Button href="/events" variant="secondary" size="lg">
-              View All Events
-            </Button>
+          {/* Right: photo + floating stat tiles */}
+          <motion.div
+            {...(prefersReducedMotion ? {} : { initial: { opacity: 0, x: 24 }, animate: { opacity: 1, x: 0 }, transition: { duration: 0.7, delay: 0.3 } })}
+            className="relative hidden lg:block"
+          >
+            <div className="relative w-full h-[500px] rounded-2xl overflow-hidden">
+              <img
+                src="https://picsum.photos/640/500?grayscale&random=1"
+                alt="VIVA volunteers"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Stat tile: bottom-left */}
+            <div className="absolute -bottom-5 -left-6 bg-white rounded-xl px-5 py-4 shadow-soft-lg min-w-[160px]">
+              <p className="font-impact text-4xl text-primary-600 leading-none mb-1">2,500+</p>
+              <p className="text-xs text-warm-600 font-medium">Active Volunteers</p>
+            </div>
+            {/* Stat tile: top-right */}
+            <div className="absolute top-6 -right-5 bg-primary-600 rounded-xl px-5 py-4 shadow-soft-lg">
+              <p className="font-impact text-3xl text-white leading-none mb-1">120</p>
+              <p className="text-xs text-white/75 font-medium">Events / Year</p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Stats bar */}
+        <div className="bg-white border-t border-warm-200">
+          <div className="max-w-7xl mx-auto px-8 py-5 grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((s) => (
+              <div key={s.id} className="text-center">
+                <p className="font-impact text-3xl text-primary-600 leading-none mb-1">
+                  {s.value.toLocaleString()}{s.suffix}
+                </p>
+                <p className="text-xs text-warm-500 font-medium">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* By the Numbers Section */}
-      <section className="section-padding gradient-hero">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Our Impact By the Numbers"
-            subtitle="See the difference our volunteers make every day"
-            className="text-white [&_h2]:text-white [&_p]:text-white/90"
-          />
-
-          <motion.div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {stats.map((stat) => (
-              <motion.div
-                key={stat.id}
-                variants={prefersReducedMotion ? {} : fadeInUp}
-              >
-                <Card variant="glass" className="p-6 text-center">
-                  <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                    {stat.value.toLocaleString()}
-                    {stat.suffix}
-                  </div>
-                  <div className="text-white/80 font-medium">{stat.label}</div>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+      {/* ── PROGRAMS (alternating image/text rows) ── */}
+      <section className="bg-warm-50 py-20">
+        <div className="text-center px-8 mb-16">
+          <p className="eyebrow">What We Do</p>
+          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900">
+            Programs That Move Communities
+          </h2>
         </div>
+
+        {programs.map((p, i) => (
+          <div
+            key={p.num}
+            className={`grid grid-cols-1 lg:grid-cols-2 min-h-[340px] ${i % 2 === 1 ? '' : ''}`}
+          >
+            {/* Image — alternates sides */}
+            <div className={`relative overflow-hidden ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
+              <img src={p.img} alt={p.imgAlt} className="w-full h-full object-cover min-h-[280px]" />
+            </div>
+
+            {/* Text */}
+            <div
+              className={`flex flex-col justify-center px-12 py-14 ${
+                i % 2 === 1 ? 'bg-warm-50 lg:order-1' : 'bg-white'
+              }`}
+            >
+              <p className="font-impact text-[5rem] text-warm-200 leading-none mb-[-1rem] select-none">
+                {p.num}
+              </p>
+              <h3 className="font-display font-extrabold text-2xl text-warm-900 mb-4">{p.title}</h3>
+              <p className="text-warm-600 text-[0.9375rem] leading-relaxed mb-5 max-w-md">{p.body}</p>
+              <Link
+                to={p.href}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700 group"
+              >
+                {p.cta}
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+          </div>
+        ))}
       </section>
 
-      {/* Recent Stories Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Recent Stories"
-            subtitle="Highlights from our past events and the impact we've made together"
-          />
+      {/* ── HONOURS (carousel) ── */}
+      <section className="bg-warm-50 py-20 px-8">
+        <div className="max-w-7xl mx-auto">
+          <p className="eyebrow">Honours & Recognition</p>
+          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-3">
+            Recognized by Canada's Leaders
+          </h2>
+          <p className="text-warm-600 text-[0.9375rem] mb-8 max-w-lg">
+            VIVA's impact has been acknowledged at the highest levels of government.
+          </p>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {pastEventsWithRecaps.map((event) => (
-              <motion.div
-                key={event.id}
-                variants={prefersReducedMotion ? {} : fadeInUp}
+          {/* Scroll track */}
+          <div className="honours-track">
+            {honours.map((h) => (
+              <div
+                key={h.name}
+                className="honours-card bg-white border border-warm-200 border-l-4 p-8"
+                style={{ borderLeftColor: h.accent }}
               >
-                <Card variant="elevated" hover className="overflow-hidden h-full flex flex-col">
-                  <div className="h-48 bg-gradient-to-br from-accent-100 to-accent-200 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-accent-600 mb-1">
-                        {event.recap?.volunteersCount}
-                      </div>
-                      <div className="text-sm text-accent-700">Volunteers</div>
-                    </div>
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-warm-200">
+                    <img src={h.img} alt={h.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="text-sm text-gray-500 mb-2">
-                      {new Date(event.date).toLocaleDateString('en-CA', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      {event.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-4 flex-1">
-                      {event.recap?.summary}
+                  <div>
+                    <p className="font-display font-extrabold text-[0.9375rem] text-warm-900">{h.name}</p>
+                    <p className="text-sm text-warm-600">{h.role}</p>
+                    <p className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: h.accent }}>
+                      {h.tier}
                     </p>
-                    <Link
-                      to={`/events/${event.slug}`}
-                      className="inline-flex items-center text-accent-600 font-semibold hover:text-accent-700 transition-colors mt-auto"
-                    >
-                      View Recap
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
                   </div>
-                </Card>
-              </motion.div>
+                </div>
+                <p className="text-warm-700 text-[0.9375rem] leading-relaxed italic">{h.quote}</p>
+              </div>
             ))}
-          </motion.div>
+          </div>
+
+          {/* Scroll indicator dots */}
+          <div className="flex items-center gap-3 mt-4">
+            <span className="text-xs text-warm-400">Scroll for more recognitions →</span>
+            <div className="flex gap-1.5">
+              <div className="w-5 h-1 rounded-sm bg-primary-600" />
+              <div className="w-2 h-1 rounded-sm bg-warm-200" />
+              <div className="w-2 h-1 rounded-sm bg-warm-200" />
+              <div className="w-2 h-1 rounded-sm bg-warm-200" />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Partners Section */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Our Partners & Supporters"
-            subtitle="We're grateful for the organizations that help make our work possible"
-          />
+      {/* ── UPCOMING EVENTS (date-first list) ── */}
+      <section className="bg-white py-20 px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <p className="eyebrow">Upcoming Events</p>
+              <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900">
+                Join Us in 2026
+              </h2>
+            </div>
+            <Link
+              to="/events"
+              className="text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1 group"
+            >
+              All events
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
 
-          <motion.div
-            className="mt-12"
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-              {partners.map((partner) => (
+          <div className="border-t border-warm-200">
+            {upcoming.length === 0 ? (
+              <div className="py-12 text-center text-warm-500">
+                No upcoming events right now — follow{' '}
                 <a
-                  key={partner.id}
-                  href={partner.websiteUrl}
+                  href="https://instagram.com/viva_hq"
+                  className="text-primary-600 font-medium"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group"
                 >
-                  <div className="h-16 px-6 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                    <span className="text-gray-600 font-semibold group-hover:text-gray-900 transition-colors">
-                      {partner.name}
-                    </span>
+                  @viva_hq
+                </a>{' '}
+                for announcements.
+              </div>
+            ) : (
+              upcoming.map((ev) => {
+                const { day, month, year } = parseEventDate(ev.date);
+                return (
+                  <div
+                    key={ev.id}
+                    className="grid grid-cols-[100px_1fr_auto_auto] items-center gap-6 py-5 border-b border-warm-200 group"
+                  >
+                    {/* Date */}
+                    <div>
+                      <p className="font-impact text-[2.5rem] text-warm-700 leading-none">{day}</p>
+                      <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400">
+                        {month} {year}
+                      </p>
+                    </div>
+
+                    {/* Info */}
+                    <div>
+                      <p className="font-display font-bold text-[0.9375rem] text-warm-900 mb-1 group-hover:text-primary-600 transition-colors">
+                        {ev.title}
+                      </p>
+                      <p className="text-xs text-warm-500">📍 {ev.location}</p>
+                    </div>
+
+                    {/* Status */}
+                    {ev.status === 'open' && (
+                      <span className="status-open hidden sm:inline-flex">Open</span>
+                    )}
+
+                    {/* CTA */}
+                    <Link
+                      to={`/events/${ev.slug}`}
+                      className="btn-primary py-2 px-4 text-sm"
+                    >
+                      Details
+                    </Link>
                   </div>
-                </a>
-              ))}
-            </div>
-          </motion.div>
+                );
+              })
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Newsletter CTA Section */}
-      <section className="section-padding gradient-accent">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <Mail className="w-16 h-16 text-white/90 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Stay Connected
-            </h2>
-            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-              Subscribe to our newsletter to receive updates on upcoming events, volunteer opportunities, and stories of impact from our community.
+      {/* ── VOLUNTEER CTA ── */}
+      <section className="gradient-hero py-20 px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest uppercase text-white/60 mb-3">
+              Get Involved
             </p>
-
-            {subscribed ? (
-              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-6 max-w-md mx-auto">
-                <p className="text-white font-semibold text-lg">
-                  Thank you for subscribing!
-                </p>
-                <p className="text-white/90 mt-2">
-                  You'll receive our next newsletter soon.
-                </p>
-              </div>
-            ) : (
-              <form
-                onSubmit={handleNewsletterSubmit}
-                className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto"
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  required
-                  className="flex-1 px-6 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-white/30"
-                />
-                <button
-                  type="submit"
-                  className="px-8 py-4 bg-white text-accent-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors focus:outline-none focus:ring-4 focus:ring-white/30"
-                >
-                  Subscribe
-                </button>
-              </form>
-            )}
-          </motion.div>
+            <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.5rem)] text-white leading-tight mb-3">
+              Ready to make a difference?
+            </h2>
+            <p className="text-white/80 text-[0.9375rem] max-w-md leading-relaxed">
+              Join 2,500+ volunteers across Vancouver. Flexible roles, real impact, lasting friendships.
+            </p>
+          </div>
+          <div className="flex gap-3 flex-shrink-0 flex-wrap">
+            <Link
+              to="/volunteer"
+              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-primary-600 rounded-lg font-bold text-sm hover:bg-warm-100 transition-colors shadow-soft"
+            >
+              Become a Volunteer
+            </Link>
+            <Link
+              to="/donate"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-lg font-bold text-sm text-white border border-white/30 bg-white/15 hover:bg-white/25 transition-colors"
+            >
+              <Heart className="w-4 h-4" /> Donate
+            </Link>
+          </div>
         </div>
       </section>
     </div>

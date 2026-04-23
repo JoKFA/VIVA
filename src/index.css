@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +10,8 @@
   }
 
   body {
-    @apply font-sans antialiased text-gray-900 bg-gray-50;
+    @apply font-sans antialiased bg-warm-50;
+    color: #1c1a16;
     margin: 0;
   }
 
@@ -18,58 +21,140 @@
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-md rounded-2xl border border-white/20 shadow-glass;
-  }
-
-  .glass-card-strong {
-    @apply bg-white/90 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-glass-lg;
-  }
-
-  .gradient-primary {
-    @apply bg-gradient-to-br from-primary-500 to-primary-700;
-  }
-
-  .gradient-accent {
-    @apply bg-gradient-to-br from-accent-400 to-accent-600;
-  }
-
-  .gradient-hero {
-    @apply bg-gradient-to-br from-primary-500 via-primary-600 to-primary-800;
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
-  }
-
+  /* ── Buttons ── */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 shadow-soft hover:shadow-soft-lg transform hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 shadow-soft hover:shadow-warm;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-primary-700 bg-white border-2 border-primary-200 hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-primary-700 bg-white border border-primary-200 hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200;
   }
 
-  .btn-accent {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold text-white bg-accent-500 hover:bg-accent-600 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 transition-all duration-200 shadow-soft hover:shadow-soft-lg transform hover:-translate-y-0.5;
+  .btn-ghost-white {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white border border-white/35 bg-white/15 hover:bg-white/25 transition-all duration-200;
   }
 
+  /* ── Hero gradient ── */
+  .gradient-hero {
+    background: linear-gradient(150deg, #c1272d 0%, #a31f26 55%, #6e1419 100%);
+  }
+
+  /* ── Image placeholder (when CMS has no upload) ── */
+  .img-placeholder {
+    @apply flex items-center justify-center bg-warm-200 relative overflow-hidden;
+  }
+  .img-placeholder::after {
+    content: 'V';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    color: rgba(193, 39, 45, 0.12);
+    letter-spacing: 0.04em;
+    position: absolute;
+  }
+  .img-placeholder img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── Page header (Option 2: white + red left bar) ── */
+  .page-header {
+    @apply bg-white border-b-[3px] border-primary-600 py-10 px-8;
+  }
+  .page-header-inner {
+    @apply max-w-7xl mx-auto flex items-center gap-5;
+  }
+  .page-header-bar {
+    @apply w-1 h-16 bg-primary-600 rounded-sm flex-shrink-0;
+  }
+
+  /* ── Events TODAY divider ── */
+  .today-divider {
+    @apply flex items-center gap-4 my-12;
+  }
+  .today-divider::before,
+  .today-divider::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: #c1272d;
+  }
+  .today-label {
+    @apply px-5 py-2 bg-primary-600 text-white font-impact text-xl tracking-widest whitespace-nowrap rounded-full;
+    font-family: 'Bebas Neue', sans-serif;
+  }
+
+  /* ── Honours carousel ── */
+  .honours-track {
+    @apply flex gap-6 overflow-x-auto pb-1;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .honours-track::-webkit-scrollbar {
+    display: none;
+  }
+  .honours-card {
+    flex: 0 0 calc(50% - 12px);
+    scroll-snap-align: start;
+  }
+
+  /* ── Event year accordion ── */
+  .year-row {
+    @apply border-t-2 border-warm-200;
+  }
+  .year-toggle {
+    @apply flex items-center justify-between py-5 cursor-pointer gap-4;
+  }
+
+  /* ── Board portrait rows ── */
+  .board-row {
+    @apply flex items-center gap-5 py-4 border-b border-warm-200;
+  }
+  .board-avatar {
+    @apply w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-warm-200 relative;
+  }
+  .board-avatar img {
+    @apply absolute inset-0 w-full h-full object-cover;
+  }
+
+  /* ── Status chips ── */
+  .status-open {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold whitespace-nowrap;
+  }
+  .status-open::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #15803d;
+    flex-shrink: 0;
+  }
+
+  /* ── Eyebrow label ── */
+  .eyebrow {
+    @apply text-xs font-bold tracking-widest uppercase text-primary-600 mb-2;
+  }
+
+  /* ── Section spacing ── */
   .section-padding {
-    @apply py-16 md:py-24 lg:py-32;
+    @apply py-16 md:py-24;
   }
 
-  .container-padding {
-    @apply px-4 sm:px-6 lg:px-8;
+  /* ── Container ── */
+  .container-xl {
+    @apply max-w-7xl mx-auto px-8;
   }
 }
 
 @layer utilities {
-  .animation-delay-2000 {
-    animation-delay: 2s;
+  .font-impact {
+    font-family: 'Bebas Neue', sans-serif;
   }
 
-  .animation-delay-4000 {
-    animation-delay: 4s;
+  .text-warm-white {
+    color: #fafaf8;
   }
 }
 
@@ -77,7 +162,6 @@
   html {
     scroll-behavior: auto;
   }
-
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

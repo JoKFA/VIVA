@@ -1,570 +1,267 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
-import {
-  Calendar,
-  MapPin,
-  Clock,
-  Users,
-  Mail,
-  Phone,
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  Image,
-  Quote,
-  BarChart3,
-} from 'lucide-react';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
-import SectionHeader from '../components/ui/SectionHeader';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { Calendar, MapPin, Clock, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { events } from '../data/mockData';
-import type { Event } from '../types';
 
-const typeColors: Record<Event['type'], string> = {
-  workshop: 'bg-blue-100 text-blue-700',
-  'community-service': 'bg-primary-100 text-primary-700',
-  career: 'bg-purple-100 text-purple-700',
-  social: 'bg-accent-100 text-accent-700',
-  fundraiser: 'bg-pink-100 text-pink-700',
-};
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-const statusConfig: Record<Event['status'], { color: string; label: string; icon: typeof CheckCircle }> = {
-  open: { color: 'success', label: 'Registration Open', icon: CheckCircle },
-  waitlist: { color: 'warning', label: 'Waitlist Only', icon: AlertCircle },
-  closed: { color: 'error', label: 'Registration Closed', icon: AlertCircle },
+function formatLong(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function parseDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return { day: d.getUTCDate(), month: MONTHS[d.getUTCMonth()], year: d.getUTCFullYear() };
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  open: 'Registration Open',
+  waitlist: 'Waitlist Only',
+  closed: 'Registration Closed',
 };
 
 export default function EventDetail() {
-  const prefersReducedMotion = useReducedMotion();
   const { slug } = useParams<{ slug: string }>();
-
-  const event = useMemo(() => {
-    return events.find((e) => e.slug === slug);
-  }, [slug]);
+  const event = useMemo(() => events.find((e) => e.slug === slug), [slug]);
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-warm-50 pt-20">
         <div className="text-center">
-          <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Event Not Found</h1>
-          <p className="text-gray-600 mb-6">
-            The event you're looking for doesn't exist or has been removed.
-          </p>
-          <Button href="/events" variant="primary">
-            View All Events
-          </Button>
+          <p className="font-impact text-[5rem] text-warm-200 leading-none">404</p>
+          <h1 className="font-display font-extrabold text-2xl text-warm-900 mb-3">Event Not Found</h1>
+          <p className="text-warm-600 mb-6 text-sm">The event you're looking for doesn't exist or has been removed.</p>
+          <Link to="/events" className="btn-primary">View All Events</Link>
         </div>
       </div>
     );
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-CA', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const formatType = (type: string) => {
-    return type
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
-  const StatusIcon = statusConfig[event.status].icon;
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-  };
-
-  const staggerChildren = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  const { day, month, year } = parseDate(event.date);
+  const spotsLeft = event.capacity - event.registered;
+  const pctFull = Math.round((event.registered / event.capacity) * 100);
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative min-h-[50vh] flex items-center bg-gradient-to-br from-primary-50 via-white to-accent-50">
-        {/* Animated background */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.div
-              className="absolute top-20 left-10 w-72 h-72 bg-primary-200/30 rounded-full blur-3xl"
-              animate={{
-                x: [0, 30, 0],
-                y: [0, -20, 0],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-            <motion.div
-              className="absolute bottom-10 right-10 w-96 h-96 bg-accent-200/30 rounded-full blur-3xl"
-              animate={{
-                x: [0, -40, 0],
-                y: [0, 30, 0],
-              }}
-              transition={{
-                duration: 10,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          </>
+      {/* Full-bleed image hero */}
+      <div className="relative w-full h-[50vh] min-h-[340px] bg-warm-900 overflow-hidden">
+        {event.imageUrl ? (
+          <img src={event.imageUrl} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        ) : (
+          <img
+            src={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+            alt={event.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
+          />
         )}
+        {/* overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-warm-900 via-warm-900/60 to-transparent" />
 
-        <div className="relative z-10 container-padding max-w-5xl mx-auto py-16">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Back link */}
-            <Link
-              to={event.isPast ? '/events/past' : '/events'}
-              className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to {event.isPast ? 'Past Events' : 'Events'}
-            </Link>
-
-            {/* Type badge */}
-            <div className="mb-4">
-              <span
-                className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${
-                  typeColors[event.type]
-                }`}
-              >
-                {formatType(event.type)}
-              </span>
+        {/* content */}
+        <div className="absolute bottom-0 left-0 right-0 px-8 pb-10 max-w-7xl mx-auto">
+          <Link to="/events"
+            className="inline-flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium mb-5 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            {event.isPast ? 'Past Events' : 'All Events'}
+          </Link>
+          <div className="flex flex-wrap items-end gap-8">
+            {/* Date block */}
+            <div>
+              <p className="font-impact text-[4rem] text-white leading-none">{day}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase text-white/60">{month} {year}</p>
+            </div>
+            <div className="flex-1 min-w-0">
               {event.isPast && (
-                <span className="inline-block ml-2 px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-600">
+                <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase bg-warm-700 text-warm-300 rounded mb-2">
                   Past Event
                 </span>
               )}
+              <h1 className="font-display font-extrabold text-[clamp(1.5rem,3vw,2.5rem)] text-white leading-tight">{event.title}</h1>
             </div>
-
-            {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 mb-6">
-              {event.title}
-            </h1>
-
-            {/* Key info */}
-            <div className="flex flex-wrap gap-6 text-lg text-gray-600">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary-500" />
-                <span>{formatDate(event.date)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary-500" />
-                <span>{event.location}</span>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Main Content */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Description */}
-              <motion.div
-                initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                transition={fadeInUp.transition}
-              >
-                <Card variant="elevated" className="p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Event</h2>
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    {event.description}
-                  </p>
+      {/* Body: 2-col */}
+      <div className="bg-warm-50 px-8 py-16">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
 
-                  {/* Tags */}
-                  {event.tags.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Tags</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {event.tags.map((tag) => (
-                          <Badge key={tag} variant="default">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-
-              {/* What You'll Do */}
-              {event.whatYouWillDo && event.whatYouWillDo.length > 0 && (
-                <motion.div
-                  initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                  animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                  transition={{ ...fadeInUp.transition, delay: 0.1 }}
-                >
-                  <Card variant="elevated" className="p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                      What You'll Do
-                    </h2>
-                    <ul className="space-y-4">
-                      {event.whatYouWillDo.map((item, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-600">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* Agenda */}
-              {event.agenda && event.agenda.length > 0 && (
-                <motion.div
-                  initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                  animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                  transition={{ ...fadeInUp.transition, delay: 0.2 }}
-                >
-                  <Card variant="elevated" className="p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Agenda</h2>
-                    <div className="space-y-4">
-                      {event.agenda.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
-                        >
-                          <div className="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-semibold text-sm">
-                            {index + 1}
-                          </div>
-                          <span className="text-gray-700">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* Recap Section (for past events) */}
-              {event.isPast && event.recap && (
-                <motion.div
-                  initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                  animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                  transition={{ ...fadeInUp.transition, delay: 0.3 }}
-                >
-                  <Card variant="elevated" className="p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Event Recap</h2>
-
-                    <p className="text-gray-600 leading-relaxed text-lg mb-8">
-                      {event.recap.summary}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                      <div className="bg-primary-50 rounded-xl p-6 text-center">
-                        <BarChart3 className="w-8 h-8 text-primary-500 mx-auto mb-2" />
-                        <div className="text-3xl font-bold text-primary-700">
-                          {event.recap.volunteersCount}
-                        </div>
-                        <div className="text-sm text-primary-600 font-medium">
-                          Volunteers
-                        </div>
-                      </div>
-                      <div className="bg-accent-50 rounded-xl p-6 text-center">
-                        <Clock className="w-8 h-8 text-accent-500 mx-auto mb-2" />
-                        <div className="text-3xl font-bold text-accent-700">
-                          {event.recap.hoursServed}
-                        </div>
-                        <div className="text-sm text-accent-600 font-medium">
-                          Hours Served
-                        </div>
-                      </div>
-                      <div className="bg-green-50 rounded-xl p-6 text-center">
-                        <Users className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                        <div className="text-3xl font-bold text-green-700">
-                          {event.recap.beneficiaries}
-                        </div>
-                        <div className="text-sm text-green-600 font-medium">
-                          People Helped
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Gallery Placeholder */}
-                    {event.recap.gallery.length > 0 && (
-                      <div className="mb-8">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                          Event Gallery
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {event.recap.gallery.map((_, index) => (
-                            <div
-                              key={index}
-                              className="aspect-square bg-gray-200 rounded-xl flex items-center justify-center"
-                            >
-                              <Image className="w-12 h-12 text-gray-400" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Quotes */}
-                    {event.recap.quotes.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                          What People Said
-                        </h3>
-                        <div className="space-y-4">
-                          {event.recap.quotes.map((quote, index) => (
-                            <div
-                              key={index}
-                              className="bg-gray-50 rounded-xl p-6 relative"
-                            >
-                              <Quote className="w-8 h-8 text-primary-200 absolute top-4 left-4" />
-                              <p className="text-gray-700 italic pl-8 mb-3">
-                                "{quote.text}"
-                              </p>
-                              <div className="pl-8">
-                                <div className="font-semibold text-gray-900">
-                                  {quote.author}
-                                </div>
-                                {quote.role && (
-                                  <div className="text-sm text-gray-500">
-                                    {quote.role}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                </motion.div>
+          {/* Left: main content */}
+          <div className="space-y-8">
+            {/* About */}
+            <div className="bg-white border border-warm-200 p-8">
+              <h2 className="font-display font-extrabold text-xl text-warm-900 mb-4">About This Event</h2>
+              <p className="text-warm-600 leading-relaxed">{event.description}</p>
+              {event.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-5">
+                  {event.tags.map((tag) => (
+                    <span key={tag} className="px-2.5 py-0.5 text-xs font-medium bg-warm-100 text-warm-600 rounded-sm">{tag}</span>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              {/* Details Box */}
-              <motion.div
-                initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                transition={{ ...fadeInUp.transition, delay: 0.1 }}
-              >
-                <Card variant="elevated" className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-6">Event Details</h3>
+            {/* What you'll do */}
+            {event.whatYouWillDo && event.whatYouWillDo.length > 0 && (
+              <div className="bg-white border border-warm-200 p-8">
+                <h2 className="font-display font-extrabold text-xl text-warm-900 mb-5">What You'll Do</h2>
+                <ul className="space-y-3">
+                  {event.whatYouWillDo.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3 text-warm-600 text-sm">
+                      <CheckCircle className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-                  <div className="space-y-4">
-                    {/* Date & Time */}
-                    <div className="flex items-start gap-3">
-                      <Calendar className="w-5 h-5 text-primary-500 mt-0.5" />
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {formatDate(event.date)}
-                        </div>
-                        <div className="text-sm text-gray-600">{event.time}</div>
-                      </div>
+            {/* Agenda */}
+            {event.agenda && event.agenda.length > 0 && (
+              <div className="bg-white border border-warm-200 p-8">
+                <h2 className="font-display font-extrabold text-xl text-warm-900 mb-5">Agenda</h2>
+                <div className="space-y-3">
+                  {event.agenda.map((item, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                      <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      <span className="text-warm-600 text-sm">{item}</span>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                    {/* Location */}
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-5 h-5 text-primary-500 mt-0.5" />
-                      <div>
-                        <div className="font-medium text-gray-900">{event.location}</div>
-                        {event.address && (
-                          <div className="text-sm text-gray-600">{event.address}</div>
-                        )}
-                      </div>
-                    </div>
+            {/* Recap (past events) */}
+            {event.isPast && event.recap && (
+              <div className="bg-white border border-warm-200 p-8">
+                <h2 className="font-display font-extrabold text-xl text-warm-900 mb-5">Event Recap</h2>
+                <p className="text-warm-600 leading-relaxed mb-7">{event.recap.summary}</p>
 
-                    {/* Registration Status */}
-                    {!event.isPast && (
-                      <div className="flex items-start gap-3">
-                        <StatusIcon
-                          className={`w-5 h-5 mt-0.5 ${
-                            event.status === 'open'
-                              ? 'text-green-500'
-                              : event.status === 'waitlist'
-                              ? 'text-yellow-500'
-                              : 'text-red-500'
-                          }`}
-                        />
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {statusConfig[event.status].label}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {event.registered}/{event.capacity} spots filled
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Capacity for past events */}
-                    {event.isPast && (
-                      <div className="flex items-start gap-3">
-                        <Users className="w-5 h-5 text-primary-500 mt-0.5" />
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {event.registered} Participants
-                          </div>
-                          <div className="text-sm text-gray-600">Event completed</div>
-                        </div>
-                      </div>
-                    )}
+                <div className="grid grid-cols-3 gap-4 mb-7">
+                  <div className="text-center border border-warm-200 py-5">
+                    <p className="font-impact text-3xl text-primary-600 leading-none mb-1">{event.recap.volunteersCount}</p>
+                    <p className="text-xs text-warm-500 font-medium">Volunteers</p>
                   </div>
+                  <div className="text-center border border-warm-200 py-5">
+                    <p className="font-impact text-3xl text-primary-600 leading-none mb-1">{event.recap.hoursServed}</p>
+                    <p className="text-xs text-warm-500 font-medium">Hours Served</p>
+                  </div>
+                  <div className="text-center border border-warm-200 py-5">
+                    <p className="font-impact text-3xl text-primary-600 leading-none mb-1">{event.recap.beneficiaries}</p>
+                    <p className="text-xs text-warm-500 font-medium">People Helped</p>
+                  </div>
+                </div>
 
-                  {/* CTA Button */}
-                  {!event.isPast && (
-                    <div className="mt-6">
-                      <Button
-                        href="/volunteer"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                      >
-                        Join as Volunteer
-                      </Button>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
+                {event.recap.quotes.length > 0 && (
+                  <div className="space-y-4">
+                    {event.recap.quotes.map((q, i) => (
+                      <div key={i} className="bg-warm-50 border-l-4 border-primary-600 pl-5 py-4 pr-4">
+                        <p className="text-warm-700 italic text-sm leading-relaxed mb-2">"{q.text}"</p>
+                        <p className="text-xs font-semibold text-warm-600">{q.author}{q.role && <span className="text-warm-400 font-normal"> · {q.role}</span>}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-              {/* Lead Contact */}
-              {event.leadContact && (
-                <motion.div
-                  initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                  animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                  transition={{ ...fadeInUp.transition, delay: 0.2 }}
-                >
-                  <Card variant="elevated" className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      Event Coordinator
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="font-medium text-gray-900">
-                        {event.leadContact.name}
+          {/* Right: sticky sidebar */}
+          <div className="space-y-5">
+            {/* Details card */}
+            <div className="bg-white border border-warm-200 p-6 sticky top-24">
+              <h3 className="font-display font-bold text-warm-900 mb-5 pb-4 border-b border-warm-200">Event Details</h3>
+              <ul className="space-y-4 text-sm">
+                <li className="flex items-start gap-3">
+                  <Calendar className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-warm-900">{formatLong(event.date)}</p>
+                    <p className="text-warm-500">{event.time}</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-warm-900">{event.location}</p>
+                    {event.address && <p className="text-warm-500">{event.address}</p>}
+                  </div>
+                </li>
+                {!event.isPast && (
+                  <li className="flex items-start gap-3">
+                    <Users className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-medium text-warm-900">{STATUS_LABEL[event.status]}</p>
+                      <p className="text-warm-500">{event.registered} / {event.capacity} registered</p>
+                      {/* Capacity bar */}
+                      <div className="mt-2 h-1.5 bg-warm-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary-600 rounded-full" style={{ width: `${pctFull}%` }} />
                       </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Mail className="w-4 h-4 text-primary-500" />
-                        <a
-                          href={`mailto:${event.leadContact.email}`}
-                          className="hover:text-primary-600 transition-colors"
-                        >
-                          {event.leadContact.email}
-                        </a>
-                      </div>
-                      {event.leadContact.phone && (
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-4 h-4 text-primary-500" />
-                          <a
-                            href={`tel:${event.leadContact.phone}`}
-                            className="hover:text-primary-600 transition-colors"
-                          >
-                            {event.leadContact.phone}
-                          </a>
-                        </div>
+                      {spotsLeft > 0 && spotsLeft <= 20 && (
+                        <p className="text-xs text-amber-600 font-medium mt-1">{spotsLeft} spots left</p>
                       )}
                     </div>
-                  </Card>
-                </motion.div>
+                  </li>
+                )}
+              </ul>
+
+              {!event.isPast && event.status === 'open' && (
+                <Link to="/volunteer" className="btn-primary w-full mt-6 text-sm">
+                  Join as Volunteer
+                </Link>
               )}
 
-              {/* Related Events Placeholder */}
-              <motion.div
-                initial={prefersReducedMotion ? {} : fadeInUp.initial}
-                animate={prefersReducedMotion ? {} : fadeInUp.animate}
-                transition={{ ...fadeInUp.transition, delay: 0.3 }}
-              >
-                <Card variant="default" className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">
-                    More {formatType(event.type)} Events
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Discover more events in this category.
-                  </p>
-                  <Button href="/events" variant="secondary" size="sm" className="w-full">
-                    Browse All Events
-                  </Button>
-                </Card>
-              </motion.div>
+              {/* Coordinator */}
+              {event.leadContact && (
+                <div className="mt-6 pt-5 border-t border-warm-200">
+                  <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400 mb-3">Coordinator</p>
+                  <p className="text-sm font-medium text-warm-900 mb-2">{event.leadContact.name}</p>
+                  {event.leadContact.email && (
+                    <a href={`mailto:${event.leadContact.email}`}
+                      className="flex items-center gap-2 text-xs text-warm-500 hover:text-primary-600 transition-colors">
+                      <Mail className="w-3.5 h-3.5" /> {event.leadContact.email}
+                    </a>
+                  )}
+                  {event.leadContact.phone && (
+                    <a href={`tel:${event.leadContact.phone}`}
+                      className="flex items-center gap-2 text-xs text-warm-500 hover:text-primary-600 transition-colors mt-1">
+                      <Phone className="w-3.5 h-3.5" /> {event.leadContact.phone}
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Bottom CTA */}
-      {!event.isPast && (
-        <section className="section-padding gradient-primary">
-          <div className="container-padding max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6 }}
-            >
-              <Users className="w-16 h-16 text-white/90 mx-auto mb-6" />
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to Make a Difference?
-              </h2>
-              <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-                Join us for this event and contribute to our community. Every volunteer
-                counts!
-              </p>
-              <Button href="/volunteer" variant="accent" size="lg">
-                Sign Up to Volunteer
-              </Button>
-            </motion.div>
+      {/* Bottom CTA band */}
+      {!event.isPast ? (
+        <section className="gradient-hero py-14 px-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-display font-extrabold text-2xl text-white mb-1">Ready to make a difference?</h2>
+              <p className="text-white/80 text-sm">Every volunteer matters. Sign up and join us.</p>
+            </div>
+            <Link to="/volunteer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-600 rounded-lg font-bold text-sm hover:bg-warm-100 transition-colors flex-shrink-0">
+              Become a Volunteer
+            </Link>
           </div>
         </section>
-      )}
-
-      {event.isPast && (
-        <section className="section-padding bg-gray-800">
-          <div className="container-padding max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-              whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6 }}
-            >
-              <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-6" />
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Don't Miss Our Next Event
-              </h2>
-              <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-                This event has passed, but there are more opportunities to get involved.
-                Check out our upcoming events!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button href="/events" variant="primary" size="lg">
-                  View Upcoming Events
-                </Button>
-                <Button href="/events/past" variant="secondary" size="lg">
-                  More Past Events
-                </Button>
-              </div>
-            </motion.div>
+      ) : (
+        <section className="bg-warm-900 py-14 px-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-display font-extrabold text-2xl text-white mb-1">Don't miss our next event</h2>
+              <p className="text-warm-400 text-sm">More upcoming opportunities to get involved.</p>
+            </div>
+            <Link to="/events"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors flex-shrink-0">
+              View Upcoming Events
+            </Link>
           </div>
         </section>
       )}

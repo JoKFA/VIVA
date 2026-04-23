@@ -1,118 +1,181 @@
-import { motion } from 'framer-motion';
-import { Linkedin, User } from 'lucide-react';
-import Card from '../components/ui/Card';
-import Badge from '../components/ui/Badge';
-import { Hero } from '../components/blocks/Hero';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Linkedin, ArrowRight } from 'lucide-react';
 import { teamMembers } from '../data/mockData';
 
+function Avatar({ src, alt, size = 56 }: { src: string; alt: string; size?: number }) {
+  const [err, setErr] = useState(false);
+  if (err) return (
+    <div className="img-placeholder" style={{ width: size, height: size, flexShrink: 0 }} />
+  );
+  return <img src={src} alt={alt} width={size} height={size} onError={() => setErr(true)} />;
+}
+
+const founders = [
+  {
+    name: 'Founder & President',
+    role: 'President',
+    bio: 'Founded VIVA in 2018 with a vision to connect Metro Vancouver\'s diverse communities through meaningful volunteer work. Previously led community development initiatives at UBC and SFU.',
+    img: 'https://picsum.photos/320/400?grayscale&random=70',
+    linkedin: '#',
+  },
+  {
+    name: 'Co-Founder & Executive Director',
+    role: 'Executive Director',
+    bio: 'Oversees all VIVA programming and organizational operations. A certified non-profit professional with 10+ years in the social sector. Passionate about building inclusive volunteer pipelines for newcomers.',
+    img: 'https://picsum.photos/320/400?grayscale&random=71',
+    linkedin: '#',
+  },
+];
+
 export default function BoardOfExecutives() {
-  const prefersReducedMotion = useReducedMotion();
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-  };
-
-  const staggerChildren = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
   const sortedMembers = [...teamMembers].sort((a, b) => a.order - b.order);
+  const executives = sortedMembers.filter((m) => m.isExecutive);
+  const boardMembers = sortedMembers.filter((m) => !m.isExecutive);
 
   return (
     <div>
-      <Hero
-        title="Our Leadership Team"
-        subtitle="Meet the People Behind VIVA"
-        description="Our dedicated board members and executives bring diverse expertise and a shared passion for community service. Together, they guide VIVA's mission to create lasting positive change."
-      />
+      {/* Page Header — Option 2 */}
+      <div className="page-header pt-28">
+        <div className="page-header-inner">
+          <div className="page-header-bar" />
+          <div>
+            <p className="eyebrow">Leadership</p>
+            <h1 className="font-display font-extrabold text-[clamp(2rem,4vw,3rem)] text-warm-900 leading-tight">
+              Board of Executives
+            </h1>
+          </div>
+        </div>
+      </div>
 
-      {/* Team Grid Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={prefersReducedMotion ? {} : staggerChildren}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: '-100px' }}
-          >
-            {sortedMembers.map((member) => (
-              <motion.div
-                key={member.id}
-                variants={prefersReducedMotion ? {} : fadeInUp}
-              >
-                <Card variant="elevated" hover className="h-full overflow-hidden">
-                  {/* Photo Placeholder */}
-                  <div className="relative h-64 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-                    <User className="w-24 h-24 text-primary-400" />
-                    {member.isExecutive && (
-                      <div className="absolute top-4 right-4">
-                        <Badge variant="primary" size="md">
-                          Executive
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+      {/* Founders — 2-up featured (large portrait + bio, NOT equal card grid) */}
+      <section className="bg-warm-50 py-20 px-8">
+        <div className="max-w-7xl mx-auto">
+          <p className="eyebrow">Founders</p>
+          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-12">
+            The People Who Started It All
+          </h2>
 
-                  {/* Content */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">
-                      {member.name}
-                    </h3>
-                    <p className="text-primary-600 font-semibold mb-4">
-                      {member.role}
-                    </p>
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                      {member.bio}
-                    </p>
-                    {member.linkedInUrl && (
-                      <a
-                        href={member.linkedInUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors"
-                      >
-                        <Linkedin className="w-5 h-5" />
-                        Connect on LinkedIn
-                      </a>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {founders.map((f) => (
+              <div key={f.name} className="flex gap-6 bg-white border border-warm-200 p-8">
+                <div className="w-28 h-36 flex-shrink-0 overflow-hidden relative">
+                  <Avatar src={f.img} alt={f.name} size={112} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold tracking-widest uppercase text-primary-600 mb-1">{f.role}</p>
+                  <h3 className="font-display font-extrabold text-xl text-warm-900 mb-3">{f.name}</h3>
+                  <p className="text-warm-600 text-sm leading-relaxed mb-4">{f.bio}</p>
+                  {f.linkedin && (
+                    <a href={f.linkedin} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-warm-600 hover:text-primary-600 transition-colors">
+                      <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+                    </a>
+                  )}
+                </div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Join Our Team CTA */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Interested in Leadership Opportunities?
+      {/* Executive Team — portrait rows */}
+      {executives.length > 0 && (
+        <section className="bg-white py-20 px-8">
+          <div className="max-w-7xl mx-auto">
+            <p className="eyebrow">Executive Team</p>
+            <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-8">
+              Senior Leadership
             </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              We're always looking for passionate individuals to join our board or take on leadership roles within our programs. If you share our commitment to community service and want to make a difference, we'd love to hear from you.
+
+            <div className="border-t border-warm-200">
+              {executives.map((member) => (
+                <div key={member.id} className="board-row">
+                  <div className="board-avatar flex-shrink-0">
+                    <Avatar src={member.imageUrl || `https://picsum.photos/56/56?grayscale&random=${member.id}`} alt={member.name} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-bold text-[0.9375rem] text-warm-900">{member.name}</p>
+                    <p className="text-sm text-warm-500">{member.role}</p>
+                  </div>
+                  {member.bio && (
+                    <p className="text-sm text-warm-600 leading-relaxed max-w-lg hidden md:block">{member.bio}</p>
+                  )}
+                  {member.linkedInUrl && (
+                    <a href={member.linkedInUrl} target="_blank" rel="noopener noreferrer"
+                      className="p-2 text-warm-400 hover:text-primary-600 transition-colors flex-shrink-0"
+                      aria-label={`${member.name} on LinkedIn`}>
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Board Members — portrait rows */}
+      {boardMembers.length > 0 && (
+        <section className="bg-warm-50 py-20 px-8">
+          <div className="max-w-7xl mx-auto">
+            <p className="eyebrow">Board</p>
+            <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-8">
+              Board of Directors
+            </h2>
+
+            <div className="border-t border-warm-200 bg-white">
+              {boardMembers.map((member) => (
+                <div key={member.id} className="board-row px-6">
+                  <div className="board-avatar flex-shrink-0">
+                    <Avatar src={member.imageUrl || `https://picsum.photos/56/56?grayscale&random=${member.id}b`} alt={member.name} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-bold text-[0.9375rem] text-warm-900">{member.name}</p>
+                    <p className="text-sm text-warm-500">{member.role}</p>
+                  </div>
+                  {member.bio && (
+                    <p className="text-sm text-warm-600 leading-relaxed max-w-lg hidden md:block">{member.bio}</p>
+                  )}
+                  {member.linkedInUrl && (
+                    <a href={member.linkedInUrl} target="_blank" rel="noopener noreferrer"
+                      className="p-2 text-warm-400 hover:text-primary-600 transition-colors flex-shrink-0"
+                      aria-label={`${member.name} on LinkedIn`}>
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Empty state if no members in mockData */}
+      {executives.length === 0 && boardMembers.length === 0 && (
+        <section className="bg-white py-20 px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="border-t border-warm-200 py-16 text-center text-warm-400">
+              <p className="text-sm">Board member profiles coming soon.</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Join CTA */}
+      <section className="gradient-hero py-16 px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest uppercase text-white/60 mb-2">Get Involved</p>
+            <h2 className="font-display font-extrabold text-2xl text-white mb-2">Interested in a leadership role?</h2>
+            <p className="text-white/80 text-sm max-w-md">
+              We're always looking for passionate community members to join our board and leadership team.
             </p>
-            <a
-              href="/contact"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-soft-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Contact Us
-            </a>
-          </motion.div>
+          </div>
+          <Link to="/contact"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-600 rounded-lg font-bold text-sm hover:bg-warm-100 transition-colors flex-shrink-0">
+            Contact Us <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
     </div>

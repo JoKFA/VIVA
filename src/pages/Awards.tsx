@@ -1,221 +1,146 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Award as AwardIcon, FileText, Calendar, CheckCircle, Trophy, Users } from 'lucide-react';
-import SectionHeader from '../components/ui/SectionHeader';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Badge from '../components/ui/Badge';
-import { Hero } from '../components/blocks/Hero';
-import { useReducedMotion } from '../hooks/useReducedMotion';
+import { Link } from 'react-router-dom';
+import { Download, ArrowRight } from 'lucide-react';
 import { awards } from '../data/mockData';
 
 export default function Awards() {
-  const prefersReducedMotion = useReducedMotion();
-  const [activeTab, setActiveTab] = useState<string>(awards[0]?.id || '');
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
-  };
-
   return (
     <div>
-      <Hero
-        title="Awards & Scholarships"
-        subtitle="Recognizing Excellence"
-        description="VIVA celebrates outstanding volunteers and supports young leaders through our awards and scholarship programs. Learn about opportunities to be recognized for your contributions."
-      />
+      {/* Page Header — Option 2 */}
+      <div className="page-header pt-28">
+        <div className="page-header-inner">
+          <div className="page-header-bar" />
+          <div>
+            <p className="eyebrow">Recognition</p>
+            <h1 className="font-display font-extrabold text-[clamp(2rem,4vw,3rem)] text-warm-900 leading-tight">
+              Awards & Scholarships
+            </h1>
+          </div>
+        </div>
+      </div>
 
-      {/* Overview Section */}
-      <section className="section-padding bg-white">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <Trophy className="w-16 h-16 text-accent-500 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Celebrating Our Community Champions
-            </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              At VIVA, we believe in recognizing the incredible contributions of our volunteers. Our awards and scholarships program honors those who go above and beyond in their service, demonstrating exceptional dedication, leadership, and impact. These programs not only celebrate past achievements but also inspire future generations of community leaders.
+      {/* Intro */}
+      <section className="bg-white py-16 px-8 border-b border-warm-200">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-warm-600 text-[0.9375rem] leading-relaxed mb-4">
+              VIVA celebrates outstanding volunteers and supports young leaders through our annual awards
+              and scholarship programs. These recognitions honour those who demonstrate exceptional
+              dedication, leadership, and community impact.
             </p>
-          </motion.div>
+            <p className="text-warm-600 text-[0.9375rem] leading-relaxed">
+              Nominations open each spring — community members, partner organizations, and VIVA staff
+              can all submit nominations.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-warm-50 border border-warm-200 p-6 text-center">
+              <p className="font-impact text-5xl text-primary-600 leading-none mb-1">7+</p>
+              <p className="text-xs text-warm-500 font-medium">Years of Awards</p>
+            </div>
+            <div className="bg-warm-50 border border-warm-200 p-6 text-center">
+              <p className="font-impact text-5xl text-primary-600 leading-none mb-1">50+</p>
+              <p className="text-xs text-warm-500 font-medium">Recipients Honoured</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Awards Tabs Section */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-padding max-w-7xl mx-auto">
-          <SectionHeader
-            title="Available Awards & Scholarships"
-            subtitle="Explore our recognition programs and find out how to apply"
-          />
+      {/* Awards list */}
+      {awards.length > 0 ? (
+        <section className="bg-warm-50 py-20 px-8">
+          <div className="max-w-7xl mx-auto">
+            <p className="eyebrow">Current Programs</p>
+            <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-10">
+              Available Awards & Scholarships
+            </h2>
 
-          {/* Tab Navigation */}
-          <div className="flex flex-wrap justify-center gap-4 mt-12 mb-8">
-            {awards.map((award) => (
-              <button
-                key={award.id}
-                onClick={() => setActiveTab(award.id)}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                  activeTab === award.id
-                    ? 'bg-primary-600 text-white shadow-soft-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                }`}
-              >
-                {award.name}
-              </button>
-            ))}
-          </div>
+            <div className="space-y-0 border-t border-warm-200">
+              {awards.map((award, i) => (
+                <div key={award.id} className={`border-b border-warm-200 py-10 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-start
+                  ${i % 2 === 0 ? 'bg-white px-8' : 'bg-warm-50 px-8'}`}>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      <h3 className="font-display font-extrabold text-xl text-warm-900">{award.name}</h3>
+                      {award.years && award.years.map((yr: number | string) => (
+                        <span key={yr} className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 bg-primary-50 text-primary-600 rounded">
+                          {yr}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-warm-600 text-[0.9375rem] leading-relaxed mb-5 max-w-2xl">{award.description}</p>
 
-          {/* Award Details */}
-          {awards.map((award) => (
-            <motion.div
-              key={award.id}
-              initial={prefersReducedMotion ? {} : { opacity: 0 }}
-              animate={
-                activeTab === award.id
-                  ? { opacity: 1, display: 'block' }
-                  : { opacity: 0, display: 'none' }
-              }
-              transition={{ duration: 0.3 }}
-            >
-              <Card variant="elevated" className="p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Main Info */}
-                  <div className="lg:col-span-2">
-                    <div className="flex items-start gap-4 mb-6">
-                      <div className="w-14 h-14 bg-accent-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <AwardIcon className="w-7 h-7 text-accent-600" />
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-5">
+                      {award.eligibility && (
+                        <div>
+                          <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400 mb-1">Eligibility</p>
+                          <p className="text-sm text-warm-600">{award.eligibility}</p>
+                        </div>
+                      )}
+                      {award.timeline && (
+                        <div>
+                          <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400 mb-1">Timeline</p>
+                          <p className="text-sm text-warm-600">{award.timeline}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Past recipients — compact inline list */}
+                    {award.pastRecipients && award.pastRecipients.length > 0 && (
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                          {award.name}
-                        </h3>
-                        <div className="flex gap-2">
-                          {award.years.map((year) => (
-                            <Badge key={year} variant="primary" size="sm">
-                              {year}
-                            </Badge>
+                        <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400 mb-2">Past Recipients</p>
+                        <div className="flex flex-wrap gap-3">
+                          {award.pastRecipients.map((r: { name: string; year: number | string; achievement?: string }) => (
+                            <div key={r.name + r.year}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-warm-200 text-sm">
+                              <span className="font-medium text-warm-900">{r.name}</span>
+                              <span className="text-warm-400">·</span>
+                              <span className="text-warm-500 text-xs">{r.year}</span>
+                            </div>
                           ))}
                         </div>
                       </div>
-                    </div>
-
-                    <p className="text-gray-600 leading-relaxed text-lg mb-6">
-                      {award.description}
-                    </p>
-
-                    <div className="space-y-6">
-                      {/* Eligibility */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <CheckCircle className="w-5 h-5 text-primary-600" />
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Eligibility Requirements
-                          </h4>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed pl-7">
-                          {award.eligibility}
-                        </p>
-                      </div>
-
-                      {/* Timeline */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Calendar className="w-5 h-5 text-primary-600" />
-                          <h4 className="text-lg font-semibold text-gray-900">
-                            Application Timeline
-                          </h4>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed pl-7">
-                          {award.timeline}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                      <Button href={award.applicationUrl} variant="primary" size="lg">
-                        Apply Now
-                      </Button>
-                      <Button
-                        href={award.pdfUrl}
-                        variant="outline"
-                        size="lg"
-                        icon={FileText}
-                        external
-                      >
-                        Download Guidelines (PDF)
-                      </Button>
-                    </div>
+                    )}
                   </div>
 
-                  {/* Past Recipients */}
-                  <div className="lg:col-span-1">
-                    <Card variant="glass" className="p-6 bg-primary-50">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Users className="w-5 h-5 text-primary-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">
-                          Past Recipients
-                        </h4>
-                      </div>
-                      <div className="space-y-4">
-                        {award.pastRecipients.map((recipient, index) => (
-                          <div
-                            key={index}
-                            className="bg-white rounded-lg p-4 shadow-soft"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold text-gray-900">
-                                {recipient.name}
-                              </span>
-                              <Badge variant="accent" size="sm">
-                                {recipient.year}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              {recipient.achievement}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
+                  <div className="flex flex-col gap-3 flex-shrink-0">
+                    <a href={award.applicationUrl || '/contact'}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 transition-colors">
+                      Apply Now <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                    {award.pdfUrl && (
+                      <a href={award.pdfUrl} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-warm-300 text-warm-700 text-sm font-semibold rounded-lg hover:bg-warm-100 transition-colors">
+                        <Download className="w-3.5 h-3.5" /> Guidelines PDF
+                      </a>
+                    )}
                   </div>
                 </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="bg-warm-50 py-20 px-8">
+          <div className="max-w-7xl mx-auto text-center text-warm-400 py-12">
+            <p className="text-sm">Award programs for the current cycle will be announced shortly. Check back soon.</p>
+          </div>
+        </section>
+      )}
 
-      {/* Nominate Section */}
-      <section className="section-padding gradient-accent">
-        <div className="container-padding max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-            whileInView={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-          >
-            <AwardIcon className="w-16 h-16 text-white/90 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Know Someone Deserving?
-            </h2>
-            <p className="text-lg text-white/90 mb-8">
-              Do you know a volunteer who has made an exceptional impact in your community? Nominate them for one of our awards and help us celebrate their dedication and service.
+      {/* Nomination CTA */}
+      <section className="bg-warm-900 py-16 px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest uppercase text-white/50 mb-2">Nominations</p>
+            <h2 className="font-display font-extrabold text-2xl text-white mb-2">Know someone deserving?</h2>
+            <p className="text-warm-400 text-sm max-w-md">
+              Nominate a volunteer who has made an exceptional impact. Nominations are reviewed by an independent committee.
             </p>
-            <a
-              href="/contact"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl bg-white text-accent-600 hover:bg-gray-100 shadow-soft-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Submit a Nomination
-            </a>
-          </motion.div>
+          </div>
+          <Link to="/contact"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors flex-shrink-0">
+            Submit Nomination <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
     </div>
