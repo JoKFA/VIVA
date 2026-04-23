@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle, Clock } from 'lucide-react';
 import { siteSettings } from '../data/mockData';
 
-interface FormData { name: string; email: string; subject: string; message: string; }
-const EMPTY: FormData = { name: '', email: '', subject: '', message: '' };
+interface FormData { firstName: string; lastName: string; email: string; subject: string; message: string; }
+const EMPTY: FormData = { firstName: '', lastName: '', email: '', subject: '', message: '' };
 
 export default function Contact() {
   const [form, setForm] = useState<FormData>(EMPTY);
@@ -17,7 +17,8 @@ export default function Contact() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = 'Required';
+    if (!form.firstName.trim()) e.firstName = 'Required';
+    if (!form.lastName.trim()) e.lastName = 'Required';
     if (!form.email.trim()) e.email = 'Required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
     if (!form.subject.trim()) e.subject = 'Required';
@@ -91,6 +92,15 @@ export default function Contact() {
                   </a>
                 </div>
               </li>
+              <li className="flex items-start gap-4">
+                <div className="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Clock className="w-4 h-4 text-primary-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold tracking-widest uppercase text-warm-400 mb-1">Response Time</p>
+                  <p className="text-warm-900 text-sm font-medium">Within 48 hours</p>
+                </div>
+              </li>
             </ul>
 
             {/* Social */}
@@ -131,17 +141,23 @@ export default function Contact() {
               <form onSubmit={submit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Full Name *</label>
-                    <input type="text" value={form.name} onChange={(e) => field('name', e.target.value)}
-                      className={inputCls('name')} placeholder="Jane Doe" />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">First Name *</label>
+                    <input type="text" value={form.firstName} onChange={(e) => field('firstName', e.target.value)}
+                      className={inputCls('firstName')} placeholder="Jane" />
+                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Email *</label>
-                    <input type="email" value={form.email} onChange={(e) => field('email', e.target.value)}
-                      className={inputCls('email')} placeholder="jane@example.com" />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Last Name *</label>
+                    <input type="text" value={form.lastName} onChange={(e) => field('lastName', e.target.value)}
+                      className={inputCls('lastName')} placeholder="Doe" />
+                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                   </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-warm-700 mb-1.5">Email *</label>
+                  <input type="email" value={form.email} onChange={(e) => field('email', e.target.value)}
+                    className={inputCls('email')} placeholder="jane@example.com" />
+                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
 
                 <div>
