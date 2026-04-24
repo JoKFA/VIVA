@@ -1,6 +1,7 @@
+import { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
+import { ArrowRight, Heart, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { events, stats, honours } from '../data/mockData';
 
@@ -49,6 +50,125 @@ const programs = [
   },
 ];
 
+
+function HonoursCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = honours.length;
+
+  const goTo = (i: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.children[i] as HTMLElement;
+    if (card) track.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+    setIdx(i);
+  };
+
+  const prev = () => goTo((idx - 1 + count) % count);
+  const next = () => goTo((idx + 1) % count);
+
+  useEffect(() => {
+    if (paused || count <= 2) return;
+    const t = setInterval(() => goTo((idx + 1) % count), 4000);
+    return () => clearInterval(t);
+  }, [paused, idx, count]);
+
+  return (
+    <section className="bg-warm-50 py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-end justify-between mb-8 gap-6">
+          <div>
+            <p className="eyebrow">Honours & Recognition</p>
+            <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-2">
+              Recognized by Canada's Leaders
+            </h2>
+            <p className="text-warm-600 text-[0.9375rem] max-w-lg">
+              VIVA's impact has been acknowledged at the highest levels of government.
+            </p>
+          </div>
+          {/* Prev / Next */}
+          <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={prev}
+              aria-label="Previous"
+              className="p-2.5 border border-warm-200 bg-white hover:bg-warm-100 transition-colors rounded-lg"
+            >
+              <ChevronLeft className="w-4 h-4 text-warm-700" />
+            </button>
+            <button
+              onClick={next}
+              aria-label="Next"
+              className="p-2.5 border border-warm-200 bg-white hover:bg-warm-100 transition-colors rounded-lg"
+            >
+              <ChevronRight className="w-4 h-4 text-warm-700" />
+            </button>
+          </div>
+        </div>
+
+        {/* Carousel */}
+        <div
+          className="overflow-hidden"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div
+            ref={trackRef}
+            className="flex gap-6 overflow-x-scroll scrollbar-none"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
+            {honours.map((h) => (
+              <div
+                key={h.id}
+                className="honours-letter-card flex-shrink-0 bg-white border border-warm-200 overflow-hidden flex flex-col"
+                style={{ scrollSnapAlign: 'start' }}
+              >
+                {/* A4 portrait photo — full letter scan */}
+                <div
+                  className="relative bg-warm-100 w-full"
+                  style={{ aspectRatio: '210 / 297' }}
+                >
+                  <img
+                    src={h.letterImageUrl}
+                    alt={`Recognition letter from ${h.name}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div
+                    className="absolute top-0 left-0 w-1 h-full"
+                    style={{ backgroundColor: h.accent }}
+                  />
+                </div>
+                {/* Caption */}
+                <div className="px-5 py-4 border-t-2 flex-shrink-0" style={{ borderTopColor: h.accent }}>
+                  <p className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{ color: h.accent }}>
+                    {h.tier}
+                  </p>
+                  <p className="font-display font-bold text-sm text-warm-900 leading-tight">{h.name}</p>
+                  <p className="text-xs text-warm-500 mt-0.5">{h.organization}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dot indicators */}
+        <div className="flex items-center gap-2 mt-5">
+          {honours.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                i === idx ? 'w-6 h-2 bg-primary-600' : 'w-2 h-2 bg-warm-300 hover:bg-warm-400'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -199,54 +319,8 @@ export default function Home() {
         ))}
       </section>
 
-      {/* ── HONOURS (photo-primary letter cards) ── */}
-      <section className="bg-warm-50 py-20 px-8">
-        <div className="max-w-7xl mx-auto">
-          <p className="eyebrow">Honours & Recognition</p>
-          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-3">
-            Recognized by Canada's Leaders
-          </h2>
-          <p className="text-warm-600 text-[0.9375rem] mb-8 max-w-lg">
-            VIVA's impact has been acknowledged at the highest levels of government.
-          </p>
-
-          <div className="honours-track">
-            {honours.map((h) => (
-              <div key={h.id} className="honours-card bg-white border border-warm-200 overflow-hidden flex flex-col">
-                {/* Letter photo — primary element */}
-                <div className="relative flex-1 bg-warm-100 min-h-[300px]">
-                  <img
-                    src={h.letterImageUrl}
-                    alt={`Recognition letter from ${h.name}`}
-                    className="w-full h-full object-cover absolute inset-0"
-                    loading="lazy"
-                  />
-                  <div
-                    className="absolute top-0 left-0 w-1 h-full"
-                    style={{ backgroundColor: h.accent }}
-                  />
-                </div>
-
-                {/* Caption bar */}
-                <div className="px-5 py-4 border-t-2" style={{ borderTopColor: h.accent }}>
-                  <p
-                    className="text-[10px] font-bold tracking-widest uppercase mb-1"
-                    style={{ color: h.accent }}
-                  >
-                    {h.tier}
-                  </p>
-                  <p className="font-display font-bold text-sm text-warm-900 leading-tight">{h.name}</p>
-                  <p className="text-xs text-warm-500 mt-0.5">{h.organization}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3 mt-4">
-            <span className="text-xs text-warm-400">Scroll for more recognitions →</span>
-          </div>
-        </div>
-      </section>
+      {/* ── HONOURS (auto-scrolling A4 portrait carousel) ── */}
+      <HonoursCarousel />
 
       {/* ── UPCOMING EVENTS (date-first list) ── */}
       <section className="bg-white py-20 px-8">

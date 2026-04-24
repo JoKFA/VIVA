@@ -86,24 +86,16 @@
     font-family: 'Bebas Neue', sans-serif;
   }
 
-  /* ── Honours carousel ── */
-  .honours-track {
-    @apply flex gap-6 overflow-x-auto pb-1;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+  /* ── Honours auto-scroll carousel ── */
+  .honours-letter-card {
+    /* mobile: one card fills the view with a peek of the next */
+    width: calc(90vw - 2rem);
   }
-  .honours-track::-webkit-scrollbar {
-    display: none;
-  }
-  .honours-card {
-    flex: 0 0 80vw;
-    scroll-snap-align: start;
-  }
-  @media (min-width: 640px) {
-    .honours-card { flex: 0 0 calc(50% - 12px); }
-  }
-  @media (min-width: 1024px) {
-    .honours-card { flex: 0 0 calc(25% - 18px); }
+  @media (min-width: 768px) {
+    .honours-letter-card {
+      /* desktop: two cards side by side */
+      width: calc(50% - 12px);
+    }
   }
 
   /* ── Event year accordion ── */
