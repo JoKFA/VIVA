@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { events, stats } from '../data/mockData';
+import { events, stats, honours } from '../data/mockData';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -38,46 +38,17 @@ const programs = [
     img: 'https://picsum.photos/640/400?grayscale&random=53',
     imgAlt: 'Shoreline cleanup',
   },
+  {
+    num: '04',
+    title: 'Career Development',
+    body: 'Empowering youth and young professionals through resume building, networking events, online seminars, and career fairs to help them achieve their professional goals.',
+    cta: 'Explore opportunities',
+    href: '/events',
+    img: 'https://picsum.photos/640/400?grayscale&random=54',
+    imgAlt: 'Career development',
+  },
 ];
 
-const honours = [
-  {
-    name: 'Mark Carney',
-    role: 'Prime Minister of Canada',
-    tier: 'Federal · 2025',
-    accent: '#c1272d',
-    quote:
-      '"VIVA\'s dedication to strengthening communities through volunteer service exemplifies the spirit of Canadian civic engagement."',
-    img: 'https://picsum.photos/56/56?grayscale&random=60',
-  },
-  {
-    name: 'Premier of British Columbia',
-    role: 'Province of British Columbia',
-    tier: 'Provincial · 2025',
-    accent: '#1a5c9e',
-    quote:
-      '"British Columbia is proud to recognize VIVA for their outstanding contributions to youth development and community building."',
-    img: 'https://picsum.photos/56/56?grayscale&random=61',
-  },
-  {
-    name: 'Mayor of Burnaby',
-    role: 'City of Burnaby',
-    tier: 'Municipal · 2024',
-    accent: '#15803d',
-    quote:
-      '"VIVA has become an essential part of our city\'s volunteer ecosystem — connecting thousands of residents with meaningful community work."',
-    img: 'https://picsum.photos/56/56?grayscale&random=62',
-  },
-  {
-    name: 'UBC Student Affairs',
-    role: 'University of British Columbia',
-    tier: 'Academic · 2025',
-    accent: '#002145',
-    quote:
-      '"The VIVA × UBC partnership has given hundreds of international students a real pathway into Canadian professional life."',
-    img: 'https://picsum.photos/56/56?grayscale&random=63',
-  },
-];
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -202,12 +173,12 @@ export default function Home() {
           >
             {/* Image — alternates sides */}
             <div className={`relative overflow-hidden ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
-              <img src={p.img} alt={p.imgAlt} className="w-full h-full object-cover min-h-[280px]" />
+              <img src={p.img} alt={p.imgAlt} className="w-full h-full object-cover min-h-[280px]" loading="lazy" />
             </div>
 
             {/* Text */}
             <div
-              className={`flex flex-col justify-center px-12 py-14 ${
+              className={`flex flex-col justify-center px-6 lg:px-12 py-14 ${
                 i % 2 === 1 ? 'bg-warm-50 lg:order-1' : 'bg-white'
               }`}
             >
@@ -228,7 +199,7 @@ export default function Home() {
         ))}
       </section>
 
-      {/* ── HONOURS (carousel) ── */}
+      {/* ── HONOURS (photo-primary letter cards) ── */}
       <section className="bg-warm-50 py-20 px-8">
         <div className="max-w-7xl mx-auto">
           <p className="eyebrow">Honours & Recognition</p>
@@ -239,40 +210,40 @@ export default function Home() {
             VIVA's impact has been acknowledged at the highest levels of government.
           </p>
 
-          {/* Scroll track */}
           <div className="honours-track">
             {honours.map((h) => (
-              <div
-                key={h.name}
-                className="honours-card bg-white border border-warm-200 border-l-4 p-8"
-                style={{ borderLeftColor: h.accent }}
-              >
-                <div className="flex items-start gap-4 mb-5">
-                  <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-warm-200">
-                    <img src={h.img} alt={h.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="font-display font-extrabold text-[0.9375rem] text-warm-900">{h.name}</p>
-                    <p className="text-sm text-warm-600">{h.role}</p>
-                    <p className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: h.accent }}>
-                      {h.tier}
-                    </p>
-                  </div>
+              <div key={h.id} className="honours-card bg-white border border-warm-200 overflow-hidden flex flex-col">
+                {/* Letter photo — primary element */}
+                <div className="relative flex-1 bg-warm-100 min-h-[300px]">
+                  <img
+                    src={h.letterImageUrl}
+                    alt={`Recognition letter from ${h.name}`}
+                    className="w-full h-full object-cover absolute inset-0"
+                    loading="lazy"
+                  />
+                  <div
+                    className="absolute top-0 left-0 w-1 h-full"
+                    style={{ backgroundColor: h.accent }}
+                  />
                 </div>
-                <p className="text-warm-700 text-[0.9375rem] leading-relaxed italic">{h.quote}</p>
+
+                {/* Caption bar */}
+                <div className="px-5 py-4 border-t-2" style={{ borderTopColor: h.accent }}>
+                  <p
+                    className="text-[10px] font-bold tracking-widest uppercase mb-1"
+                    style={{ color: h.accent }}
+                  >
+                    {h.tier}
+                  </p>
+                  <p className="font-display font-bold text-sm text-warm-900 leading-tight">{h.name}</p>
+                  <p className="text-xs text-warm-500 mt-0.5">{h.organization}</p>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Scroll indicator dots */}
           <div className="flex items-center gap-3 mt-4">
             <span className="text-xs text-warm-400">Scroll for more recognitions →</span>
-            <div className="flex gap-1.5">
-              <div className="w-5 h-1 rounded-sm bg-primary-600" />
-              <div className="w-2 h-1 rounded-sm bg-warm-200" />
-              <div className="w-2 h-1 rounded-sm bg-warm-200" />
-              <div className="w-2 h-1 rounded-sm bg-warm-200" />
-            </div>
           </div>
         </div>
       </section>
@@ -331,7 +302,7 @@ export default function Home() {
                       <p className="font-display font-bold text-[0.9375rem] text-warm-900 mb-1 group-hover:text-primary-600 transition-colors">
                         {ev.title}
                       </p>
-                      <p className="text-xs text-warm-500">📍 {ev.location}</p>
+                      <p className="text-xs text-warm-500"><span aria-hidden="true">📍</span> {ev.location}</p>
                     </div>
 
                     {/* Status */}

@@ -3,6 +3,23 @@ import { Link } from 'react-router-dom';
 import { MapPin, ChevronDown, ArrowRight } from 'lucide-react';
 import { events } from '../data/mockData';
 
+const FILTERS = [
+  { label: 'All', value: 'all' },
+  { label: 'Community', value: 'community' },
+  { label: 'Career', value: 'career' },
+  { label: 'Environment', value: 'environment' },
+  { label: 'Fundraiser', value: 'fundraiser' },
+];
+
+function matchesFilter(ev: (typeof events)[0], filter: string) {
+  if (filter === 'all') return true;
+  if (filter === 'community') return ev.type === 'community-service' || ev.type === 'social';
+  if (filter === 'career') return ev.type === 'workshop' || ev.tags?.includes('career');
+  if (filter === 'environment') return ev.tags?.includes('environment') || ev.tags?.some((t) => t.includes('environment'));
+  if (filter === 'fundraiser') return ev.type === 'fundraiser';
+  return true;
+}
+
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 function parseDate(dateStr: string) {
@@ -31,9 +48,13 @@ function groupByYear(evts: typeof events) {
 }
 
 export default function Events() {
-  const upcoming = events.filter((e) => !e.isPast);
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const allUpcoming = events.filter((e) => !e.isPast);
   const past = events.filter((e) => e.isPast);
   const pastByYear = groupByYear(past);
+
+  const upcoming = allUpcoming.filter((e) => matchesFilter(e, activeFilter));
 
   const [openYears, setOpenYears] = useState<Set<number>>(new Set());
   const toggleYear = (yr: number) =>
@@ -48,21 +69,43 @@ export default function Events() {
 
   return (
     <div>
-      {/* Page Header — Option 2 */}
-      <div className="page-header pt-28">
-        <div className="page-header-inner">
-          <div className="page-header-bar" />
-          <div>
-            <p className="eyebrow">2026</p>
-            <h1 className="font-display font-extrabold text-[clamp(2rem,4vw,3rem)] text-warm-900 leading-tight">
-              Events
-            </h1>
+      {/* Page Header — Option 4: dark charcoal + red gradient + filter chips */}
+      <div className="relative bg-warm-900 pt-28 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Red gradient wash */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-[600px] h-[600px] rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, #c1272d 0%, transparent 70%)' }} />
+          <div className="absolute -bottom-16 right-0 w-[400px] h-[400px] rounded-full opacity-10"
+            style={{ background: 'radial-gradient(circle, #c1272d 0%, transparent 70%)' }} />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto">
+          <p className="text-[10px] font-bold tracking-widest uppercase text-primary-400 mb-3">2026</p>
+          <h1 className="font-impact text-[clamp(5rem,12vw,9rem)] text-white leading-none tracking-wide mb-8">
+            EVENTS
+          </h1>
+
+          {/* Filter chips */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setActiveFilter(f.value)}
+                className={`flex-shrink-0 px-5 py-2 text-sm font-semibold rounded-md border transition-colors ${
+                  activeFilter === f.value
+                    ? 'bg-primary-600 border-primary-600 text-white'
+                    : 'bg-transparent border-white/25 text-white/70 hover:border-white/50 hover:text-white'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* ── UPCOMING ── */}
-      <section className="bg-white py-20 px-8">
+      <section className="bg-white py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <p className="eyebrow">Upcoming</p>
           <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-10">
@@ -117,7 +160,7 @@ export default function Events() {
                     const { day, month, year } = parseDate(ev.date);
                     return (
                       <div key={ev.id}
-                        className="grid grid-cols-[80px_1fr_auto_auto] items-center gap-5 py-5 border-b border-warm-200 group">
+                        className="grid grid-cols-[64px_1fr_auto] sm:grid-cols-[80px_1fr_auto_auto] items-center gap-4 sm:gap-5 py-5 border-b border-warm-200 group">
                         <div>
                           <p className="font-impact text-[2rem] text-warm-700 leading-none">{day}</p>
                           <p className="text-[9px] font-bold tracking-widest uppercase text-warm-400">{month} {year}</p>
@@ -139,14 +182,16 @@ export default function Events() {
       </section>
 
       {/* ── TODAY DIVIDER ── */}
-      <div className="px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto today-divider">
-          <span className="today-label">Past Events</span>
+          <span className="today-label">
+            TODAY &mdash; {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+          </span>
         </div>
       </div>
 
       {/* ── PAST (year accordion) ── */}
-      <section className="bg-warm-50 py-12 px-8">
+      <section className="bg-warm-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {past.length === 0 ? (
             <div className="py-12 text-center text-warm-400">

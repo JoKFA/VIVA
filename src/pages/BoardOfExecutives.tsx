@@ -13,16 +13,16 @@ function Avatar({ src, alt, size = 56 }: { src: string; alt: string; size?: numb
 
 const founders = [
   {
-    name: 'Founder & President',
-    role: 'President',
-    bio: 'Founded VIVA in 2018 with a vision to connect Metro Vancouver\'s diverse communities through meaningful volunteer work. Previously led community development initiatives at UBC and SFU.',
+    name: 'Leaf Alifu',
+    role: 'Founder',
+    bio: 'Founded VIVA in 2018 with a vision to connect Metro Vancouver\'s diverse communities through meaningful volunteer work and to empower youth to become globally minded leaders.',
     img: 'https://picsum.photos/320/400?grayscale&random=70',
     linkedin: '#',
   },
   {
-    name: 'Co-Founder & Executive Director',
-    role: 'Executive Director',
-    bio: 'Oversees all VIVA programming and organizational operations. A certified non-profit professional with 10+ years in the social sector. Passionate about building inclusive volunteer pipelines for newcomers.',
+    name: 'Lynne Chen',
+    role: 'Co-Founder & President',
+    bio: 'Co-founded VIVA and serves as President, overseeing all programming, organizational operations, and strategic direction. Passionate about building inclusive volunteer pipelines for youth and newcomers across British Columbia.',
     img: 'https://picsum.photos/320/400?grayscale&random=71',
     linkedin: '#',
   },
@@ -85,7 +85,7 @@ export default function BoardOfExecutives() {
           <div className="max-w-7xl mx-auto">
             <p className="eyebrow">Executive Team</p>
             <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-8">
-              Senior Leadership
+              2025–2026 Executive Members
             </h2>
 
             <div className="border-t border-warm-200">

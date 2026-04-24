@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle } from 'lucide-react';
 import { siteSettings } from '../data/mockData';
 
 interface FormData { firstName: string; lastName: string; email: string; subject: string; message: string; }
@@ -92,15 +92,6 @@ export default function Contact() {
                   </a>
                 </div>
               </li>
-              <li className="flex items-start gap-4">
-                <div className="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Clock className="w-4 h-4 text-primary-600" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold tracking-widest uppercase text-warm-400 mb-1">Response Time</p>
-                  <p className="text-warm-900 text-sm font-medium">Within 48 hours</p>
-                </div>
-              </li>
             </ul>
 
             {/* Social */}
@@ -120,8 +111,25 @@ export default function Contact() {
               </div>
             </div>
 
+            {/* Google Maps */}
+            <div className="mt-8">
+              <p className="text-xs font-bold tracking-widest uppercase text-warm-400 mb-3">Location</p>
+              <div className="rounded-lg overflow-hidden border border-warm-200 h-48">
+                <iframe
+                  title="VIVA Office Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2604.9!2d-122.9145!3d49.2488!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x5486759c8db96ee3%3A0x56e7c2b0b1ff83d!2s3290B%20Production%20Way%2C%20Burnaby%2C%20BC%20V5A%204X1!5e0!3m2!1sen!2sca!4v1"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </div>
+
             {/* Land acknowledgement */}
-            <div className="mt-10 pt-8 border-t border-warm-200">
+            <div className="mt-8 pt-8 border-t border-warm-200">
               <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400 mb-2">Land Acknowledgement</p>
               <p className="text-xs text-warm-500 leading-relaxed">{siteSettings.territoryAcknowledgement}</p>
             </div>

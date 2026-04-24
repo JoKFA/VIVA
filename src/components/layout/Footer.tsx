@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin, Mail, MapPin, Phone, Heart } from 'lucide-react';
+import { Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 import { siteSettings } from '../../data/mockData';
 
 const footerLinks = {
@@ -26,11 +26,8 @@ export default function Footer() {
 
         {/* Brand */}
         <div className="lg:col-span-1">
-          <Link to="/" className="flex items-center gap-2.5 mb-5 group">
-            <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="font-impact text-white text-xl leading-none tracking-wide">V</span>
-            </div>
-            <span className="font-display font-extrabold text-xl text-white tracking-tight">VIVA</span>
+          <Link to="/" className="inline-flex mb-5">
+            <img src="/logo.png" alt="VIVA" className="h-10 w-auto" />
           </Link>
           <p className="text-warm-400 text-sm leading-relaxed mb-6 max-w-xs">
             Vancouver International Volunteer Association — connecting passionate volunteers
@@ -41,7 +38,7 @@ export default function Footer() {
               href={siteSettings.socialLinks.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
+              className="p-2.5 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
               aria-label="Instagram"
             >
               <Instagram className="w-4 h-4 text-white" />
@@ -50,7 +47,7 @@ export default function Footer() {
               href={siteSettings.socialLinks.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
+              className="p-2.5 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
               aria-label="LinkedIn"
             >
               <Linkedin className="w-4 h-4 text-white" />
@@ -128,11 +125,14 @@ export default function Footer() {
       <div className="border-t border-warm-800">
         <div className="max-w-7xl mx-auto px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[11px] text-warm-600">
-            © {new Date().getFullYear()} Vancouver International Volunteer Association. All rights reserved.
+            © {new Date().getFullYear()} VIVA. All rights reserved.
           </p>
-          <p className="text-[11px] text-warm-600 flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-primary-600" /> in Vancouver, BC
-          </p>
+          <div className="flex items-center gap-4 text-[11px] text-warm-600">
+            <a href="/faqs" className="hover:text-warm-400 transition-colors">FAQs</a>
+            <a href="/code-of-conduct" className="hover:text-warm-400 transition-colors">Code of Conduct</a>
+            <a href="/privacy" className="hover:text-warm-400 transition-colors">Privacy Policy</a>
+            <a href="/accessibility" className="hover:text-warm-400 transition-colors">Accessibility</a>
+          </div>
         </div>
       </div>
     </footer>

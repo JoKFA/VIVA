@@ -144,6 +144,7 @@ export interface SiteSettings {
   };
   phone: string;
   email: string;
+  mediaEmail?: string;
   territoryAcknowledgement: string;
 }
 

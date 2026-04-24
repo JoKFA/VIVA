@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, CheckCircle, Send, Upload, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle, Send, Upload, ArrowRight, ChevronRight } from 'lucide-react';
 import { volunteerRoles, faqs } from '../data/mockData';
 
 const WHY_ITEMS = [
@@ -10,7 +10,7 @@ const WHY_ITEMS = [
   { num: '04', title: 'Official Recognition', body: 'Receive documented volunteer hours and a reference letter — valuable for academic and career applications.' },
 ];
 
-const STEPS = [
+const PROCESS_STEPS = [
   { n: 1, title: 'Submit Application', body: 'Fill out the form below. Takes about 5 minutes.' },
   { n: 2, title: 'Team Review', body: 'We review applications within 5–7 business days.' },
   { n: 3, title: 'Match & Interview', body: 'We contact you to discuss the best role fit.' },
@@ -21,15 +21,22 @@ const STEPS = [
 const INTERESTS = ['Newcomer Support', 'Youth Mentorship', 'Community Events', 'Environmental Action', 'Communications & Marketing', 'Administrative Support', 'Fundraising', 'Other'];
 const AVAILABILITY = ['Weekday mornings', 'Weekday afternoons', 'Weekday evenings', 'Weekend mornings', 'Weekend afternoons', 'Flexible schedule'];
 
+const FORM_STEPS = [
+  { n: 1, label: 'Personal' },
+  { n: 2, label: 'Availability' },
+  { n: 3, label: 'Interests' },
+];
+
 interface FormData {
   firstName: string; lastName: string; email: string; phone: string;
-  interests: string[]; availability: string; experience: string; motivation: string;
-  resume: File | null;
+  availability: string; resume: File | null;
+  interests: string[]; experience: string; motivation: string;
 }
 
-const EMPTY: FormData = { firstName: '', lastName: '', email: '', phone: '', interests: [], availability: '', experience: '', motivation: '', resume: null };
+const EMPTY: FormData = { firstName: '', lastName: '', email: '', phone: '', availability: '', resume: null, interests: [], experience: '', motivation: '' };
 
 export default function Volunteer() {
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -44,23 +51,32 @@ export default function Volunteer() {
     if (errors.interests) setErrors((p) => ({ ...p, interests: '' }));
   };
 
-  const validate = () => {
+  const validateStep = (s: number) => {
     const e: Record<string, string> = {};
-    if (!form.firstName.trim()) e.firstName = 'Required';
-    if (!form.lastName.trim()) e.lastName = 'Required';
-    if (!form.email.trim()) e.email = 'Required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
-    if (!form.phone.trim()) e.phone = 'Required';
-    if (form.interests.length === 0) e.interests = 'Select at least one area';
-    if (!form.availability) e.availability = 'Required';
-    if (!form.motivation.trim()) e.motivation = 'Required';
+    if (s === 1) {
+      if (!form.firstName.trim()) e.firstName = 'Required';
+      if (!form.lastName.trim()) e.lastName = 'Required';
+      if (!form.email.trim()) e.email = 'Required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
+      if (!form.phone.trim()) e.phone = 'Required';
+    }
+    if (s === 2) {
+      if (!form.availability) e.availability = 'Required';
+    }
+    if (s === 3) {
+      if (form.interests.length === 0) e.interests = 'Select at least one area';
+      if (!form.motivation.trim()) e.motivation = 'Required';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  const next = () => { if (validateStep(step)) setStep((s) => s + 1); };
+  const back = () => { setErrors({}); setStep((s) => s - 1); };
+
   const submit = (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (validateStep(3)) setSubmitted(true);
   };
 
   const inputCls = (k: string) =>
@@ -147,7 +163,7 @@ export default function Volunteer() {
               How It Works
             </h2>
             <div className="space-y-0 border-l-2 border-warm-200 ml-4">
-              {STEPS.map((s, i) => (
+              {PROCESS_STEPS.map((s) => (
                 <div key={s.n} className="relative pl-8 pb-9">
                   <div className="absolute -left-[17px] w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
                     <span className="font-impact text-white text-sm">{s.n}</span>
@@ -184,7 +200,7 @@ export default function Volunteer() {
         </div>
       </section>
 
-      {/* Application Form */}
+      {/* Application Form — 3-step */}
       <section id="apply" className="bg-warm-50 py-20 px-8">
         <div className="max-w-3xl mx-auto">
           <p className="eyebrow">Apply</p>
@@ -202,96 +218,154 @@ export default function Volunteer() {
               </p>
             </div>
           ) : (
-            <form onSubmit={submit} className="bg-white border border-warm-200 p-8 space-y-7">
-              {/* Name row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-warm-700 mb-1.5">First Name *</label>
-                  <input type="text" value={form.firstName} onChange={(e) => field('firstName', e.target.value)} className={inputCls('firstName')} placeholder="Jane" />
-                  {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+            <>
+              {/* Step indicator */}
+              <div className="flex items-center gap-0 mb-8">
+                {FORM_STEPS.map((s, i) => (
+                  <div key={s.n} className="flex items-center flex-1 last:flex-none">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors ${
+                        step > s.n ? 'bg-primary-600 border-primary-600 text-white'
+                        : step === s.n ? 'bg-white border-primary-600 text-primary-600'
+                        : 'bg-white border-warm-300 text-warm-400'
+                      }`}>
+                        {step > s.n ? <CheckCircle className="w-4 h-4" /> : s.n}
+                      </div>
+                      <span className={`text-xs mt-1 font-medium ${step >= s.n ? 'text-warm-900' : 'text-warm-400'}`}>{s.label}</span>
+                    </div>
+                    {i < FORM_STEPS.length - 1 && (
+                      <div className={`flex-1 h-0.5 mx-2 mb-4 transition-colors ${step > s.n ? 'bg-primary-600' : 'bg-warm-200'}`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Step 1: Personal */}
+              {step === 1 && (
+                <div className="bg-white border border-warm-200 p-8 space-y-6">
+                  <div>
+                    <h3 className="font-display font-bold text-lg text-warm-900 mb-1">Personal Information</h3>
+                    <p className="text-warm-500 text-sm">Tell us a bit about yourself.</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-warm-700 mb-1.5">First Name *</label>
+                      <input type="text" value={form.firstName} onChange={(e) => field('firstName', e.target.value)} className={inputCls('firstName')} placeholder="Jane" />
+                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-warm-700 mb-1.5">Last Name *</label>
+                      <input type="text" value={form.lastName} onChange={(e) => field('lastName', e.target.value)} className={inputCls('lastName')} placeholder="Doe" />
+                      {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-warm-700 mb-1.5">Email *</label>
+                      <input type="email" value={form.email} onChange={(e) => field('email', e.target.value)} className={inputCls('email')} placeholder="jane@example.com" />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-warm-700 mb-1.5">Phone *</label>
+                      <input type="tel" value={form.phone} onChange={(e) => field('phone', e.target.value)} className={inputCls('phone')} placeholder="604-555-0100" />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <button type="button" onClick={next}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors">
+                      Next <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-warm-700 mb-1.5">Last Name *</label>
-                  <input type="text" value={form.lastName} onChange={(e) => field('lastName', e.target.value)} className={inputCls('lastName')} placeholder="Doe" />
-                  {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+              )}
+
+              {/* Step 2: Availability */}
+              {step === 2 && (
+                <div className="bg-white border border-warm-200 p-8 space-y-6">
+                  <div>
+                    <h3 className="font-display font-bold text-lg text-warm-900 mb-1">Availability</h3>
+                    <p className="text-warm-500 text-sm">When are you available to volunteer?</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Availability *</label>
+                    <select value={form.availability} onChange={(e) => field('availability', e.target.value)} className={inputCls('availability')}>
+                      <option value="">Select availability…</option>
+                      {AVAILABILITY.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                    {errors.availability && <p className="text-red-500 text-xs mt-1">{errors.availability}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Resume / CV <span className="text-warm-400 font-normal">(optional)</span></label>
+                    <div className="border-2 border-dashed border-warm-300 rounded-lg p-5 text-center hover:border-primary-400 transition-colors">
+                      <Upload className="w-7 h-7 text-warm-400 mx-auto mb-2" />
+                      <input type="file" id="resume" accept=".pdf,.doc,.docx" className="hidden"
+                        onChange={(e) => setForm((p) => ({ ...p, resume: e.target.files?.[0] || null }))} />
+                      <label htmlFor="resume" className="cursor-pointer text-sm">
+                        <span className="text-primary-600 font-medium">Click to upload</span>
+                        <span className="text-warm-500"> or drag and drop</span>
+                      </label>
+                      <p className="text-xs text-warm-400 mt-1">PDF, DOC, DOCX — max 5 MB</p>
+                      {form.resume && <p className="text-xs text-green-600 mt-1">{form.resume.name}</p>}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2">
+                    <button type="button" onClick={back}
+                      className="py-3 px-2 text-sm font-semibold text-warm-600 hover:text-warm-900 transition-colors">
+                      Back
+                    </button>
+                    <button type="button" onClick={next}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors">
+                      Next <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Contact row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-warm-700 mb-1.5">Email *</label>
-                  <input type="email" value={form.email} onChange={(e) => field('email', e.target.value)} className={inputCls('email')} placeholder="jane@example.com" />
-                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-warm-700 mb-1.5">Phone *</label>
-                  <input type="tel" value={form.phone} onChange={(e) => field('phone', e.target.value)} className={inputCls('phone')} placeholder="604-555-0100" />
-                  {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                </div>
-              </div>
-
-              {/* Interests */}
-              <div>
-                <label className="block text-xs font-semibold text-warm-700 mb-3">Areas of Interest * <span className="text-warm-400 font-normal">(select all that apply)</span></label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {INTERESTS.map((v) => (
-                    <label key={v} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={form.interests.includes(v)} onChange={() => toggleInterest(v)}
-                        className="w-4 h-4 rounded border-warm-300 text-primary-600 focus:ring-primary-500" />
-                      <span className="text-sm text-warm-700">{v}</span>
-                    </label>
-                  ))}
-                </div>
-                {errors.interests && <p className="text-red-500 text-xs mt-1">{errors.interests}</p>}
-              </div>
-
-              {/* Availability */}
-              <div>
-                <label className="block text-xs font-semibold text-warm-700 mb-1.5">Availability *</label>
-                <select value={form.availability} onChange={(e) => field('availability', e.target.value)} className={inputCls('availability')}>
-                  <option value="">Select availability…</option>
-                  {AVAILABILITY.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-                {errors.availability && <p className="text-red-500 text-xs mt-1">{errors.availability}</p>}
-              </div>
-
-              {/* Experience */}
-              <div>
-                <label className="block text-xs font-semibold text-warm-700 mb-1.5">Relevant Experience <span className="text-warm-400 font-normal">(optional)</span></label>
-                <textarea value={form.experience} onChange={(e) => field('experience', e.target.value)} rows={3}
-                  className={inputCls('experience')} placeholder="Volunteer, work, or educational experience…" />
-              </div>
-
-              {/* Motivation */}
-              <div>
-                <label className="block text-xs font-semibold text-warm-700 mb-1.5">Why do you want to volunteer with VIVA? *</label>
-                <textarea value={form.motivation} onChange={(e) => field('motivation', e.target.value)} rows={4}
-                  className={inputCls('motivation')} placeholder="Tell us what motivates you…" />
-                {errors.motivation && <p className="text-red-500 text-xs mt-1">{errors.motivation}</p>}
-              </div>
-
-              {/* Resume upload */}
-              <div>
-                <label className="block text-xs font-semibold text-warm-700 mb-1.5">Resume / CV <span className="text-warm-400 font-normal">(optional)</span></label>
-                <div className="border-2 border-dashed border-warm-300 rounded-lg p-5 text-center hover:border-primary-400 transition-colors">
-                  <Upload className="w-7 h-7 text-warm-400 mx-auto mb-2" />
-                  <input type="file" id="resume" accept=".pdf,.doc,.docx" className="hidden"
-                    onChange={(e) => setForm((p) => ({ ...p, resume: e.target.files?.[0] || null }))} />
-                  <label htmlFor="resume" className="cursor-pointer text-sm">
-                    <span className="text-primary-600 font-medium">Click to upload</span>
-                    <span className="text-warm-500"> or drag and drop</span>
-                  </label>
-                  <p className="text-xs text-warm-400 mt-1">PDF, DOC, DOCX — max 5 MB</p>
-                  {form.resume && <p className="text-xs text-green-600 mt-1">{form.resume.name}</p>}
-                </div>
-              </div>
-
-              <button type="submit"
-                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <Send className="w-4 h-4" /> Submit Application
-              </button>
-            </form>
+              {/* Step 3: Interests */}
+              {step === 3 && (
+                <form onSubmit={submit} className="bg-white border border-warm-200 p-8 space-y-6">
+                  <div>
+                    <h3 className="font-display font-bold text-lg text-warm-900 mb-1">Interests & Motivation</h3>
+                    <p className="text-warm-500 text-sm">Help us find the right role for you.</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-warm-700 mb-3">Areas of Interest * <span className="text-warm-400 font-normal">(select all that apply)</span></label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {INTERESTS.map((v) => (
+                        <label key={v} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" checked={form.interests.includes(v)} onChange={() => toggleInterest(v)}
+                            className="w-4 h-4 rounded border-warm-300 text-primary-600 focus:ring-primary-500" />
+                          <span className="text-sm text-warm-700">{v}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {errors.interests && <p className="text-red-500 text-xs mt-1">{errors.interests}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Relevant Experience <span className="text-warm-400 font-normal">(optional)</span></label>
+                    <textarea value={form.experience} onChange={(e) => field('experience', e.target.value)} rows={3}
+                      className={inputCls('experience')} placeholder="Volunteer, work, or educational experience…" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Why do you want to volunteer with VIVA? *</label>
+                    <textarea value={form.motivation} onChange={(e) => field('motivation', e.target.value)} rows={4}
+                      className={inputCls('motivation')} placeholder="Tell us what motivates you…" />
+                    {errors.motivation && <p className="text-red-500 text-xs mt-1">{errors.motivation}</p>}
+                  </div>
+                  <div className="flex items-center justify-between pt-2">
+                    <button type="button" onClick={back}
+                      className="py-3 px-2 text-sm font-semibold text-warm-600 hover:text-warm-900 transition-colors">
+                      Back
+                    </button>
+                    <button type="submit"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
+                      <Send className="w-4 h-4" /> Submit Application
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
           )}
         </div>
       </section>

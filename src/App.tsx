@@ -17,7 +17,6 @@ const EventDetail = lazy(() => import('./pages/EventDetail'));
 const Volunteer = lazy(() => import('./pages/Volunteer'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Donate = lazy(() => import('./pages/Donate'));
-const UIComponents = lazy(() => import('./pages/UIComponents'));
 
 function App() {
   return (
@@ -127,14 +126,7 @@ function App() {
               </Suspense>
             }
           />
-          <Route
-            path="ui-components"
-            element={
-              <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
-                <UIComponents />
-              </Suspense>
-            }
-          />
+
         </Route>
       </Routes>
     </Router>

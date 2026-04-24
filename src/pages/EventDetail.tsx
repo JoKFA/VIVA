@@ -170,7 +170,7 @@ export default function EventDetail() {
           </div>
 
           {/* Right: sticky sidebar */}
-          <div className="space-y-5">
+          <div className="space-y-5 self-start">
             {/* Details card */}
             <div className="bg-white border border-warm-200 p-6 sticky top-24">
               <h3 className="font-display font-bold text-warm-900 mb-5 pb-4 border-b border-warm-200">Event Details</h3>

@@ -67,14 +67,11 @@ export default function Header() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group" onClick={closeMobileMenu}>
-            <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="font-impact text-white text-xl leading-none tracking-wide">V</span>
-            </div>
-            <span className={`font-display font-extrabold text-xl tracking-tight transition-colors ${
-              isDark ? 'text-white' : 'text-warm-900'
-            }`}>
-              VIVA
-            </span>
+            <img
+              src="/logo.png"
+              alt="VIVA"
+              className="h-10 w-auto transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -88,6 +85,9 @@ export default function Header() {
               >
                 {item.children ? (
                   <button
+                    onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                    aria-expanded={openDropdown === item.name}
+                    aria-haspopup="true"
                     className={`flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isDark
                         ? 'text-white/85 hover:text-white hover:bg-white/10'
@@ -130,6 +130,7 @@ export default function Header() {
                         <NavLink
                           key={child.name}
                           to={child.href}
+                          end
                           className={({ isActive }) =>
                             `block px-4 py-2.5 text-sm transition-colors ${
                               isActive
@@ -165,7 +166,7 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <button
-            className={`lg:hidden p-2 rounded-lg transition-colors ${
+            className={`lg:hidden p-2.5 rounded-lg transition-colors ${
               isDark ? 'text-white hover:bg-white/10' : 'text-warm-700 hover:bg-warm-100'
             }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -210,6 +211,7 @@ export default function Header() {
                               <NavLink
                                 key={child.name}
                                 to={child.href}
+                                end
                                 onClick={closeMobileMenu}
                                 className={({ isActive }) =>
                                   `block px-4 py-2.5 text-sm rounded-lg ${
