@@ -131,6 +131,27 @@
     @apply absolute inset-0 w-full h-full object-cover;
   }
 
+  /* Event volunteer coordinator modal */
+  .event-contact-modal__body {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .event-contact-modal__card {
+    padding: 1rem;
+  }
+
+  .event-contact-modal__qr {
+    width: 132px;
+  }
+
+  .event-contact-modal__note {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
   /* Status chips */
   .status-open {
     @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold whitespace-nowrap;
@@ -202,6 +223,36 @@
   .home-hero-grid {
     grid-template-columns: minmax(0, 0.9fr) minmax(300px, 0.78fr);
     gap: 2rem;
+  }
+}
+
+@media (min-width: 760px) {
+  .event-contact-modal__body {
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    padding: 1.125rem;
+  }
+
+  .event-contact-modal__card {
+    padding: 1.125rem;
+  }
+
+  .event-contact-modal__qr {
+    width: 154px;
+  }
+}
+
+@media (max-width: 759px) {
+  .event-contact-modal__body {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .event-contact-modal__card {
+    padding: 0.875rem;
+  }
+
+  .event-contact-modal__qr {
+    width: 112px;
   }
 }
 
