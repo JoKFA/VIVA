@@ -1,179 +1,395 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ChevronDown, ArrowRight } from 'lucide-react';
-import { events } from '../data/mockData';
+import { ChevronDown } from 'lucide-react';
+import EventAdminContactModal from '../components/events/EventAdminContactModal';
+import { eventVolunteerContacts, events } from '../data/mockData';
+
+type EventItem = (typeof events)[number];
 
 const FILTERS = [
-  { label: 'All', value: 'all' },
-  { label: 'Community', value: 'community' },
-  { label: 'Career', value: 'career' },
-  { label: 'Environment', value: 'environment' },
-  { label: 'Fundraiser', value: 'fundraiser' },
+  { key: 'all', label: 'All Events' },
+  { key: 'community', label: 'Community' },
+  { key: 'career', label: 'Career' },
+  { key: 'social', label: 'Social' },
+  { key: 'fundraiser', label: 'Fundraiser' },
 ];
 
-function matchesFilter(ev: (typeof events)[0], filter: string) {
-  if (filter === 'all') return true;
-  if (filter === 'community') return ev.type === 'community-service' || ev.type === 'social';
-  if (filter === 'career') return ev.type === 'workshop' || ev.tags?.includes('career');
-  if (filter === 'environment') return ev.tags?.includes('environment') || ev.tags?.some((t) => t.includes('environment'));
-  if (filter === 'fundraiser') return ev.type === 'fundraiser';
-  return true;
-}
-
-const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-
-function parseDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return { day: d.getUTCDate(), month: MONTHS[d.getUTCMonth()], year: d.getUTCFullYear() };
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  'community-service': 'Community',
-  fundraiser: 'Fundraiser',
-  workshop: 'Workshop',
-  social: 'Social',
-  career: 'Career',
+const TYPE_CONFIG: Record<string, { bg: string; color: string; label: string; accent: string }> = {
+  'community-service': { bg: '#fff0f1', color: '#a31f26', label: 'Community', accent: '#c1272d' },
+  career: { bg: '#fef3c7', color: '#92400e', label: 'Career', accent: '#f59e0b' },
+  fundraiser: { bg: '#f5f3ff', color: '#6d28d9', label: 'Fundraiser', accent: '#7c3aed' },
+  social: { bg: '#f0fdf4', color: '#15803d', label: 'Social', accent: '#16a34a' },
+  workshop: { bg: '#eff6ff', color: '#1e40af', label: 'Workshop', accent: '#2563eb' },
 };
 
-function groupByYear(evts: typeof events) {
-  const map: Record<number, typeof events> = {};
-  evts.forEach((e) => {
-    const yr = new Date(e.date).getUTCFullYear();
-    if (!map[yr]) map[yr] = [];
-    map[yr].push(e);
-  });
-  return Object.entries(map)
-    .sort(([a], [b]) => Number(b) - Number(a))
-    .map(([year, items]) => ({ year: Number(year), items }));
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+function getTypeConfig(type: string) {
+  return TYPE_CONFIG[type] || TYPE_CONFIG['community-service'];
 }
 
-export default function Events() {
-  const [activeFilter, setActiveFilter] = useState('all');
+function parseEventDate(dateStr: string) {
+  const date = new Date(`${dateStr}T00:00:00`);
+  return {
+    date,
+    day: date.getDate(),
+    month: MONTHS[date.getMonth()],
+    year: date.getFullYear(),
+  };
+}
 
-  const allUpcoming = events.filter((e) => !e.isPast);
-  const past = events.filter((e) => e.isPast);
-  const pastByYear = groupByYear(past);
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
 
-  const upcoming = allUpcoming.filter((e) => matchesFilter(e, activeFilter));
+function getEventTiming(event: EventItem) {
+  const start = parseEventDate(event.date).date;
+  const end = event.endDate ? parseEventDate(event.endDate).date : start;
+  const today = startOfToday();
+  const daysUntil = Math.ceil((start.getTime() - today.getTime()) / 86400000);
+  const isPastByDate = end.getTime() < today.getTime();
 
-  const [openYears, setOpenYears] = useState<Set<number>>(new Set());
-  const toggleYear = (yr: number) =>
-    setOpenYears((prev) => {
-      const next = new Set(prev);
-      next.has(yr) ? next.delete(yr) : next.add(yr);
-      return next;
-    });
+  return {
+    daysUntil,
+    isPast: isPastByDate || event.isPast,
+  };
+}
 
-  const featured = upcoming[0];
-  const rest = upcoming.slice(1);
+function matchesFilter(event: EventItem, filter: string) {
+  if (filter === 'all') return true;
+  if (filter === 'community') return event.type === 'community-service' || event.type === 'social';
+  return event.type === filter || event.tags.includes(filter);
+}
+
+function formatToday() {
+  return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+}
+
+function formatLongDate(dateStr: string) {
+  return new Date(`${dateStr}T00:00:00`).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function useReveal(threshold = 0.05, delay = 0) {
+  const ref = useRef<HTMLAnchorElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    let timer: number | undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          timer = window.setTimeout(() => setVisible(true), delay);
+          observer.disconnect();
+        }
+      },
+      { threshold },
+    );
+
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [threshold, delay]);
+
+  return { ref, visible };
+}
+
+function FeaturedEvent({ event, onContactAdmin }: { event: EventItem; onContactAdmin: (event: EventItem) => void }) {
+  const type = getTypeConfig(event.type);
+  const { day, month, year } = parseEventDate(event.date);
+  const { daysUntil } = getEventTiming(event);
+  const pctFull = event.capacity > 0 ? Math.round((event.registered / event.capacity) * 100) : 0;
+  const spotsLeft = Math.max(event.capacity - event.registered, 0);
+  const urgent = pctFull >= 70;
 
   return (
-    <div>
-      {/* Page Header — Option 4: dark charcoal + red gradient + filter chips */}
-      <div className="relative bg-warm-900 pt-28 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Red gradient wash */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-[600px] h-[600px] rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #c1272d 0%, transparent 70%)' }} />
-          <div className="absolute -bottom-16 right-0 w-[400px] h-[400px] rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #c1272d 0%, transparent 70%)' }} />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto">
-          <p className="text-[10px] font-bold tracking-widest uppercase text-primary-400 mb-3">2026</p>
-          <h1 className="font-impact text-[clamp(5rem,12vw,9rem)] text-white leading-none tracking-wide mb-8">
-            EVENTS
-          </h1>
-
-          {/* Filter chips */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                className={`flex-shrink-0 px-5 py-2 text-sm font-semibold rounded-md border transition-colors ${
-                  activeFilter === f.value
-                    ? 'bg-primary-600 border-primary-600 text-white'
-                    : 'bg-transparent border-white/25 text-white/70 hover:border-white/50 hover:text-white'
-                }`}
+    <article className="grid overflow-hidden rounded-[20px] border-2 border-warm-200 bg-white shadow-[0_8px_40px_-12px_rgba(28,20,16,0.10)] lg:grid-cols-2">
+      <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-primary-50">
+        {event.imageUrl ? (
+          <img src={event.imageUrl} alt={event.title} className="absolute inset-0 h-full w-full object-cover" />
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(193,39,45,0.14)_0%,transparent_58%)]" />
+            <div className="relative text-center">
+              <div className="font-impact text-[6rem] leading-none tracking-wide text-primary-600/10">VIVA</div>
+              <span
+                className="inline-block rounded-md px-3 py-1 text-[11px] font-bold uppercase tracking-widest"
+                style={{ background: type.bg, color: type.color }}
               >
-                {f.label}
-              </button>
-            ))}
+                {type.label}
+              </span>
+            </div>
+          </>
+        )}
+
+        <div className="absolute right-5 top-5 rounded-xl bg-white px-4 py-3 text-center shadow-[0_4px_20px_-4px_rgba(0,0,0,0.15)]">
+          <div className="font-impact text-[2rem] leading-none text-primary-600">{day}</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-warm-500">
+            {month} {year}
           </div>
         </div>
       </div>
 
-      {/* ── UPCOMING ── */}
-      <section className="bg-white py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <p className="eyebrow">Upcoming</p>
-          <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-10">
-            What's Next
-          </h2>
+      <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-11">
+        <div className="mb-4 flex flex-wrap items-center gap-2.5">
+          <span
+            className="rounded-md px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest"
+            style={{ background: type.bg, color: type.color }}
+          >
+            {type.label}
+          </span>
+          {daysUntil > 0 && daysUntil <= 30 && (
+            <span className={`rounded-md px-2.5 py-1 text-[11px] font-semibold ${daysUntil <= 7 ? 'bg-accent-100 text-accent-800' : 'bg-warm-100 text-warm-600'}`}>
+              {daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days away`}
+            </span>
+          )}
+          {daysUntil === 0 && (
+            <span className="rounded-md bg-accent-100 px-2.5 py-1 text-[11px] font-bold text-accent-800">Today</span>
+          )}
+        </div>
 
-          {upcoming.length === 0 ? (
-            <div className="py-16 text-center text-warm-400">
-              <p className="text-sm">No upcoming events right now — follow <a href="https://instagram.com/viva_hq" target="_blank" rel="noopener noreferrer" className="text-primary-600 font-medium">@viva_hq</a> for announcements.</p>
+        <h2 className="mb-2.5 font-display text-2xl font-extrabold leading-tight text-warm-900">{event.title}</h2>
+        <p className="mb-1 text-[13px] text-warm-500">Location: {event.location}</p>
+        <p className="mb-4 text-[13px] text-warm-500">Time: {event.time}</p>
+        <p className="mb-5 text-sm leading-relaxed text-warm-600">{event.description}</p>
+
+        {event.capacity > 0 && (
+          <div className="mb-5">
+            <div className="mb-1.5 flex justify-between text-xs">
+              <span className="font-semibold text-warm-700">Spots Filled</span>
+              <span className={`font-medium ${urgent ? 'text-accent-700' : 'text-warm-500'}`}>
+                {event.registered} / {event.capacity} ({pctFull}%)
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-warm-200">
+              <div
+                className={`h-full rounded-full transition-[width] duration-700 ${urgent ? 'bg-accent-500' : 'bg-primary-600'}`}
+                style={{ width: `${pctFull}%` }}
+              />
+            </div>
+            {urgent && <p className="mt-1.5 text-[11px] font-medium text-accent-700">Only {spotsLeft} spots remaining. Register soon.</p>}
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button type="button" onClick={() => onContactAdmin(event)} className="btn-primary px-6 py-2.5 text-sm shadow-warm">
+            Join as Volunteer
+          </button>
+          <span className="status-open">Open</span>
+          <Link to={`/events/${event.slug}`} className="text-sm font-semibold text-primary-600 hover:text-primary-700">
+            Details
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function EventListRow({ event, delay = 0 }: { event: EventItem; delay?: number }) {
+  const { ref, visible } = useReveal(0.05, delay);
+  const [hovered, setHovered] = useState(false);
+  const type = getTypeConfig(event.type);
+  const { day, month, year } = parseEventDate(event.date);
+  const { daysUntil } = getEventTiming(event);
+  const pctFull = event.capacity > 0 ? Math.round((event.registered / event.capacity) * 100) : 0;
+  const urgent = pctFull >= 70;
+
+  return (
+    <Link
+      ref={ref}
+      to={`/events/${event.slug}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="grid gap-4 border-b border-warm-200 py-4 text-left sm:grid-cols-[76px_1fr_auto_auto] sm:items-center"
+      style={{
+        background: hovered ? '#fff8f6' : 'white',
+        borderRadius: hovered ? 12 : 0,
+        marginLeft: hovered ? -20 : 0,
+        marginRight: hovered ? -20 : 0,
+        paddingLeft: hovered ? 20 : 0,
+        paddingRight: hovered ? 20 : 0,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'none' : 'translateY(12px)',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      <div>
+        <div className="font-impact text-[2.2rem] leading-none text-warm-900">{day}</div>
+        <div className="text-[9px] font-bold uppercase tracking-widest text-warm-400">
+          {month} {year}
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <span
+            className="rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+            style={{ background: type.bg, color: type.color }}
+          >
+            {type.label}
+          </span>
+          {daysUntil > 0 && daysUntil <= 14 && (
+            <span className="rounded bg-accent-100 px-2 py-0.5 text-[10px] font-semibold text-accent-800">
+              {daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d away`}
+            </span>
+          )}
+        </div>
+        <h3 className={`mb-1 font-display text-[0.9375rem] font-bold transition-colors ${hovered ? 'text-primary-600' : 'text-warm-900'}`}>
+          {event.title}
+        </h3>
+        <p className="text-xs text-warm-500">Location: {event.location}</p>
+        {event.capacity > 0 && (
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-[3px] w-24 overflow-hidden rounded-full bg-warm-200">
+              <div className={`h-full rounded-full ${urgent ? 'bg-accent-500' : 'bg-primary-600'}`} style={{ width: `${pctFull}%` }} />
+            </div>
+            <span className={`text-[10px] font-medium ${urgent ? 'text-accent-700' : 'text-warm-400'}`}>
+              {urgent ? `${Math.max(event.capacity - event.registered, 0)} left` : `${pctFull}% filled`}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <span className="status-open w-fit">Open</span>
+      <span
+        className={`w-fit rounded-lg border px-4 py-2 text-xs font-bold transition-all ${
+          hovered ? 'border-primary-600 bg-primary-600 text-white' : 'border-primary-200 text-primary-600'
+        }`}
+      >
+        {hovered ? 'Register' : 'Details'}
+      </span>
+    </Link>
+  );
+}
+
+function PastEventRow({ event }: { event: EventItem }) {
+  const { day, month } = parseEventDate(event.date);
+
+  return (
+    <Link
+      to={`/events/${event.slug}`}
+      className="grid gap-4 border-b border-warm-100 py-3.5 transition-all hover:rounded-lg hover:bg-white hover:px-3 sm:grid-cols-[60px_1fr_auto] sm:items-center"
+    >
+      <div>
+        <div className="font-impact text-[1.75rem] leading-none text-warm-400">{day}</div>
+        <div className="text-[9px] font-bold uppercase tracking-widest text-warm-300">{month}</div>
+      </div>
+      <div>
+        <h4 className="mb-0.5 font-display text-sm font-bold text-warm-600">{event.title}</h4>
+        <p className="text-xs text-warm-400">Location: {event.location}</p>
+        {event.recap && (
+          <p className="mt-1 text-[11px] text-warm-400">
+            {event.recap.volunteersCount} volunteers · {event.recap.hoursServed} hrs · {event.recap.beneficiaries} beneficiaries
+          </p>
+        )}
+      </div>
+      <span className="text-xs font-semibold text-warm-400">Recap</span>
+    </Link>
+  );
+}
+
+function groupByYear(items: EventItem[]) {
+  const grouped = items.reduce<Record<number, EventItem[]>>((acc, event) => {
+    const year = parseEventDate(event.date).year;
+    acc[year] = acc[year] || [];
+    acc[year].push(event);
+    return acc;
+  }, {});
+
+  return Object.entries(grouped)
+    .sort(([a], [b]) => Number(b) - Number(a))
+    .map(([year, yearEvents]) => ({ year: Number(year), events: yearEvents }));
+}
+
+export default function Events() {
+  const [filter, setFilter] = useState('all');
+  const [openYears, setOpenYears] = useState<Set<number>>(new Set());
+  const [contactEvent, setContactEvent] = useState<EventItem | null>(null);
+
+  const { upcoming, past } = useMemo(() => {
+    const sorted = [...events].sort((a, b) => parseEventDate(a.date).date.getTime() - parseEventDate(b.date).date.getTime());
+    return {
+      upcoming: sorted.filter((event) => !getEventTiming(event).isPast),
+      past: sorted.filter((event) => getEventTiming(event).isPast).reverse(),
+    };
+  }, []);
+
+  const filteredUpcoming = upcoming.filter((event) => matchesFilter(event, filter));
+  const featured = filteredUpcoming[0];
+  const rest = filteredUpcoming.slice(1);
+  const pastByYear = groupByYear(past);
+
+  const toggleYear = (year: number) => {
+    setOpenYears((current) => {
+      const next = new Set(current);
+      if (next.has(year)) {
+        next.delete(year);
+      } else {
+        next.add(year);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="bg-warm-50">
+      <div className="page-header pt-28">
+        <div className="page-header-inner">
+          <div className="page-header-bar" />
+          <div>
+            <p className="eyebrow">2026 Season</p>
+            <h1 className="font-display font-extrabold text-[clamp(2rem,4vw,3rem)] leading-tight text-warm-900">
+              Events
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-b border-warm-200 bg-white px-4 py-4 sm:px-8">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {FILTERS.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setFilter(item.key)}
+              className={`whitespace-nowrap rounded-lg px-5 py-2 text-sm font-semibold transition-all ${
+                filter === item.key
+                  ? 'bg-primary-600 text-white shadow-warm'
+                  : 'bg-warm-100 text-warm-600 hover:bg-primary-50 hover:text-primary-600'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <section className="bg-white px-4 py-12 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          {filteredUpcoming.length === 0 ? (
+            <div className="border border-dashed border-warm-200 bg-warm-50 px-6 py-14 text-center">
+              <h2 className="mb-2 font-display text-lg font-bold text-warm-900">No events in this category right now</h2>
+              <p className="text-sm text-warm-500">
+                Follow <a href="https://instagram.com/viva_hq" className="font-semibold text-primary-600">@viva_hq</a> for announcements.
+              </p>
             </div>
           ) : (
             <>
-              {/* Featured first event */}
-              {featured && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 mb-8 border border-warm-200">
-                  {/* Image */}
-                  <div className="img-placeholder min-h-[260px] relative">
-                    {featured.imageUrl && <img src={featured.imageUrl} alt={featured.title} />}
-                  </div>
-                  {/* Content */}
-                  <div className="p-10 flex flex-col justify-center">
-                    {(() => { const { day, month, year } = parseDate(featured.date); return (
-                      <div className="mb-4">
-                        <p className="font-impact text-[3.5rem] text-warm-700 leading-none">{day}</p>
-                        <p className="text-[10px] font-bold tracking-widest uppercase text-warm-400">{month} {year}</p>
-                      </div>
-                    ); })()}
-                    <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase bg-primary-50 text-primary-600 rounded mb-3 w-fit">
-                      {TYPE_LABELS[featured.type] || featured.type}
-                    </span>
-                    <h3 className="font-display font-extrabold text-2xl text-warm-900 mb-3">{featured.title}</h3>
-                    <p className="text-warm-600 text-sm leading-relaxed mb-2">
-                      <MapPin className="inline w-3.5 h-3.5 mr-1 text-primary-400" />{featured.location}
-                    </p>
-                    <p className="text-warm-600 text-[0.875rem] leading-relaxed mb-6 line-clamp-3">{featured.description}</p>
-                    <div className="flex items-center gap-3">
-                      <Link to={`/events/${featured.slug}`} className="btn-primary py-2 px-5 text-sm">
-                        View Details
-                      </Link>
-                      {featured.status === 'open' && (
-                        <span className="status-open">Open</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Remaining events — date-column list */}
+              {featured && <FeaturedEvent event={featured} onContactAdmin={setContactEvent} />}
               {rest.length > 0 && (
-                <div className="border-t border-warm-200">
-                  {rest.map((ev) => {
-                    const { day, month, year } = parseDate(ev.date);
-                    return (
-                      <div key={ev.id}
-                        className="grid grid-cols-[64px_1fr_auto] sm:grid-cols-[80px_1fr_auto_auto] items-center gap-4 sm:gap-5 py-5 border-b border-warm-200 group">
-                        <div>
-                          <p className="font-impact text-[2rem] text-warm-700 leading-none">{day}</p>
-                          <p className="text-[9px] font-bold tracking-widest uppercase text-warm-400">{month} {year}</p>
-                        </div>
-                        <div>
-                          <p className="font-display font-bold text-[0.9375rem] text-warm-900 mb-0.5 group-hover:text-primary-600 transition-colors">{ev.title}</p>
-                          <p className="text-xs text-warm-500"><MapPin className="inline w-3 h-3 mr-0.5" />{ev.location}</p>
-                        </div>
-                        {ev.status === 'open' && <span className="status-open hidden sm:inline-flex">Open</span>}
-                        <Link to={`/events/${ev.slug}`} className="btn-primary py-1.5 px-4 text-xs">Details</Link>
-                      </div>
-                    );
-                  })}
+                <div className="mt-8">
+                  <h2 className="mb-0 font-display text-base font-bold uppercase tracking-widest text-warm-400">More Events</h2>
+                  <div>{rest.map((event, index) => <EventListRow key={event.id} event={event} delay={index * 80} />)}</div>
                 </div>
               )}
             </>
@@ -181,24 +397,18 @@ export default function Events() {
         </div>
       </section>
 
-      {/* ── TODAY DIVIDER ── */}
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto today-divider">
-          <span className="today-label">
-            TODAY &mdash; {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
-          </span>
+      <div className="px-4 sm:px-8">
+        <div className="today-divider mx-auto max-w-7xl">
+          <span className="today-label">TODAY — {formatToday()}</span>
         </div>
       </div>
 
-      {/* ── PAST (year accordion) ── */}
-      <section className="bg-warm-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {past.length === 0 ? (
-            <div className="py-12 text-center text-warm-400">
-              <p className="text-sm">Past event records will appear here.</p>
-            </div>
+      <section className="px-4 pb-16 pt-4 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          {pastByYear.length === 0 ? (
+            <p className="py-10 text-center text-sm text-warm-400">Past event records will appear here.</p>
           ) : (
-            pastByYear.map(({ year, items }) => (
+            pastByYear.map(({ year, events: yearEvents }) => (
               <div key={year} className="year-row">
                 <button
                   onClick={() => toggleYear(year)}
@@ -206,34 +416,14 @@ export default function Events() {
                   aria-expanded={openYears.has(year)}
                 >
                   <div className="flex items-center gap-4">
-                    <span className="font-impact text-[2.5rem] text-warm-700 leading-none">{year}</span>
-                    <span className="text-sm text-warm-400">{items.length} event{items.length !== 1 ? 's' : ''}</span>
+                    <span className="font-impact text-[2.5rem] leading-none text-warm-400">{year}</span>
+                    <span className="text-sm text-warm-400">{yearEvents.length} event{yearEvents.length === 1 ? '' : 's'}</span>
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-warm-400 transition-transform ${openYears.has(year) ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-5 w-5 text-warm-400 transition-transform ${openYears.has(year) ? 'rotate-180' : ''}`} />
                 </button>
-
                 {openYears.has(year) && (
-                  <div className="pb-6 border-t border-warm-200">
-                    {items.map((ev) => {
-                      const { day, month } = parseDate(ev.date);
-                      return (
-                        <div key={ev.id}
-                          className="grid grid-cols-[64px_1fr_auto] items-center gap-5 py-4 border-b border-warm-200/60 group">
-                          <div>
-                            <p className="font-impact text-[1.75rem] text-warm-500 leading-none">{day}</p>
-                            <p className="text-[9px] font-bold tracking-widest uppercase text-warm-400">{month}</p>
-                          </div>
-                          <div>
-                            <p className="font-display font-bold text-[0.875rem] text-warm-700 mb-0.5 group-hover:text-primary-600 transition-colors">{ev.title}</p>
-                            <p className="text-xs text-warm-400"><MapPin className="inline w-3 h-3 mr-0.5" />{ev.location}</p>
-                          </div>
-                          <Link to={`/events/${ev.slug}`}
-                            className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1">
-                            Recap <ArrowRight className="w-3 h-3" />
-                          </Link>
-                        </div>
-                      );
-                    })}
+                  <div className="pb-6">
+                    {yearEvents.map((event) => <PastEventRow key={event.id} event={event} />)}
                   </div>
                 )}
               </div>
@@ -242,19 +432,27 @@ export default function Events() {
         </div>
       </section>
 
-      {/* Volunteer CTA band */}
-      <section className="gradient-hero py-14 px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="gradient-hero px-8 py-14">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-white/60 mb-2">Get Involved</p>
-            <h2 className="font-display font-extrabold text-2xl text-white">Volunteer at our next event</h2>
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/60">Get Involved</p>
+            <h2 className="font-display text-2xl font-extrabold text-white">Volunteer at our next event</h2>
+            <p className="mt-1 text-sm text-white/70">No experience needed. Just your time and enthusiasm.</p>
           </div>
-          <Link to="/volunteer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-600 rounded-lg font-bold text-sm hover:bg-warm-100 transition-colors flex-shrink-0">
-            Become a Volunteer <ArrowRight className="w-4 h-4" />
-          </Link>
+          <button type="button" onClick={() => featured && setContactEvent(featured)} className="inline-flex flex-shrink-0 items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-primary-600 transition-all hover:-translate-y-0.5 hover:bg-warm-50">
+            Become a Volunteer
+          </button>
         </div>
       </section>
+
+      <span className="sr-only">Dates are derived from event date fields. Today is {formatLongDate(new Date().toISOString().slice(0, 10))}.</span>
+      {contactEvent && eventVolunteerContacts[contactEvent.slug] && (
+        <EventAdminContactModal
+          event={contactEvent}
+          contact={eventVolunteerContacts[contactEvent.slug]}
+          onClose={() => setContactEvent(null)}
+        />
+      )}
     </div>
   );
 }

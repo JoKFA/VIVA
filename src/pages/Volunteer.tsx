@@ -21,6 +21,17 @@ const PROCESS_STEPS = [
 const INTERESTS = ['Newcomer Support', 'Youth Mentorship', 'Community Events', 'Environmental Action', 'Communications & Marketing', 'Administrative Support', 'Fundraising', 'Other'];
 const AVAILABILITY = ['Weekday mornings', 'Weekday afternoons', 'Weekday evenings', 'Weekend mornings', 'Weekend afternoons', 'Flexible schedule'];
 
+const ROLE_ACCENTS: Record<string, string> = {
+  Operations: '#c1272d',
+  'Publicity Department': '#1a5c9e',
+  'Event Coordination Department': '#15803d',
+  'Secretariat Office': '#b45309',
+  'Environmental Action': '#15803d',
+  'Vancouver Career Fair': '#b45309',
+  'Newcomer Support': '#6d28d9',
+  'Learning Hub': '#c1272d',
+};
+
 const FORM_STEPS = [
   { n: 1, label: 'Personal' },
   { n: 2, label: 'Availability' },
@@ -40,6 +51,8 @@ export default function Volunteer() {
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [hoveredRole, setHoveredRole] = useState<string | null>(null);
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
 
   const field = (name: keyof FormData, value: string) => {
     setForm((p) => ({ ...p, [name]: value }));
@@ -132,11 +145,34 @@ export default function Volunteer() {
               Find Your Fit
             </h2>
 
-            <div className="honours-track">
-              {volunteerRoles.map((role) => (
-                <div key={role.id}
-                  className="honours-card bg-white border border-warm-200 p-7 flex flex-col">
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-primary-600 mb-2">{role.program}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+              {volunteerRoles.map((role) => {
+                const accent = ROLE_ACCENTS[role.program] || '#c1272d';
+                const hovered = hoveredRole === role.id;
+
+                return (
+                <div
+                  key={role.id}
+                  onMouseEnter={() => setHoveredRole(role.id)}
+                  onMouseLeave={() => setHoveredRole(null)}
+                  className="bg-white rounded-xl p-7 flex flex-col transition-all duration-200 hover:-translate-y-1"
+                  style={{
+                    border: `1px solid ${hovered ? accent : '#f0e8e5'}`,
+                    boxShadow: hovered ? `0 8px 32px -8px ${accent}35` : '0 2px 12px -3px rgba(28,20,16,0.06)',
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span
+                      className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded"
+                      style={{ color: accent, backgroundColor: `${accent}15` }}
+                    >
+                      {role.program}
+                    </span>
+                    <span
+                      className="w-2 h-2 rounded-full transition-colors"
+                      style={{ backgroundColor: hovered ? accent : '#e8e6e1' }}
+                    />
+                  </div>
                   <h3 className="font-display font-bold text-lg text-warm-900 mb-2">{role.title}</h3>
                   <p className="text-warm-600 text-sm leading-relaxed mb-4 flex-1">{role.description}</p>
                   <div className="flex items-center gap-2 text-xs text-warm-500 mb-4">
@@ -144,11 +180,18 @@ export default function Volunteer() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {role.skills.map((s: string) => (
-                      <span key={s} className="px-2 py-0.5 bg-warm-100 text-warm-600 text-xs rounded-sm">{s}</span>
+                      <span
+                        key={s}
+                        className="px-2 py-0.5 text-xs rounded transition-colors"
+                        style={{ backgroundColor: hovered ? `${accent}15` : '#f5f4f1', color: hovered ? accent : '#7c756e' }}
+                      >
+                        {s}
+                      </span>
                     ))}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -163,10 +206,14 @@ export default function Volunteer() {
               How It Works
             </h2>
             <div className="space-y-0 border-l-2 border-warm-200 ml-4">
-              {PROCESS_STEPS.map((s) => (
+              {PROCESS_STEPS.map((s, index) => (
                 <div key={s.n} className="relative pl-8 pb-9">
-                  <div className="absolute -left-[17px] w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
-                    <span className="font-impact text-white text-sm">{s.n}</span>
+                  <div
+                    className={`absolute -left-[17px] w-8 h-8 rounded-full border-2 border-primary-600 flex items-center justify-center ${
+                      index === 0 ? 'bg-primary-600' : 'bg-white'
+                    }`}
+                  >
+                    <span className={`font-impact text-sm ${index === 0 ? 'text-white' : 'text-primary-600'}`}>{s.n}</span>
                   </div>
                   <h3 className="font-display font-bold text-warm-900 mb-1">{s.title}</h3>
                   <p className="text-warm-600 text-sm leading-relaxed">{s.body}</p>
@@ -184,13 +231,25 @@ export default function Volunteer() {
             {faqs.length > 0 ? (
               <div className="space-y-0 border-t border-warm-200">
                 {faqs.slice(0, 6).map((faq) => (
-                  <details key={faq.id} className="group border-b border-warm-200">
-                    <summary className="flex items-center justify-between py-4 cursor-pointer text-sm font-semibold text-warm-900 hover:text-primary-600 transition-colors list-none">
+                  <div key={faq.id} className="border-b border-warm-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
+                      className={`flex items-center justify-between w-full py-4 cursor-pointer text-left text-sm font-semibold transition-colors ${
+                        openFaq === faq.id ? 'text-primary-600' : 'text-warm-900 hover:text-primary-600'
+                      }`}
+                    >
                       {faq.question}
-                      <span className="text-warm-400 group-open:text-primary-600 transition-colors text-lg leading-none ml-4">+</span>
-                    </summary>
-                    <p className="text-warm-600 text-sm leading-relaxed pb-4">{faq.answer}</p>
-                  </details>
+                      <span className={`text-lg leading-none ml-4 transition-transform ${openFaq === faq.id ? 'rotate-45 text-primary-600' : 'text-warm-400'}`}>+</span>
+                    </button>
+                    <div
+                      className={`grid transition-[grid-template-rows,opacity] duration-200 ${
+                        openFaq === faq.id ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                      }`}
+                    >
+                      <p className="overflow-hidden text-warm-600 text-sm leading-relaxed pb-4">{faq.answer}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -288,11 +347,32 @@ export default function Volunteer() {
                     <p className="text-warm-500 text-sm">When are you available to volunteer?</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Availability *</label>
-                    <select value={form.availability} onChange={(e) => field('availability', e.target.value)} className={inputCls('availability')}>
-                      <option value="">Select availability…</option>
-                      {AVAILABILITY.map((v) => <option key={v} value={v}>{v}</option>)}
-                    </select>
+                    <label className="block text-xs font-semibold text-warm-700 mb-3">Availability *</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {AVAILABILITY.map((value) => {
+                        const selected = form.availability === value;
+                        return (
+                          <label
+                            key={value}
+                            className={`flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-sm cursor-pointer transition-colors ${
+                              selected
+                                ? 'border-primary-600 bg-primary-50 text-primary-700 font-semibold'
+                                : 'border-warm-200 bg-white text-warm-700 hover:border-primary-200'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="availability"
+                              value={value}
+                              checked={selected}
+                              onChange={() => field('availability', value)}
+                              className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                            />
+                            {value}
+                          </label>
+                        );
+                      })}
+                    </div>
                     {errors.availability && <p className="text-red-500 text-xs mt-1">{errors.availability}</p>}
                   </div>
                   <div>

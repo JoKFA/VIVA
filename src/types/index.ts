@@ -26,6 +26,15 @@ export interface Event {
   recap?: EventRecap;
 }
 
+export interface EventVolunteerContact {
+  eventSlug: string;
+  adminName: string;
+  adminRole: string;
+  adminWechatId?: string;
+  adminWechatQrUrl?: string;
+  adminContactNote?: string;
+}
+
 export interface EventRecap {
   summary: string;
   volunteersCount: number;

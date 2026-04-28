@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Calendar, MapPin, Clock, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
-import { events } from '../data/mockData';
+import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
+import EventAdminContactModal from '../components/events/EventAdminContactModal';
+import { eventVolunteerContacts, events } from '../data/mockData';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -24,6 +25,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
   const event = useMemo(() => events.find((e) => e.slug === slug), [slug]);
+  const [contactOpen, setContactOpen] = useState(false);
 
   if (!event) {
     return (
@@ -208,9 +210,9 @@ export default function EventDetail() {
               </ul>
 
               {!event.isPast && event.status === 'open' && (
-                <Link to="/volunteer" className="btn-primary w-full mt-6 text-sm">
+                <button type="button" onClick={() => setContactOpen(true)} className="btn-primary w-full mt-6 text-sm">
                   Join as Volunteer
-                </Link>
+                </button>
               )}
 
               {/* Coordinator */}
@@ -245,10 +247,10 @@ export default function EventDetail() {
               <h2 className="font-display font-extrabold text-2xl text-white mb-1">Ready to make a difference?</h2>
               <p className="text-white/80 text-sm">Every volunteer matters. Sign up and join us.</p>
             </div>
-            <Link to="/volunteer"
+            <button type="button" onClick={() => setContactOpen(true)}
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-600 rounded-lg font-bold text-sm hover:bg-warm-100 transition-colors flex-shrink-0">
               Become a Volunteer
-            </Link>
+            </button>
           </div>
         </section>
       ) : (
@@ -264,6 +266,13 @@ export default function EventDetail() {
             </Link>
           </div>
         </section>
+      )}
+      {contactOpen && eventVolunteerContacts[event.slug] && (
+        <EventAdminContactModal
+          event={event}
+          contact={eventVolunteerContacts[event.slug]}
+          onClose={() => setContactOpen(false)}
+        />
       )}
     </div>
   );

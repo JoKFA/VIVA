@@ -21,7 +21,23 @@
 }
 
 @layer components {
-  /* ── Buttons ── */
+  .home-hero-bg {
+    background-image: url('/hero-bg.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+
+  .home-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(340px, 1fr);
+  }
+
+  .home-hero-copy {
+    max-width: 560px;
+  }
+
+  /* Buttons */
   .btn-primary {
     @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 shadow-soft hover:shadow-warm;
   }
@@ -34,12 +50,12 @@
     @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white border border-white/35 bg-white/15 hover:bg-white/25 transition-all duration-200;
   }
 
-  /* ── Hero gradient ── */
+  /* Hero gradient */
   .gradient-hero {
     background: linear-gradient(150deg, #c1272d 0%, #a31f26 55%, #6e1419 100%);
   }
 
-  /* ── Image placeholder (when CMS has no upload) ── */
+  /* Image placeholder (when CMS has no upload) */
   .img-placeholder {
     @apply flex items-center justify-center bg-warm-200 relative overflow-hidden;
   }
@@ -59,7 +75,7 @@
     object-fit: cover;
   }
 
-  /* ── Page header (Option 2: white + red left bar) ── */
+  /* Page header (Option 2: white + red left bar) */
   .page-header {
     @apply bg-white border-b-[3px] border-primary-600 py-10 px-8;
   }
@@ -70,7 +86,7 @@
     @apply w-1 h-16 bg-primary-600 rounded-sm flex-shrink-0;
   }
 
-  /* ── Events TODAY divider ── */
+  /* Events TODAY divider */
   .today-divider {
     @apply flex items-center gap-4 my-12;
   }
@@ -86,19 +102,17 @@
     font-family: 'Bebas Neue', sans-serif;
   }
 
-  /* ── Honours auto-scroll carousel ── */
-  .honours-letter-card {
-    /* mobile: one card fills the view with a peek of the next */
-    width: calc(90vw - 2rem);
+  /* Honours auto-scroll marquee */
+  .honours-marquee-track {
+    display: flex;
+    will-change: transform;
+    animation: honoursScroll 50s linear infinite;
   }
-  @media (min-width: 768px) {
-    .honours-letter-card {
-      /* desktop: two cards side by side */
-      width: calc(50% - 12px);
-    }
+  .honours-marquee-track.paused {
+    animation-play-state: paused;
   }
 
-  /* ── Event year accordion ── */
+  /* Event year accordion */
   .year-row {
     @apply border-t-2 border-warm-200;
   }
@@ -106,7 +120,7 @@
     @apply flex items-center justify-between py-5 cursor-pointer gap-4;
   }
 
-  /* ── Board portrait rows ── */
+  /* Board portrait rows */
   .board-row {
     @apply flex items-center gap-5 py-4 border-b border-warm-200;
   }
@@ -117,7 +131,7 @@
     @apply absolute inset-0 w-full h-full object-cover;
   }
 
-  /* ── Status chips ── */
+  /* Status chips */
   .status-open {
     @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold whitespace-nowrap;
   }
@@ -130,17 +144,17 @@
     flex-shrink: 0;
   }
 
-  /* ── Eyebrow label ── */
+  /* Eyebrow label */
   .eyebrow {
     @apply text-xs font-bold tracking-widest uppercase text-primary-600 mb-2;
   }
 
-  /* ── Section spacing ── */
+  /* Section spacing */
   .section-padding {
     @apply py-16 md:py-24;
   }
 
-  /* ── Container ── */
+  /* Container */
   .container-xl {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
@@ -163,6 +177,16 @@
   }
 }
 
+@keyframes honoursScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes announcementFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -171,5 +195,38 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .home-hero-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(300px, 0.78fr);
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-hero-bg {
+    background-position: 58% top;
+  }
+
+  .home-hero-grid {
+    display: flex;
+    min-height: 0;
+    align-items: center;
+  }
+
+  .home-hero-copy {
+    max-width: 720px;
+  }
+
+  .home-hero-media {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .home-hero-bg {
+    background-position: 61% top;
   }
 }

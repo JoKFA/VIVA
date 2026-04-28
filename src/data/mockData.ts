@@ -11,6 +11,7 @@ import type {
   SiteSettings,
   Stat,
   Program,
+  EventVolunteerContact,
 } from '../types';
 
 export const siteSettings: SiteSettings = {
@@ -36,7 +37,7 @@ export const siteSettings: SiteSettings = {
   email: 'info.vivahq@gmail.com',
   mediaEmail: 'media.vivahq@gmail.com',
   territoryAcknowledgement:
-    'VIVA respectfully acknowledges that our main operations are located on the traditional, ancestral, and unceded territories of the xʷməθkʷəy̓əm (Musqueam), Sḵwx̱wú7mesh (Squamish), and səlilwətaɬ (Tsleil-Waututh) Nations. As our volunteer work and impact span across British Columbia, we also recognize the territories of more than 200 First Nations, as well as the Métis and Inuit peoples who live in our communities. We are deeply grateful for the opportunity to live, work, and serve on these lands.',
+    'VIVA respectfully acknowledges that our main operations are located on the traditional, ancestral, and unceded territories of the Musqueam, Squamish, and Tsleil-Waututh Nations. As our volunteer work and impact span across British Columbia, we also recognize the territories of more than 200 First Nations, as well as the Metis and Inuit peoples who live in our communities. We are deeply grateful for the opportunity to live, work, and serve on these lands.',
 };
 
 export const stats: Stat[] = [
@@ -289,6 +290,58 @@ export const events: Event[] = [
     },
   },
 ];
+
+// Keep event volunteer coordinator contact config separate from event content.
+// Backend note: event records should provide title/date/time/location, while this
+// admin-managed record should provide the coordinator name and personal WeChat QR.
+// The QR is for contacting the coordinator only; it is not an event group QR.
+export const eventVolunteerContacts: Record<string, EventVolunteerContact> = {
+  'viva-eg-shoreline-cleanup-2026': {
+    eventSlug: 'viva-eg-shoreline-cleanup-2026',
+    adminName: 'Linda Chen',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-eg-admin',
+    adminWechatQrUrl: '',
+    adminContactNote: 'Mention the shoreline cleanup when adding the coordinator.',
+  },
+  'bmo-vancouver-marathon-2026': {
+    eventSlug: 'bmo-vancouver-marathon-2026',
+    adminName: 'Olivia Chen',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-marathon-admin',
+    adminWechatQrUrl: '',
+    adminContactNote: 'Mention BMO Vancouver Marathon when adding the coordinator.',
+  },
+  'summer-ice-cream-festival-2026': {
+    eventSlug: 'summer-ice-cream-festival-2026',
+    adminName: 'VIVA Events Team',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-events-admin',
+    adminWechatQrUrl: '',
+  },
+  'cutie-pet-fair-2026': {
+    eventSlug: 'cutie-pet-fair-2026',
+    adminName: 'VIVA Events Team',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-events-admin',
+    adminWechatQrUrl: '',
+  },
+  'cyaca-2026': {
+    eventSlug: 'cyaca-2026',
+    adminName: 'Linda Chen',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-cyaca-admin',
+    adminWechatQrUrl: '',
+    adminContactNote: 'Mention CYACA when adding the coordinator.',
+  },
+  'viva-ubc-career-fair-2026': {
+    eventSlug: 'viva-ubc-career-fair-2026',
+    adminName: 'VCF Team',
+    adminRole: 'Event Volunteer Coordinator',
+    adminWechatId: 'viva-vcf-admin',
+    adminWechatQrUrl: '',
+  },
+};
 
 export const teamMembers: TeamMember[] = [
   {
@@ -618,39 +671,47 @@ export const faqs: FAQ[] = [
 export const honours = [
   {
     id: '1',
-    letterImageUrl: 'https://picsum.photos/400/520?grayscale&random=80',
+    initials: 'PM',
+    letterImageUrl: '', // replace with real scanned letter URL
     name: 'Mark Carney',
-    role: 'Prime Minister of Canada',
-    organization: 'Government of Canada',
-    tier: 'Federal · 2025',
+    title: 'Prime Minister of Canada',
+    organization: 'Office of the Prime Minister',
+    tier: 'Federal Recognition · 2025',
     accent: '#c1272d',
+    quote: 'VIVA exemplifies the spirit of community service that makes Canada stronger. Your work supporting newcomers and youth across Vancouver is a model for volunteer organizations nationwide.',
   },
   {
     id: '2',
-    letterImageUrl: 'https://picsum.photos/400/520?grayscale&random=81',
+    initials: 'BC',
+    letterImageUrl: '', // replace with real scanned letter URL
     name: 'Premier of British Columbia',
-    role: 'Province of British Columbia',
-    organization: 'Province of British Columbia',
-    tier: 'Provincial · 2025',
+    title: 'Province of British Columbia',
+    organization: 'Office of the Premier',
+    tier: 'Provincial Recognition · 2025',
     accent: '#1a5c9e',
+    quote: 'The Vancouver International Volunteer Association has made a profound difference in the lives of international students and newcomers in British Columbia. We are proud to recognize your dedication.',
   },
   {
     id: '3',
-    letterImageUrl: 'https://picsum.photos/400/520?grayscale&random=82',
+    initials: 'BN',
+    letterImageUrl: '', // replace with real scanned letter URL
     name: 'Mayor of Burnaby',
-    role: 'City of Burnaby',
-    organization: 'City of Burnaby',
-    tier: 'Municipal · 2024',
+    title: 'City of Burnaby',
+    organization: 'Office of the Mayor',
+    tier: 'Municipal Recognition · 2024',
     accent: '#15803d',
+    quote: "VIVA's tireless efforts to build bridges between communities in Burnaby and Vancouver reflect the very best of what civic volunteerism can achieve. Thank you for your service.",
   },
   {
     id: '4',
-    letterImageUrl: 'https://picsum.photos/400/520?grayscale&random=83',
+    initials: 'UBC',
+    letterImageUrl: '', // replace with real scanned letter URL
     name: 'UBC Student Affairs',
-    role: 'University of British Columbia',
-    organization: 'UBC',
-    tier: 'Academic · 2025',
+    title: 'University of British Columbia',
+    organization: 'UBC Vancouver Campus',
+    tier: 'Academic Recognition · 2025',
     accent: '#002145',
+    quote: 'VIVA has been an invaluable partner in connecting UBC students with meaningful volunteer opportunities. Their career fairs and mentorship programs have shaped the futures of hundreds of our students.',
   },
 ];
 

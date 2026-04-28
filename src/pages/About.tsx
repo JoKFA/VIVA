@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { honours } from '../data/mockData';
 
 const timeline = [
   { year: '2018', label: 'Founded', body: 'VIVA established in Burnaby, BC with a founding team of 12 volunteers.' },
@@ -9,42 +11,14 @@ const timeline = [
   { year: '2026', label: 'Today', body: '2,500+ active volunteers, 120+ events annually, recognized by federal and provincial governments.' },
 ];
 
-const honours = [
-  {
-    name: 'Mark Carney',
-    role: 'Prime Minister of Canada',
-    tier: 'Federal · 2025',
-    accent: '#c1272d',
-    quote: '"VIVA\'s dedication to strengthening communities through volunteer service exemplifies the spirit of Canadian civic engagement."',
-    img: 'https://picsum.photos/56/56?grayscale&random=60',
-  },
-  {
-    name: 'Premier of British Columbia',
-    role: 'Province of British Columbia',
-    tier: 'Provincial · 2025',
-    accent: '#1a5c9e',
-    quote: '"British Columbia is proud to recognize VIVA for their outstanding contributions to youth development and community building."',
-    img: 'https://picsum.photos/56/56?grayscale&random=61',
-  },
-  {
-    name: 'Mayor of Burnaby',
-    role: 'City of Burnaby',
-    tier: 'Municipal · 2024',
-    accent: '#15803d',
-    quote: '"VIVA has become an essential part of our city\'s volunteer ecosystem — connecting thousands of residents with meaningful community work."',
-    img: 'https://picsum.photos/56/56?grayscale&random=62',
-  },
-  {
-    name: 'UBC Student Affairs',
-    role: 'University of British Columbia',
-    tier: 'Academic · 2025',
-    accent: '#002145',
-    quote: '"The VIVA × UBC partnership has given hundreds of international students a real pathway into Canadian professional life."',
-    img: 'https://picsum.photos/56/56?grayscale&random=63',
-  },
-];
-
 export default function About() {
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+
+  const openLightbox = (i: number) => setLightboxIdx(i);
+  const closeLightbox = () => setLightboxIdx(null);
+  const prevLetter = () => setLightboxIdx((i) => (i! - 1 + honours.length) % honours.length);
+  const nextLetter = () => setLightboxIdx((i) => (i! + 1) % honours.length);
+
   return (
     <div>
       {/* Page Header — Option 2 */}
@@ -139,40 +113,164 @@ export default function About() {
         </div>
       </section>
 
-      {/* Honours — same carousel as home */}
-      <section className="bg-white py-20 px-8">
+      {/* Honours — A4 letter gallery */}
+      <section className="bg-white py-20 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
           <p className="eyebrow">Recognition</p>
           <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-3">
             Recognized by Canada's Leaders
           </h2>
-          <p className="text-warm-600 text-[0.9375rem] mb-8 max-w-lg">
-            VIVA's impact has been acknowledged at the highest levels of government and academia.
+          <p className="text-warm-600 text-[0.9375rem] mb-10 max-w-lg">
+            VIVA's impact has been acknowledged at the highest levels of government and academia. Click any letter to read in full.
           </p>
 
-          <div className="honours-track">
-            {honours.map((h) => (
-              <div
-                key={h.name}
-                className="honours-card bg-warm-50 border border-warm-200 border-l-4 p-8"
-                style={{ borderLeftColor: h.accent }}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {honours.map((h, i) => (
+              <button
+                key={h.id}
+                onClick={() => openLightbox(i)}
+                className="group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-xl"
               >
-                <div className="flex items-start gap-4 mb-5">
-                  <div className="w-14 h-14 rounded overflow-hidden flex-shrink-0 bg-warm-200">
-                    <img src={h.img} alt={h.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="font-display font-extrabold text-[0.9375rem] text-warm-900">{h.name}</p>
-                    <p className="text-sm text-warm-600">{h.role}</p>
-                    <p className="text-[10px] font-bold tracking-widest uppercase mt-1" style={{ color: h.accent }}>{h.tier}</p>
+                {/* A4 portrait card */}
+                <div
+                  className="relative bg-warm-50 border border-warm-200 rounded-xl overflow-hidden shadow-sm group-hover:shadow-soft-lg transition-shadow"
+                  style={{ aspectRatio: '210 / 297' }}
+                >
+                  {/* Accent left bar */}
+                  <div className="absolute top-0 left-0 w-1 h-full z-10" style={{ backgroundColor: h.accent }} />
+
+                  {/* Letter scan or placeholder */}
+                  {h.letterImageUrl ? (
+                    <img
+                      src={h.letterImageUrl}
+                      alt={`Recognition letter from ${h.name}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4">
+                      {/* Letterhead placeholder */}
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                        style={{ backgroundColor: h.accent }}
+                      >
+                        {h.initials}
+                      </div>
+                      <div className="w-3/4 space-y-1.5">
+                        {[100, 85, 92, 70, 88, 60].map((w, j) => (
+                          <div key={j} className="h-1.5 rounded bg-warm-200" style={{ width: `${w}%` }} />
+                        ))}
+                      </div>
+                      <p className="text-[9px] text-warm-400 text-center font-medium mt-2">
+                        Full letter<br />coming soon
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-warm-900/0 group-hover:bg-warm-900/40 transition-colors flex items-center justify-center">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg px-3 py-1.5 text-xs font-semibold text-warm-900 shadow-soft">
+                      View letter
+                    </span>
                   </div>
                 </div>
-                <p className="text-warm-700 text-[0.9375rem] leading-relaxed italic">{h.quote}</p>
-              </div>
+
+                {/* Caption */}
+                <div className="mt-3 px-1">
+                  <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: h.accent }}>
+                    {h.tier}
+                  </p>
+                  <p className="font-display font-bold text-sm text-warm-900 leading-tight">{h.name}</p>
+                  <p className="text-xs text-warm-500 mt-0.5">{h.organization}</p>
+                </div>
+              </button>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4"
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); prevLetter(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-3 rounded-full text-white transition-colors z-10"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <div
+            className="relative bg-white rounded-xl overflow-hidden shadow-2xl max-h-[90vh]"
+            style={{ aspectRatio: '210 / 297', maxWidth: 'min(420px, 90vw)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Accent bar */}
+            <div
+              className="absolute top-0 left-0 w-1.5 h-full z-10"
+              style={{ backgroundColor: honours[lightboxIdx].accent }}
+            />
+
+            {honours[lightboxIdx].letterImageUrl ? (
+              <img
+                src={honours[lightboxIdx].letterImageUrl}
+                alt={`Recognition letter from ${honours[lightboxIdx].name}`}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-4 px-10">
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold"
+                  style={{ backgroundColor: honours[lightboxIdx].accent }}
+                >
+                  {honours[lightboxIdx].initials}
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] font-bold tracking-widest uppercase mb-2" style={{ color: honours[lightboxIdx].accent }}>
+                    {honours[lightboxIdx].tier}
+                  </p>
+                  <p className="font-display font-bold text-warm-900 mb-1">{honours[lightboxIdx].name}</p>
+                  <p className="text-sm text-warm-500 mb-6">{honours[lightboxIdx].organization}</p>
+                  <blockquote className="text-warm-700 text-sm leading-relaxed italic border-l-2 pl-4 text-left" style={{ borderColor: honours[lightboxIdx].accent }}>
+                    "{honours[lightboxIdx].quote}"
+                  </blockquote>
+                </div>
+                <p className="text-xs text-warm-400 mt-4">Letter scan will be added soon.</p>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); nextLetter(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 p-3 rounded-full text-white transition-colors z-10"
+            aria-label="Next"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Counter */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+            {honours.map((_, i) => (
+              <div
+                key={i}
+                className="w-2 h-2 rounded-full transition-all"
+                style={{ background: i === lightboxIdx ? 'white' : 'rgba(255,255,255,0.3)' }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Board CTA */}
       <section className="bg-warm-50 py-16 px-8 border-t border-warm-200">
