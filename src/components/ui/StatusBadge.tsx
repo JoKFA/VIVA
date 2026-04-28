@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle, Clock, AlertCircle, Circle } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Circle } from 'lucide-react';
 
 type Status = 'active' | 'inactive' | 'pending' | 'completed' | 'cancelled' | 'approved' | 'rejected';
 

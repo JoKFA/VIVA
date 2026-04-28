@@ -59,7 +59,7 @@ export default function EventsCalendar() {
       }
     });
     return grouped;
-  }, [events, currentMonth, currentYear]);
+  }, [currentMonth, currentYear]);
 
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -84,12 +84,6 @@ export default function EventsCalendar() {
       currentMonth === today.getMonth() &&
       currentYear === today.getFullYear()
     );
-  };
-
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
   };
 
   return (

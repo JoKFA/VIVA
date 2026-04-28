@@ -15,7 +15,7 @@ interface TableProps<T> {
   striped?: boolean;
 }
 
-export default function Table<T extends Record<string, any>>({
+export default function Table<T extends Record<string, unknown>>({
   data,
   columns,
   className = '',
@@ -26,7 +26,7 @@ export default function Table<T extends Record<string, any>>({
     if (typeof column.accessor === 'function') {
       return column.accessor(row);
     }
-    return row[column.accessor];
+    return row[column.accessor] as React.ReactNode;
   };
 
   const getAlignment = (align?: 'left' | 'center' | 'right') => {
