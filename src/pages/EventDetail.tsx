@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
-import { eventVolunteerContacts, events } from '../data/mockData';
+import { useEventWithContact } from '../hooks/useEventWithContact';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -24,8 +24,16 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const event = useMemo(() => events.find((e) => e.slug === slug), [slug]);
+  const { event, contact, loading } = useEventWithContact(slug ?? '');
   const [contactOpen, setContactOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-warm-50 pt-20">
+        <div className="animate-pulse text-warm-400">Loading event…</div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -267,10 +275,10 @@ export default function EventDetail() {
           </div>
         </section>
       )}
-      {contactOpen && eventVolunteerContacts[event.slug] && (
+      {contactOpen && contact && (
         <EventAdminContactModal
           event={event}
-          contact={eventVolunteerContacts[event.slug]}
+          contact={contact!}
           onClose={() => setContactOpen(false)}
         />
       )}

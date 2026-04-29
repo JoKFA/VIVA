@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { events, stats, honours, testimonials } from '../data/mockData';
+import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
+import { useStats } from '../hooks/useStats';
+import { useHonours } from '../hooks/useHonours';
+import { useTestimonials } from '../hooks/useTestimonials';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -391,8 +394,11 @@ function HomeEventRow({ ev }: { ev: (typeof events)[number] }) {
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
-  const upcoming = events
-    .filter((e) => !getEventTiming(e).isPast)
+  const { data: upcomingEvents } = useUpcomingEvents();
+  const { data: stats } = useStats();
+  const { data: honours } = useHonours();
+  const { data: testimonials } = useTestimonials();
+  const upcoming = upcomingEvents
     .sort((a, b) => new Date(`${a.date}T00:00:00`).getTime() - new Date(`${b.date}T00:00:00`).getTime())
     .slice(0, 4);
 

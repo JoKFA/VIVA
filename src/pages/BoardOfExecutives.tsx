@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Linkedin, ArrowRight } from 'lucide-react';
-import { teamMembers } from '../data/mockData';
+import { useTeamMembers } from '../hooks/useTeamMembers';
 
 function Avatar({ src, alt, size = 56 }: { src: string; alt: string; size?: number }) {
   const [err, setErr] = useState(false);
@@ -29,6 +29,7 @@ const founders = [
 ];
 
 export default function BoardOfExecutives() {
+  const { data: teamMembers } = useTeamMembers();
   const sortedMembers = [...teamMembers].sort((a, b) => a.order - b.order);
   const executives = sortedMembers.filter((m) => m.isExecutive);
   const boardMembers = sortedMembers.filter((m) => !m.isExecutive);
