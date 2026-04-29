@@ -41,6 +41,7 @@ Thumbs.db
 .codex/
 .cursor/
 .windsurf/
+supabase/.temp/
 CLAUDE.md
 claude*.md
 codex*.md

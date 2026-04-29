@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { Hero } from '../components/blocks/Hero';
 import Button from '../components/ui/Button';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { events } from '../data/mockData';
+import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import type { Event } from '../types';
 
 const typeColors: Record<Event['type'], string> = {
@@ -17,6 +17,7 @@ const typeColors: Record<Event['type'], string> = {
 };
 
 export default function EventsCalendar() {
+  const { data: events } = useUpcomingEvents();
   const prefersReducedMotion = useReducedMotion();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -59,7 +60,7 @@ export default function EventsCalendar() {
       }
     });
     return grouped;
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, events]);
 
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

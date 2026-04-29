@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, CheckCircle, Send, Upload, ArrowRight, ChevronRight } from 'lucide-react';
-import { volunteerRoles, faqs } from '../data/mockData';
+import { useVolunteerRoles } from '../hooks/useVolunteerRoles';
+import { useFaqs } from '../hooks/useFaqs';
 
 const WHY_ITEMS = [
   { num: '01', title: 'Real Impact', body: 'See direct results of your efforts — from students finding jobs to communities restored after a cleanup.' },
@@ -47,6 +48,8 @@ interface FormData {
 const EMPTY: FormData = { firstName: '', lastName: '', email: '', phone: '', availability: '', resume: null, interests: [], experience: '', motivation: '' };
 
 export default function Volunteer() {
+  const { data: volunteerRoles } = useVolunteerRoles();
+  const { data: faqs } = useFaqs();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});

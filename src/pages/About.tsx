@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { honours } from '../data/mockData';
+import { useHonours } from '../hooks/useHonours';
 
 const timeline = [
   { year: '2018', label: 'Founded', body: 'VIVA established in Burnaby, BC with a founding team of 12 volunteers.' },
@@ -12,6 +12,7 @@ const timeline = [
 ];
 
 export default function About() {
+  const { data: honours } = useHonours();
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const openLightbox = (i: number) => setLightboxIdx(i);

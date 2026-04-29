@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
-import { eventVolunteerContacts, events } from '../data/mockData';
+import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
+import { useEventYears } from '../hooks/useEventYears';
+import { useEventsByYear } from '../hooks/useEventsByYear';
+import type { Event } from '../types';
 
-type EventItem = (typeof events)[number];
+type EventItem = Event;
 
 const FILTERS = [
   { key: 'all', label: 'All Events' },
@@ -299,36 +302,53 @@ function PastEventRow({ event }: { event: EventItem }) {
   );
 }
 
-function groupByYear(items: EventItem[]) {
-  const grouped = items.reduce<Record<number, EventItem[]>>((acc, event) => {
-    const year = parseEventDate(event.date).year;
-    acc[year] = acc[year] || [];
-    acc[year].push(event);
-    return acc;
-  }, {});
-
-  return Object.entries(grouped)
-    .sort(([a], [b]) => Number(b) - Number(a))
-    .map(([year, yearEvents]) => ({ year: Number(year), events: yearEvents }));
+/** Lazy-loads events for a single year when the dropdown is open */
+function YearSection({ year, isOpen, onToggle }: { year: number; isOpen: boolean; onToggle: () => void }) {
+  const { data: yearEvents, loading } = useEventsByYear(year, isOpen);
+  return (
+    <div className="year-row">
+      <button
+        onClick={onToggle}
+        className="year-toggle w-full text-left"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-4">
+          <span className="font-impact text-[2.5rem] leading-none text-warm-400">{year}</span>
+          {isOpen && !loading && (
+            <span className="text-sm text-warm-400">{yearEvents.length} event{yearEvents.length === 1 ? '' : 's'}</span>
+          )}
+        </div>
+        <ChevronDown className={`h-5 w-5 text-warm-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="pb-6">
+          {loading ? (
+            <div className="animate-pulse space-y-3 py-4">
+              {[1,2].map(i => <div key={i} className="h-16 bg-warm-100 rounded-lg" />)}
+            </div>
+          ) : (
+            yearEvents.map((event) => <PastEventRow key={event.id} event={event} />)
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function Events() {
   const [filter, setFilter] = useState('all');
   const [openYears, setOpenYears] = useState<Set<number>>(new Set());
   const [contactEvent, setContactEvent] = useState<EventItem | null>(null);
+  const [contactForSlug, setContactForSlug] = useState<import('../types').EventVolunteerContact | null>(null);
 
-  const { upcoming, past } = useMemo(() => {
-    const sorted = [...events].sort((a, b) => parseEventDate(a.date).date.getTime() - parseEventDate(b.date).date.getTime());
-    return {
-      upcoming: sorted.filter((event) => !getEventTiming(event).isPast),
-      past: sorted.filter((event) => getEventTiming(event).isPast).reverse(),
-    };
-  }, []);
+  const { data: upcomingEvents } = useUpcomingEvents();
+  const { data: pastYears } = useEventYears();
 
-  const filteredUpcoming = upcoming.filter((event) => matchesFilter(event, filter));
+  const filteredUpcoming = upcomingEvents
+    .sort((a, b) => parseEventDate(a.date).date.getTime() - parseEventDate(b.date).date.getTime())
+    .filter((event) => matchesFilter(event, filter));
   const featured = filteredUpcoming[0];
   const rest = filteredUpcoming.slice(1);
-  const pastByYear = groupByYear(past);
 
   const toggleYear = (year: number) => {
     setOpenYears((current) => {
@@ -341,6 +361,11 @@ export default function Events() {
       return next;
     });
   };
+
+  function handleContactAdmin(event: EventItem, contact: import('../types').EventVolunteerContact | null) {
+    setContactEvent(event);
+    setContactForSlug(contact);
+  }
 
   return (
     <div className="bg-warm-50">
@@ -385,7 +410,7 @@ export default function Events() {
             </div>
           ) : (
             <>
-              {featured && <FeaturedEvent event={featured} onContactAdmin={setContactEvent} />}
+              {featured && <FeaturedEvent event={featured} onContactAdmin={(ev) => handleContactAdmin(ev, null)} />}
               {rest.length > 0 && (
                 <div className="mt-8">
                   <h2 className="mb-0 font-display text-base font-bold uppercase tracking-widest text-warm-400">More Events</h2>
@@ -405,28 +430,16 @@ export default function Events() {
 
       <section className="px-4 pb-16 pt-4 sm:px-8">
         <div className="mx-auto max-w-7xl">
-          {pastByYear.length === 0 ? (
+          {pastYears.length === 0 ? (
             <p className="py-10 text-center text-sm text-warm-400">Past event records will appear here.</p>
           ) : (
-            pastByYear.map(({ year, events: yearEvents }) => (
-              <div key={year} className="year-row">
-                <button
-                  onClick={() => toggleYear(year)}
-                  className="year-toggle w-full text-left"
-                  aria-expanded={openYears.has(year)}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="font-impact text-[2.5rem] leading-none text-warm-400">{year}</span>
-                    <span className="text-sm text-warm-400">{yearEvents.length} event{yearEvents.length === 1 ? '' : 's'}</span>
-                  </div>
-                  <ChevronDown className={`h-5 w-5 text-warm-400 transition-transform ${openYears.has(year) ? 'rotate-180' : ''}`} />
-                </button>
-                {openYears.has(year) && (
-                  <div className="pb-6">
-                    {yearEvents.map((event) => <PastEventRow key={event.id} event={event} />)}
-                  </div>
-                )}
-              </div>
+            pastYears.map((year) => (
+              <YearSection
+                key={year}
+                year={year}
+                isOpen={openYears.has(year)}
+                onToggle={() => toggleYear(year)}
+              />
             ))
           )}
         </div>
@@ -439,18 +452,18 @@ export default function Events() {
             <h2 className="font-display text-2xl font-extrabold text-white">Volunteer at our next event</h2>
             <p className="mt-1 text-sm text-white/70">No experience needed. Just your time and enthusiasm.</p>
           </div>
-          <button type="button" onClick={() => featured && setContactEvent(featured)} className="inline-flex flex-shrink-0 items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-primary-600 transition-all hover:-translate-y-0.5 hover:bg-warm-50">
+          <button type="button" onClick={() => featured && handleContactAdmin(featured, null)} className="inline-flex flex-shrink-0 items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-primary-600 transition-all hover:-translate-y-0.5 hover:bg-warm-50">
             Become a Volunteer
           </button>
         </div>
       </section>
 
       <span className="sr-only">Dates are derived from event date fields. Today is {formatLongDate(new Date().toISOString().slice(0, 10))}.</span>
-      {contactEvent && eventVolunteerContacts[contactEvent.slug] && (
+      {contactEvent && contactForSlug && (
         <EventAdminContactModal
           event={contactEvent}
-          contact={eventVolunteerContacts[contactEvent.slug]}
-          onClose={() => setContactEvent(null)}
+          contact={contactForSlug}
+          onClose={() => { setContactEvent(null); setContactForSlug(null); }}
         />
       )}
     </div>

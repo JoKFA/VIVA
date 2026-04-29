@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Send, CheckCircle, Heart } from 'lucide-react';
-import { siteSettings } from '../data/mockData';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 
 interface FormData { name: string; email: string; message: string; }
 const EMPTY: FormData = { name: '', email: '', message: '' };
 
 export default function Donate() {
+  const { settings: siteSettings } = useSiteSettings();
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);

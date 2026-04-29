@@ -1,7 +1,8 @@
 import { Download } from 'lucide-react';
-import { annualReports } from '../data/mockData';
+import { useAnnualReports } from '../hooks/useAnnualReports';
 
 export default function AnnualReports() {
+  const { data: annualReports } = useAnnualReports();
   const sorted = [...annualReports].sort((a, b) => b.year - a.year);
 
   return (

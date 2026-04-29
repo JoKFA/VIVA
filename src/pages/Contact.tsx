@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle } from 'lucide-react';
-import { siteSettings } from '../data/mockData';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 
 interface FormData { firstName: string; lastName: string; email: string; subject: string; message: string; }
 const EMPTY: FormData = { firstName: '', lastName: '', email: '', subject: '', message: '' };
 
 export default function Contact() {
+  const { settings: siteSettings } = useSiteSettings();
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
