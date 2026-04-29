@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
-import { eventVolunteerContacts, events } from '../data/mockData';
+import { useEventWithContact } from '../hooks/useEventWithContact';
+import { SafeImage } from '../components/ui/SafeImage';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -24,16 +25,23 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function EventDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const event = useMemo(() => events.find((e) => e.slug === slug), [slug]);
+  const { event, contact, loading } = useEventWithContact(slug ?? '');
   const [contactOpen, setContactOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-warm-50 pt-20">
+        <div className="animate-pulse text-warm-400">Loading event…</div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-warm-50 pt-20">
         <div className="text-center">
-          <p className="font-impact text-[5rem] text-warm-200 leading-none">404</p>
-          <h1 className="font-display font-extrabold text-2xl text-warm-900 mb-3">Event Not Found</h1>
-          <p className="text-warm-600 mb-6 text-sm">The event you're looking for doesn't exist or has been removed.</p>
+          <h1 className="font-display font-extrabold text-2xl text-warm-900 mb-3">Event Not Currently Available</h1>
+          <p className="text-warm-600 mb-6 text-sm">This event is not visible on the public site right now.</p>
           <Link to="/events" className="btn-primary">View All Events</Link>
         </div>
       </div>
@@ -41,22 +49,21 @@ export default function EventDetail() {
   }
 
   const { day, month, year } = parseDate(event.date);
-  const spotsLeft = event.capacity - event.registered;
-  const pctFull = Math.round((event.registered / event.capacity) * 100);
+  const spotsLeft = Math.max(event.capacity - event.registered, 0);
+  const pctFull = event.capacity > 0 ? Math.min(Math.round((event.registered / event.capacity) * 100), 100) : 0;
+  const canJoin = !event.isPast && event.status === 'open' && Boolean(contact);
+  const statusLabel = STATUS_LABEL[event.status] ?? 'Registration Unavailable';
 
   return (
     <div>
       {/* Full-bleed image hero */}
       <div className="relative w-full h-[50vh] min-h-[340px] bg-warm-900 overflow-hidden">
-        {event.imageUrl ? (
-          <img src={event.imageUrl} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-        ) : (
-          <img
-            src={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
-            alt={event.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
-          />
-        )}
+        <SafeImage
+          src={event.imageUrl || `https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          fallbackSrc={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          alt={event.title}
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
         {/* overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-warm-900 via-warm-900/60 to-transparent" />
 
@@ -195,7 +202,7 @@ export default function EventDetail() {
                   <li className="flex items-start gap-3">
                     <Users className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-medium text-warm-900">{STATUS_LABEL[event.status]}</p>
+                      <p className="font-medium text-warm-900">{statusLabel}</p>
                       <p className="text-warm-500">{event.registered} / {event.capacity} registered</p>
                       {/* Capacity bar */}
                       <div className="mt-2 h-1.5 bg-warm-200 rounded-full overflow-hidden">
@@ -209,7 +216,7 @@ export default function EventDetail() {
                 )}
               </ul>
 
-              {!event.isPast && event.status === 'open' && (
+              {canJoin && (
                 <button type="button" onClick={() => setContactOpen(true)} className="btn-primary w-full mt-6 text-sm">
                   Join as Volunteer
                 </button>
@@ -240,7 +247,7 @@ export default function EventDetail() {
       </div>
 
       {/* Bottom CTA band */}
-      {!event.isPast ? (
+      {canJoin ? (
         <section className="gradient-hero py-14 px-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -253,7 +260,7 @@ export default function EventDetail() {
             </button>
           </div>
         </section>
-      ) : (
+      ) : event.isPast ? (
         <section className="bg-warm-900 py-14 px-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -266,11 +273,24 @@ export default function EventDetail() {
             </Link>
           </div>
         </section>
+      ) : (
+        <section className="bg-warm-900 py-14 px-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-display font-extrabold text-2xl text-white mb-1">{statusLabel}</h2>
+              <p className="text-warm-400 text-sm">Please check other upcoming opportunities to get involved.</p>
+            </div>
+            <Link to="/events"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors flex-shrink-0">
+              View Upcoming Events
+            </Link>
+          </div>
+        </section>
       )}
-      {contactOpen && eventVolunteerContacts[event.slug] && (
+      {contactOpen && contact && (
         <EventAdminContactModal
           event={event}
-          contact={eventVolunteerContacts[event.slug]}
+          contact={contact!}
           onClose={() => setContactOpen(false)}
         />
       )}
