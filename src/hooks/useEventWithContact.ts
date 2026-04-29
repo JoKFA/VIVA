@@ -23,7 +23,7 @@ export function useEventWithContact(slug: string) {
 
   const [data, setData] = useState<EventWithContact>({
     event: mockEvent,
-    contact: fallbackVolunteerContact,
+    contact: mockEvent && !mockEvent.isPast ? fallbackVolunteerContact : null,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +44,15 @@ export function useEventWithContact(slug: string) {
 
         if (cancelled) return;
         if (eventErr || !eventRow) {
+          const notFound = eventErr && 'code' in eventErr && eventErr.code === 'PGRST116';
+          if (!notFound && mockEvent) {
+            setData({
+              event: mockEvent,
+              contact: mockEvent.isPast ? null : fallbackVolunteerContact,
+            });
+            return;
+          }
+          setData({ event: null, contact: null });
           setError(eventErr?.message ?? 'Event not found');
           return;
         }
@@ -51,7 +60,7 @@ export function useEventWithContact(slug: string) {
         const event = dbRowToEvent(eventRow);
 
         // Only fetch contact for upcoming events
-        let contact: EventVolunteerContact | null = fallbackVolunteerContact;
+        let contact: EventVolunteerContact | null = null;
         if (!event.isPast) {
           const { data: contactRow } = await supabase
             .from('event_volunteer_contact_settings')
@@ -80,7 +89,7 @@ export function useEventWithContact(slug: string) {
 
     fetch();
     return () => { cancelled = true; };
-  }, [slug]);
+  }, [slug, mockEvent]);
 
   return { ...data, loading, error };
 }

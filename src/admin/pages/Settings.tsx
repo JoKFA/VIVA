@@ -39,10 +39,16 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [rowId, setRowId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from('site_settings').select('*').single();
+      const { data, error: err } = await supabase.from('site_settings').select('*').maybeSingle();
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
       if (data) {
         const r = data as Record<string, unknown>;
         const sl = (r.social_links as Record<string, string>) ?? {};
@@ -77,6 +83,7 @@ export default function AdminSettings() {
   async function save() {
     setSaving(true);
     setSaved(false);
+    setError(null);
     const payload = {
       organization_name: form.organization_name,
       tagline: form.tagline,
@@ -103,13 +110,19 @@ export default function AdminSettings() {
       updated_at: new Date().toISOString(),
     };
 
+    let err;
     if (rowId) {
-      await supabase.from('site_settings').update(payload).eq('id', rowId);
+      ({ error: err } = await supabase.from('site_settings').update(payload).eq('id', rowId));
     } else {
-      const { data } = await supabase.from('site_settings').insert([payload]).select('id').single();
+      const { data, error: insertError } = await supabase.from('site_settings').insert([payload]).select('id').single();
+      err = insertError;
       if (data) setRowId((data as Record<string, unknown>).id as string);
     }
     setSaving(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -127,6 +140,7 @@ export default function AdminSettings() {
     <div>
       <AdminPageHeader title="Site Settings" description="Global configuration for the VIVA website" />
       <div className="p-8 max-w-2xl space-y-8">
+        {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Organization</h2>

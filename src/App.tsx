@@ -17,6 +17,7 @@ const EventDetail = lazy(() => import('./pages/EventDetail'));
 const Volunteer = lazy(() => import('./pages/Volunteer'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Donate = lazy(() => import('./pages/Donate'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
 const AdminLogin = lazy(() => import('./admin/pages/Login'));
@@ -68,6 +69,7 @@ function App() {
             <Route path="volunteer" element={<S><Volunteer /></S>} />
             <Route path="contact" element={<S><Contact /></S>} />
             <Route path="donate" element={<S><Donate /></S>} />
+            <Route path="*" element={<S><NotFound /></S>} />
           </Route>
 
           {/* ── Admin — separate branch, no public Layout ─────────────── */}
@@ -90,8 +92,10 @@ function App() {
             <Route path="programs" element={<S><AdminPrograms /></S>} />
             <Route path="settings" element={<S><AdminSettings /></S>} />
             <Route path="honours" element={<S><AdminHonours /></S>} />
+            <Route path="*" element={<S><NotFound /></S>} />
           </Route>
 
+          <Route path="*" element={<S><NotFound /></S>} />
         </Routes>
       </Router>
     </SiteSettingsProvider>

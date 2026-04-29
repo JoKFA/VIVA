@@ -23,7 +23,19 @@ const LABEL: Record<UploadKind, string> = {
   pdf: 'PDF',
 };
 
+const EXTENSIONS: Record<UploadKind, string[]> = {
+  image: ['jpg', 'jpeg', 'png'],
+  pdf: ['pdf'],
+};
+
+const MAX_BYTES: Record<UploadKind, number> = {
+  image: 5 * 1024 * 1024,
+  pdf: 10 * 1024 * 1024,
+};
+
 function isAllowed(file: File, kind: UploadKind) {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (!EXTENSIONS[kind].includes(ext)) return false;
   if (kind === 'image') return ['image/jpeg', 'image/png'].includes(file.type);
   return file.type === 'application/pdf';
 }
@@ -44,23 +56,32 @@ export function MediaUpload({ label, value, kind, folder, onChange, previewAlt }
       setError(`Only ${LABEL[kind]} files are allowed.`);
       return;
     }
+    if (file.size > MAX_BYTES[kind]) {
+      setError(`${LABEL[kind]} files must be ${kind === 'image' ? '5 MB' : '10 MB'} or smaller.`);
+      return;
+    }
 
     setUploading(true);
     const ext = file.name.split('.').pop()?.toLowerCase() || (kind === 'pdf' ? 'pdf' : 'jpg');
     const path = `${folder}/${crypto.randomUUID()}-${safeName(file.name) || `upload.${ext}`}`;
-    const { error: uploadError } = await supabase.storage
-      .from('viva-media')
-      .upload(path, file, { contentType: file.type, upsert: false });
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('viva-media')
+        .upload(path, file, { contentType: file.type, upsert: false });
 
-    if (uploadError) {
-      setError(uploadError.message);
+      if (uploadError) {
+        setError(uploadError.message);
+        setUploading(false);
+        return;
+      }
+
+      const { data } = supabase.storage.from('viva-media').getPublicUrl(path);
+      onChange(data.publicUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload failed.');
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data } = supabase.storage.from('viva-media').getPublicUrl(path);
-    onChange(data.publicUrl);
-    setUploading(false);
   }
 
   return (
@@ -80,7 +101,10 @@ export function MediaUpload({ label, value, kind, folder, onChange, previewAlt }
           accept={ACCEPT[kind]}
           className="hidden"
           disabled={uploading}
-          onChange={e => handleFile(e.target.files?.[0])}
+          onChange={e => {
+            handleFile(e.target.files?.[0]);
+            e.currentTarget.value = '';
+          }}
         />
         {value && (
           <button

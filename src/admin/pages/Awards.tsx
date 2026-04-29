@@ -36,29 +36,52 @@ export default function AdminAwards() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(toFormState(EMPTY));
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase.from('awards').select('*');
+    const { data, error: err } = await supabase.from('awards').select('*');
+    if (err) {
+      setError(err.message);
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setRows((data ?? []) as AwardRow[]);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
 
   async function save() {
+    setError(null);
     const payload = fromFormState(form);
-    if (editing === 'new') await supabase.from('awards').insert([payload]);
-    else if (editing) await supabase.from('awards').update(payload).eq('id', editing);
+    let err;
+    if (editing === 'new') ({ error: err } = await supabase.from('awards').insert([payload]));
+    else if (editing) ({ error: err } = await supabase.from('awards').update(payload).eq('id', editing));
+    if (err) {
+      setError(err.message);
+      return;
+    }
     setEditing(null); setForm(toFormState(EMPTY)); load();
   }
 
   async function del(id: string) {
     if (!confirm('Delete this award?')) return;
-    await supabase.from('awards').delete().eq('id', id);
+    setError(null);
+    const { error: err } = await supabase.from('awards').delete().eq('id', id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
     load();
   }
 
   async function togglePublish(id: string, v: boolean) {
-    await supabase.from('awards').update({ published: v }).eq('id', id);
+    setError(null);
+    const { error: err } = await supabase.from('awards').update({ published: v }).eq('id', id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
     load();
   }
 
@@ -95,6 +118,7 @@ export default function AdminAwards() {
         <button onClick={() => { setEditing('new'); setForm(toFormState(EMPTY)); }} className="btn-admin-primary flex items-center gap-1.5 text-sm"><Plus size={14} />Add Award</button>
       } />
       <div className="p-8 space-y-3">
+        {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
         {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
         {rows.map(r => (
