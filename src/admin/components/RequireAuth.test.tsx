@@ -18,9 +18,10 @@ import { RequireAuth } from './RequireAuth';
 // `const mockGetSession = vi.fn()` declarations aren't yet initialised when the
 // factory runs. vi.hoisted() evaluates its callback at hoist time, making the
 // returned fns available inside the factory without a TDZ error.
-const { mockGetSession, mockOnAuthStateChange, mockUnsubscribe } = vi.hoisted(() => ({
+const { mockGetSession, mockOnAuthStateChange, mockSignOut, mockUnsubscribe } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   mockOnAuthStateChange: vi.fn(),
+  mockSignOut: vi.fn(),
   mockUnsubscribe: vi.fn(),
 }));
 
@@ -29,6 +30,7 @@ vi.mock('../../lib/supabase', () => ({
     auth: {
       getSession: mockGetSession,
       onAuthStateChange: mockOnAuthStateChange,
+      signOut: mockSignOut,
     },
   },
 }));
@@ -96,7 +98,7 @@ describe('RequireAuth', () => {
 
   it('renders children when session is active', async () => {
     const fakeSession = {
-      user: { id: 'user-1', email: 'admin@vivahq.ca' },
+      user: { id: 'user-1', email: 'admin@vivahq.ca', app_metadata: { user_role: 'admin' } },
       access_token: 'fake-jwt-token',
     };
     mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
@@ -110,9 +112,26 @@ describe('RequireAuth', () => {
     expect(screen.queryByTestId('login-page')).toBeNull();
   });
 
+  it('blocks authenticated users without the admin claim', async () => {
+    const fakeSession = {
+      user: { id: 'user-2', email: 'volunteer@vivahq.ca', app_metadata: { user_role: 'volunteer' } },
+      access_token: 'fake-jwt-token',
+    };
+    mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
+
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(screen.getByText('Admin access required')).toBeTruthy();
+    });
+
+    expect(screen.queryByTestId('protected-content')).toBeNull();
+    expect(screen.queryByTestId('login-page')).toBeNull();
+  });
+
   it('updates when onAuthStateChange fires a sign-out event', async () => {
     // Start authenticated
-    const fakeSession = { user: { id: 'u1' }, access_token: 'tok' };
+    const fakeSession = { user: { id: 'u1', app_metadata: { user_role: 'admin' } }, access_token: 'tok' };
     mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
 
     // Capture the callback so we can fire it manually

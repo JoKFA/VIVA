@@ -49,8 +49,10 @@ export default function EventDetail() {
   }
 
   const { day, month, year } = parseDate(event.date);
-  const spotsLeft = event.capacity - event.registered;
-  const pctFull = Math.round((event.registered / event.capacity) * 100);
+  const spotsLeft = Math.max(event.capacity - event.registered, 0);
+  const pctFull = event.capacity > 0 ? Math.min(Math.round((event.registered / event.capacity) * 100), 100) : 0;
+  const canJoin = !event.isPast && event.status === 'open' && Boolean(contact);
+  const statusLabel = STATUS_LABEL[event.status] ?? 'Registration Unavailable';
 
   return (
     <div>
@@ -200,7 +202,7 @@ export default function EventDetail() {
                   <li className="flex items-start gap-3">
                     <Users className="w-4 h-4 text-primary-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <p className="font-medium text-warm-900">{STATUS_LABEL[event.status]}</p>
+                      <p className="font-medium text-warm-900">{statusLabel}</p>
                       <p className="text-warm-500">{event.registered} / {event.capacity} registered</p>
                       {/* Capacity bar */}
                       <div className="mt-2 h-1.5 bg-warm-200 rounded-full overflow-hidden">
@@ -214,7 +216,7 @@ export default function EventDetail() {
                 )}
               </ul>
 
-              {!event.isPast && event.status === 'open' && (
+              {canJoin && (
                 <button type="button" onClick={() => setContactOpen(true)} className="btn-primary w-full mt-6 text-sm">
                   Join as Volunteer
                 </button>
@@ -245,7 +247,7 @@ export default function EventDetail() {
       </div>
 
       {/* Bottom CTA band */}
-      {!event.isPast ? (
+      {canJoin ? (
         <section className="gradient-hero py-14 px-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -258,12 +260,25 @@ export default function EventDetail() {
             </button>
           </div>
         </section>
-      ) : (
+      ) : event.isPast ? (
         <section className="bg-warm-900 py-14 px-8">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h2 className="font-display font-extrabold text-2xl text-white mb-1">Don't miss our next event</h2>
               <p className="text-warm-400 text-sm">More upcoming opportunities to get involved.</p>
+            </div>
+            <Link to="/events"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors flex-shrink-0">
+              View Upcoming Events
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="bg-warm-900 py-14 px-8">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-display font-extrabold text-2xl text-white mb-1">{statusLabel}</h2>
+              <p className="text-warm-400 text-sm">Please check other upcoming opportunities to get involved.</p>
             </div>
             <Link to="/events"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors flex-shrink-0">

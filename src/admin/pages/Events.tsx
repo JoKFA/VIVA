@@ -74,10 +74,14 @@ export default function AdminEvents() {
     setLoading(false);
   }
   async function loadContact() {
-    const { data } = await supabase
+    const { data, error: err } = await supabase
       .from('event_volunteer_contact_settings')
       .select('*')
       .maybeSingle();
+    if (err) {
+      setError(err.message);
+      return;
+    }
     if (data) {
       setContact({
         admin_name: String(data.admin_name ?? ''),

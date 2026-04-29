@@ -13,19 +13,32 @@ export default function AdminStats() {
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<StatRow, 'id'>>(EMPTY);
   const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase.from('stats').select('*').order('sort_order');
+    const { data, error: err } = await supabase.from('stats').select('*').order('sort_order');
+    if (err) {
+      setError(err.message);
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setRows((data ?? []) as StatRow[]);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
 
   async function save() {
+    setError(null);
+    let err;
     if (editing === 'new') {
-      await supabase.from('stats').insert([form]);
+      ({ error: err } = await supabase.from('stats').insert([form]));
     } else if (editing) {
-      await supabase.from('stats').update(form).eq('id', editing);
+      ({ error: err } = await supabase.from('stats').update(form).eq('id', editing));
+    }
+    if (err) {
+      setError(err.message);
+      return;
     }
     setEditing(null); setAdding(false); setForm(EMPTY);
     load();
@@ -33,12 +46,22 @@ export default function AdminStats() {
 
   async function del(id: string) {
     if (!confirm('Delete this stat?')) return;
-    await supabase.from('stats').delete().eq('id', id);
+    setError(null);
+    const { error: err } = await supabase.from('stats').delete().eq('id', id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
     load();
   }
 
   async function togglePublish(id: string, v: boolean) {
-    await supabase.from('stats').update({ published: v }).eq('id', id);
+    setError(null);
+    const { error: err } = await supabase.from('stats').update({ published: v }).eq('id', id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
     load();
   }
 
@@ -53,6 +76,7 @@ export default function AdminStats() {
       <AdminPageHeader title="Stats" description="Homepage statistics counters"
         action={<button onClick={() => { setAdding(true); setEditing('new'); setForm(EMPTY); }} className="btn-admin-primary flex items-center gap-1.5 text-sm"><Plus size={14} />Add Stat</button>} />
       <div className="p-8">
+        {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
         {loading ? <div className="animate-pulse h-20 bg-gray-100 rounded-lg" /> : (
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-400 border-b">{['Label','Value','Suffix','Prefix','Order','Published',''].map(h => <th key={h} className="pb-2 pr-4 font-medium">{h}</th>)}</tr></thead>
