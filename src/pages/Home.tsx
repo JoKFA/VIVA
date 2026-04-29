@@ -5,8 +5,9 @@ import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import { useStats } from '../hooks/useStats';
-import { useHonours } from '../hooks/useHonours';
+import { useHonours, type HonourEntry } from '../hooks/useHonours';
 import { useTestimonials } from '../hooks/useTestimonials';
+import type { Event, Testimonial } from '../types';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -58,7 +59,7 @@ const programs = [
 ];
 
 
-function HonoursMarquee() {
+function HonoursMarquee({ honours }: { honours: HonourEntry[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [cardW, setCardW] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -108,7 +109,7 @@ function HonoursMarquee() {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {cardW > 0 && (
+        {honours.length > 0 && cardW > 0 && (
           <div
             className={`honours-marquee-track${paused ? ' paused' : ''}`}
           >
@@ -170,7 +171,7 @@ function HonoursMarquee() {
   );
 }
 
-function TestimonialsCarousel() {
+function TestimonialsCarousel({ testimonials }: { testimonials: Testimonial[] }) {
   const [idx, setIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -183,7 +184,7 @@ function TestimonialsCarousel() {
   };
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || count === 0) return;
     const t = setInterval(() => {
       setFading(true);
       setTimeout(() => { setIdx((i) => (i + 1) % count); setFading(false); }, 280);
@@ -192,6 +193,8 @@ function TestimonialsCarousel() {
   }, [paused, count]);
 
   const t = testimonials[idx];
+
+  if (!t) return null;
 
   return (
     <section
@@ -310,7 +313,7 @@ function getEventTypeConfig(type: string) {
   return EVENT_TYPE_CONFIG[type] || EVENT_TYPE_CONFIG['community-service'];
 }
 
-function getEventTiming(event: (typeof events)[number]) {
+function getEventTiming(event: Event) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const start = new Date(`${event.date}T00:00:00`);
@@ -323,7 +326,7 @@ function getEventTiming(event: (typeof events)[number]) {
   };
 }
 
-function HomeEventRow({ ev }: { ev: (typeof events)[number] }) {
+function HomeEventRow({ ev }: { ev: Event }) {
   const [hovered, setHovered] = useState(false);
   const { day, month, year } = parseEventDate(ev.date);
   const { daysUntil } = getEventTiming(ev);
@@ -592,10 +595,10 @@ export default function Home() {
       </section>
 
       {/* Community voices */}
-      <TestimonialsCarousel />
+      <TestimonialsCarousel testimonials={testimonials} />
 
       {/* Honours */}
-      <HonoursMarquee />
+      <HonoursMarquee honours={honours} />
 
       {/* Volunteer CTA */}
       <section className="gradient-hero py-20 px-8 relative overflow-hidden">

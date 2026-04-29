@@ -34,12 +34,21 @@ const TYPE_COLORS: Record<string, string> = {
 export default function AdminEvents() {
   const [rows, setRows] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase
+    setError(null);
+    const { data, error: err } = await supabase
       .from('events')
       .select('id,slug,title,date,type,status,is_past_override,recap,published')
       .order('date', { ascending: false });
+    if (err) {
+      setError(err.message);
+      setRows([]);
+      setLoading(false);
+      return;
+    }
     setRows((data ?? []) as EventRow[]);
     setLoading(false);
   }
@@ -47,13 +56,27 @@ export default function AdminEvents() {
 
   async function del(id: string) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
-    await supabase.from('events').delete().eq('id', id);
-    load();
+    setBusyId(id);
+    setError(null);
+    const { error: err } = await supabase.from('events').delete().eq('id', id);
+    setBusyId(null);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    await load();
   }
 
   async function togglePublish(id: string, v: boolean) {
-    await supabase.from('events').update({ published: v }).eq('id', id);
-    load();
+    setBusyId(id);
+    setError(null);
+    const { error: err } = await supabase.from('events').update({ published: v }).eq('id', id);
+    setBusyId(null);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    await load();
   }
 
   return (
@@ -66,6 +89,11 @@ export default function AdminEvents() {
         }
       />
       <div className="p-8">
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         {loading ? (
           <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />
         ) : (
@@ -115,13 +143,13 @@ export default function AdminEvents() {
                       )}
                     </td>
                     <td className="py-2 pr-4">
-                      <PublishToggle published={r.published} onToggle={v => togglePublish(r.id, v)} />
+                      <PublishToggle published={r.published} disabled={busyId === r.id} onToggle={v => togglePublish(r.id, v)} />
                     </td>
                     <td className="py-2 flex gap-1 items-center">
                       <Link to={`/admin/events/${r.id}/edit`} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
                         <Pencil size={14} />
                       </Link>
-                      <button onClick={() => del(r.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                      <button disabled={busyId === r.id} onClick={() => del(r.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-40">
                         <Trash2 size={14} />
                       </button>
                     </td>

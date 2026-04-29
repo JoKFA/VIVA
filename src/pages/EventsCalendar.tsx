@@ -60,7 +60,7 @@ export default function EventsCalendar() {
       }
     });
     return grouped;
-  }, [currentMonth, currentYear]);
+  }, [currentMonth, currentYear, events]);
 
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
