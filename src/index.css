@@ -24,7 +24,7 @@
   .home-hero-bg {
     background-image: url('/hero-bg.png');
     background-size: cover;
-    background-position: center bottom;
+    background-position: center top;
     background-repeat: no-repeat;
   }
 
@@ -262,7 +262,7 @@
 
 @media (max-width: 900px) {
   .home-hero-bg {
-    background-position: 58% bottom;
+    background-position: 58% top;
   }
 
   .home-hero-grid {
@@ -282,6 +282,6 @@
 
 @media (max-width: 560px) {
   .home-hero-bg {
-    background-position: 61% bottom;
+    background-position: 61% top;
   }
 }

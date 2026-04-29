@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, Eye, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
+import { SafeImage } from '../../components/ui/SafeImage';
 
 interface EventForm {
   slug: string;
@@ -52,6 +54,7 @@ export default function AdminEventEdit() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     if (isNew) return;
@@ -222,7 +225,7 @@ export default function AdminEventEdit() {
             <F label="Capacity"><input type="number" value={form.capacity} onChange={e => set('capacity', Number(e.target.value))} className={inp} /></F>
             <F label="Registered"><input type="number" value={form.registered} onChange={e => set('registered', Number(e.target.value))} className={inp} /></F>
           </div>
-          <F label="Image URL"><input value={form.image_url} onChange={e => set('image_url', e.target.value)} className={inp} /></F>
+          <MediaUpload label="Event Image" kind="image" folder="events" value={form.image_url} onChange={url => set('image_url', url)} previewAlt={form.title} />
         </section>
 
         {/* Lead Contact */}
@@ -254,12 +257,87 @@ export default function AdminEventEdit() {
         <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
           <PublishToggle published={form.published} onToggle={v => set('published', v)} />
           <span className="text-xs text-gray-500">Published</span>
-          <button onClick={save} disabled={saving} className="ml-auto btn-admin-primary flex items-center gap-1.5">
-            <Check size={14} />{saving ? 'Saving…' : isNew ? 'Create Event' : 'Save Changes'}
+          <button type="button" onClick={() => setPreviewOpen(true)} className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Eye size={14} />Preview
+          </button>
+          <button onClick={save} disabled={saving} className="btn-admin-primary flex items-center gap-1.5">
+            <Check size={14} />{saving ? 'Saving...' : isNew ? 'Create Event' : 'Save Changes'}
           </button>
           <button onClick={() => navigate('/admin/events')} className="text-sm text-gray-500 hover:text-gray-800">Cancel</button>
         </div>
       </div>
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-5 py-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Event Preview</p>
+                <h2 className="font-display text-lg font-bold text-gray-900">{form.title || 'Untitled Event'}</h2>
+              </div>
+              <button type="button" onClick={() => setPreviewOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="bg-warm-50">
+              <div className="relative h-72 overflow-hidden bg-warm-900">
+                <SafeImage
+                  src={form.image_url || `https://picsum.photos/1400/600?grayscale&random=${form.slug || 'event'}`}
+                  fallbackSrc={`https://picsum.photos/1400/600?grayscale&random=${form.slug || 'event'}`}
+                  alt={form.title || 'Event preview'}
+                  className="h-full w-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-warm-900 via-warm-900/50 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/60">{form.date || 'Date TBD'} · {form.time || 'Time TBD'}</p>
+                  <h3 className="font-display text-3xl font-extrabold text-white">{form.title || 'Untitled Event'}</h3>
+                </div>
+              </div>
+              <div className="grid gap-6 p-8 lg:grid-cols-[1fr_280px]">
+                <section className="space-y-6">
+                  <div className="border border-warm-200 bg-white p-6">
+                    <h4 className="mb-3 font-display text-lg font-extrabold text-warm-900">About This Event</h4>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-warm-600">{form.description || 'No description yet.'}</p>
+                    {form.tags && (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {form.tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
+                          <span key={tag} className="rounded-sm bg-warm-100 px-2.5 py-0.5 text-xs font-medium text-warm-600">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {isPast && form.recap_summary && (
+                    <div className="border border-warm-200 bg-white p-6">
+                      <h4 className="mb-3 font-display text-lg font-extrabold text-warm-900">Event Recap</h4>
+                      <p className="mb-5 whitespace-pre-wrap text-sm leading-relaxed text-warm-600">{form.recap_summary}</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          ['Volunteers', form.recap_volunteers],
+                          ['Hours Served', form.recap_hours],
+                          ['People Helped', form.recap_beneficiaries],
+                        ].map(([label, value]) => (
+                          <div key={label} className="border border-warm-200 py-4 text-center">
+                            <p className="font-impact text-3xl leading-none text-primary-600">{value}</p>
+                            <p className="mt-1 text-xs font-medium text-warm-500">{label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
+                <aside className="self-start border border-warm-200 bg-white p-5">
+                  <h4 className="mb-4 border-b border-warm-200 pb-3 font-display font-bold text-warm-900">Event Details</h4>
+                  <dl className="space-y-3 text-sm">
+                    <div><dt className="text-xs text-warm-400">Location</dt><dd className="font-medium text-warm-900">{form.location || 'TBD'}</dd></div>
+                    <div><dt className="text-xs text-warm-400">Address</dt><dd className="text-warm-600">{form.address || 'TBD'}</dd></div>
+                    <div><dt className="text-xs text-warm-400">Status</dt><dd className="text-warm-600">{form.status}</dd></div>
+                    <div><dt className="text-xs text-warm-400">Capacity</dt><dd className="text-warm-600">{form.registered} / {form.capacity}</dd></div>
+                  </dl>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

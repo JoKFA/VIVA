@@ -5,8 +5,11 @@ import { ArrowRight, Heart, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import { useStats } from '../hooks/useStats';
+import { usePrograms } from '../hooks/usePrograms';
 import { useHonours, type HonourEntry } from '../hooks/useHonours';
 import { useTestimonials } from '../hooks/useTestimonials';
+import { useHeroSettings } from '../hooks/useHeroSettings';
+import { SafeImage } from '../components/ui/SafeImage';
 import type { Event, Testimonial } from '../types';
 
 const fadeUp = (delay = 0) => ({
@@ -15,7 +18,7 @@ const fadeUp = (delay = 0) => ({
   transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 });
 
-const programs = [
+const defaultHomePrograms = [
   {
     num: '01',
     accent: '#c1272d',
@@ -399,11 +402,25 @@ export default function Home() {
   const prefersReducedMotion = useReducedMotion();
   const { data: upcomingEvents } = useUpcomingEvents();
   const { data: stats } = useStats();
+  const { data: programRows } = usePrograms();
   const { data: honours } = useHonours();
   const { data: testimonials } = useTestimonials();
+  const { data: hero } = useHeroSettings();
   const upcoming = upcomingEvents
     .sort((a, b) => new Date(`${a.date}T00:00:00`).getTime() - new Date(`${b.date}T00:00:00`).getTime())
     .slice(0, 4);
+  const homePrograms = programRows.length > 0
+    ? programRows.map((p, i) => ({
+        num: String(i + 1).padStart(2, '0'),
+        accent: defaultHomePrograms[i % defaultHomePrograms.length].accent,
+        title: p.title,
+        body: p.description,
+        cta: 'Explore',
+        href: p.link,
+        img: p.imageUrl || defaultHomePrograms[i % defaultHomePrograms.length].img,
+        imgAlt: p.title,
+      }))
+    : defaultHomePrograms;
 
   return (
     <div>
@@ -419,24 +436,23 @@ export default function Home() {
               {...(prefersReducedMotion ? {} : fadeUp(0.1))}
               className="text-xs font-bold tracking-widest uppercase text-accent-500 mb-6"
             >
-              Vancouver · Since 2018
+              {hero.eyebrow}
             </motion.p>
 
             <motion.h1
               {...(prefersReducedMotion ? {} : fadeUp(0.2))}
               className="font-impact text-[clamp(4.6rem,8.4vw,7.5rem)] text-white leading-[0.88] tracking-wide mb-7 drop-shadow-[0_2px_18px_rgba(0,0,0,0.36)]"
             >
-              EMPOWER<br />
-              <span className="text-accent-500">CONNECT</span><br />
-              SERVE
+              {hero.titleLine1}<br />
+              <span className="text-accent-500">{hero.titleLine2}</span><br />
+              {hero.titleLine3}
             </motion.h1>
 
             <motion.p
               {...(prefersReducedMotion ? {} : fadeUp(0.3))}
               className="text-white/70 text-[1.0625rem] leading-relaxed max-w-md mb-10"
             >
-              VIVA brings together passionate volunteers and community members across
-              Vancouver — from shoreline cleanups to career fairs, senior care to youth mentorship.
+              {hero.body}
             </motion.p>
 
             <motion.div
@@ -464,8 +480,9 @@ export default function Home() {
             className="home-hero-media relative"
           >
             <div className="relative w-full h-[clamp(360px,38vw,500px)] rounded-2xl overflow-hidden shadow-[0_20px_70px_-26px_rgba(0,0,0,0.65)]">
-              <img
-                src="https://picsum.photos/640/500?grayscale&random=1"
+              <SafeImage
+                src={hero.imageUrl || 'https://picsum.photos/640/500?grayscale&random=1'}
+                fallbackSrc="https://picsum.photos/640/500?grayscale&random=1"
                 alt="VIVA volunteers"
                 className="w-full h-full object-cover opacity-90"
               />
@@ -473,13 +490,13 @@ export default function Home() {
             </div>
             {/* Stat tile: bottom-left */}
             <div className="absolute -bottom-5 -left-6 bg-white rounded-xl px-5 py-4 shadow-soft-lg min-w-[160px]">
-              <p className="font-impact text-4xl text-primary-600 leading-none mb-1">2,500+</p>
-              <p className="text-xs text-warm-600 font-medium">Active Volunteers</p>
+              <p className="font-impact text-4xl text-primary-600 leading-none mb-1">{hero.leftStatValue}</p>
+              <p className="text-xs text-warm-600 font-medium">{hero.leftStatLabel}</p>
             </div>
             {/* Stat tile: top-right */}
             <div className="absolute top-6 -right-5 bg-primary-600 rounded-xl px-5 py-4 shadow-soft-lg">
-              <p className="font-impact text-3xl text-white leading-none mb-1">120</p>
-              <p className="text-xs text-white/75 font-medium">Events / Year</p>
+              <p className="font-impact text-3xl text-white leading-none mb-1">{hero.rightStatValue}</p>
+              <p className="text-xs text-white/75 font-medium">{hero.rightStatLabel}</p>
             </div>
           </motion.div>
         </div>
@@ -510,15 +527,16 @@ export default function Home() {
           </h2>
         </div>
 
-        {programs.map((p, i) => (
+        {homePrograms.map((p, i) => (
           <div
             key={p.num}
             className="group grid grid-cols-1 lg:grid-cols-2 lg:min-h-[340px]"
           >
             {/* Image — alternates sides */}
             <div className={`relative overflow-hidden h-[210px] sm:h-[250px] lg:h-auto ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
-              <img
+              <SafeImage
                 src={p.img}
+                fallbackSrc={defaultHomePrograms[i % defaultHomePrograms.length].img}
                 alt={p.imgAlt}
                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 loading="lazy"

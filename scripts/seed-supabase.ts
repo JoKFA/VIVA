@@ -71,6 +71,7 @@ async function run() {
     description: p.description,
     icon: p.icon,
     link: p.link,
+    image_url: null,
     sort_order: i,
     published: true,
   })));
@@ -113,6 +114,17 @@ async function run() {
     admin_contact_note: c.adminContactNote ?? null,
     published: false,  // admin must explicitly publish each contact
   })));
+  if (contacts[0]) {
+    await upsert('event_volunteer_contact_settings', [{
+      id: true,
+      admin_name: contacts[0].adminName,
+      admin_role: contacts[0].adminRole,
+      admin_wechat_id: contacts[0].adminWechatId ?? null,
+      admin_wechat_qr_url: contacts[0].adminWechatQrUrl ?? null,
+      admin_contact_note: contacts[0].adminContactNote ?? null,
+      published: false,
+    }]);
+  }
 
   // 6. team_members
   await upsert('team_members', teamMembers.map(m => ({
@@ -183,7 +195,6 @@ async function run() {
     quote: t.quote,
     author: t.author,
     role: t.role,
-    image_url: t.imageUrl ?? null,
     published: true,
   })));
 
@@ -218,13 +229,28 @@ async function run() {
     initials: h.initials,
     accent: h.accent,
     quote: h.quote,
-    image_url: null,
     letter_image_url: h.letterImageUrl || null,
     year: null,
     description: null,
     sort_order: i,
     published: true,
   })));
+
+  // 15. homepage_hero_settings
+  await upsert('homepage_hero_settings', [{
+    id: true,
+    eyebrow: 'Vancouver - Since 2018',
+    title_line_1: 'EMPOWER',
+    title_line_2: 'CONNECT',
+    title_line_3: 'SERVE',
+    body: 'VIVA brings together passionate volunteers and community members across Vancouver - from shoreline cleanups to career fairs, senior care to youth mentorship.',
+    image_url: null,
+    left_stat_value: '2,500+',
+    left_stat_label: 'Active Volunteers',
+    right_stat_value: '120',
+    right_stat_label: 'Events / Year',
+    published: true,
+  }]);
 
   console.log('\nSeed complete.');
 }

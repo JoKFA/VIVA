@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
 
 interface HonourRow {
   id: string;
@@ -13,7 +14,6 @@ interface HonourRow {
   initials: string;
   accent: string;
   quote: string;
-  image_url: string;
   letter_image_url: string;
   year: number;
   description: string;
@@ -23,7 +23,7 @@ interface HonourRow {
 
 const EMPTY: Omit<HonourRow, 'id'> = {
   name: '', title: '', organization: '', tier: '', initials: '', accent: '#c1272d',
-  quote: '', image_url: '', letter_image_url: '', year: new Date().getFullYear(),
+  quote: '', letter_image_url: '', year: new Date().getFullYear(),
   description: '', sort_order: 0, published: true,
 };
 
@@ -61,7 +61,7 @@ export default function AdminHonours() {
     setEditing(r.id);
     setForm({
       name: r.name, title: r.title, organization: r.organization, tier: r.tier,
-      initials: r.initials, accent: r.accent, quote: r.quote, image_url: r.image_url ?? '',
+      initials: r.initials, accent: r.accent, quote: r.quote,
       letter_image_url: r.letter_image_url ?? '', year: r.year, description: r.description ?? '',
       sort_order: r.sort_order, published: r.published,
     });
@@ -85,8 +85,9 @@ export default function AdminHonours() {
           </div>
         </div>
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Quote</label><textarea value={form.quote} onChange={e => setForm(p => ({ ...p, quote: e.target.value }))} rows={2} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Image URL</label><input value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Letter Image URL</label><input value={form.letter_image_url} onChange={e => setForm(p => ({ ...p, letter_image_url: e.target.value }))} className={inp} /></div>
+        <div className="col-span-2">
+          <MediaUpload label="Letter Image" kind="image" folder="honours/letters" value={form.letter_image_url} onChange={url => setForm(p => ({ ...p, letter_image_url: url }))} previewAlt={`${form.name} letter`} />
+        </div>
         <div><label className="block text-xs text-gray-500 mb-1">Year</label><input type="number" value={form.year} onChange={e => setForm(p => ({ ...p, year: Number(e.target.value) }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Sort Order</label><input type="number" value={form.sort_order} onChange={e => setForm(p => ({ ...p, sort_order: Number(e.target.value) }))} className={inp} /></div>
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Description</label><textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={2} className={inp} /></div>

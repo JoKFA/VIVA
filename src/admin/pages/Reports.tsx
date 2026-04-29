@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
 
 interface ReportRow {
   id: string;
@@ -74,8 +75,8 @@ export default function AdminReports() {
       <div className="grid grid-cols-2 gap-3">
         <div><label className="block text-xs text-gray-500 mb-1">Year</label><input type="number" value={form.year} onChange={e => setForm(p => ({ ...p, year: Number(e.target.value) }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Title</label><input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Cover Image URL</label><input value={form.cover_image_url} onChange={e => setForm(p => ({ ...p, cover_image_url: e.target.value }))} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">PDF URL</label><input value={form.pdf_url} onChange={e => setForm(p => ({ ...p, pdf_url: e.target.value }))} className={inp} /></div>
+        <MediaUpload label="Cover Image" kind="image" folder="reports/covers" value={form.cover_image_url} onChange={url => setForm(p => ({ ...p, cover_image_url: url }))} previewAlt={form.title} />
+        <MediaUpload label="Report PDF" kind="pdf" folder="reports/pdfs" value={form.pdf_url} onChange={url => setForm(p => ({ ...p, pdf_url: url }))} />
         <div><label className="block text-xs text-gray-500 mb-1">Total Volunteers</label><input type="number" value={form.total_volunteers} onChange={e => setForm(p => ({ ...p, total_volunteers: Number(e.target.value) }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Total Hours</label><input type="number" value={form.total_hours} onChange={e => setForm(p => ({ ...p, total_hours: Number(e.target.value) }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Total Events</label><input type="number" value={form.total_events} onChange={e => setForm(p => ({ ...p, total_events: Number(e.target.value) }))} className={inp} /></div>

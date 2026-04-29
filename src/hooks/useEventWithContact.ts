@@ -18,7 +18,7 @@ interface EventWithContact {
 
 export function useEventWithContact(slug: string) {
   const mockEvent = mockEvents.find(e => e.slug === slug) ?? null;
-  const mockContact = eventVolunteerContacts[slug] ?? null;
+  const mockContact = Object.values(eventVolunteerContacts)[0] ?? null;
 
   const [data, setData] = useState<EventWithContact>({
     event: mockEvent,
@@ -53,15 +53,13 @@ export function useEventWithContact(slug: string) {
         let contact: EventVolunteerContact | null = null;
         if (!event.isPast) {
           const { data: contactRow } = await supabase
-            .from('event_volunteer_contacts')
+            .from('event_volunteer_contact_settings')
             .select('*')
-            .eq('event_slug', slug)
             .eq('published', true)
-            .single();
+            .maybeSingle();
 
           if (contactRow) {
             contact = {
-              eventSlug: contactRow.event_slug as string,
               adminName: contactRow.admin_name as string,
               adminRole: contactRow.admin_role as string,
               adminWechatId: contactRow.admin_wechat_id as string | undefined,

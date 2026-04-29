@@ -77,9 +77,11 @@ CREATE TABLE IF NOT EXISTS programs (
   description text,
   icon       text,
   link       text,
+  image_url  text,
   sort_order integer DEFAULT 0,
   published  boolean DEFAULT true
 );
+ALTER TABLE programs ADD COLUMN IF NOT EXISTS image_url text;
 
 ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "public_read" ON programs;
@@ -155,6 +157,35 @@ DROP POLICY IF EXISTS "public_read" ON event_volunteer_contacts;
 CREATE POLICY "public_read" ON event_volunteer_contacts FOR SELECT TO anon, authenticated USING (published = true);
 DROP POLICY IF EXISTS "admin_all" ON event_volunteer_contacts;
 CREATE POLICY "admin_all" ON event_volunteer_contacts FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
+
+-- -----------------------------------------------------------------------------
+-- 5b. global event volunteer contact settings
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS event_volunteer_contact_settings (
+  id                  boolean PRIMARY KEY DEFAULT true,
+  admin_name          text,
+  admin_role          text,
+  admin_wechat_id     text,
+  admin_wechat_qr_url text,
+  admin_contact_note  text,
+  published           boolean DEFAULT true,
+  updated_at          timestamptz DEFAULT now(),
+  CONSTRAINT event_volunteer_contact_settings_singleton CHECK (id)
+);
+
+ALTER TABLE event_volunteer_contact_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "public_read" ON event_volunteer_contact_settings;
+CREATE POLICY "public_read" ON event_volunteer_contact_settings
+  FOR SELECT TO anon, authenticated USING (published = true);
+DROP POLICY IF EXISTS "admin_all" ON event_volunteer_contact_settings;
+CREATE POLICY "admin_all" ON event_volunteer_contact_settings
+  FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
+
+INSERT INTO event_volunteer_contact_settings (
+  id, admin_name, admin_role, admin_wechat_id, admin_wechat_qr_url, admin_contact_note, published
+) VALUES (
+  true, 'VIVA Events Team', 'Event Volunteer Coordinator', '', '', 'Mention the event name when adding the coordinator.', true
+) ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- 6. team_members
@@ -340,6 +371,52 @@ DROP POLICY IF EXISTS "public_read" ON honours_carousel_entries;
 CREATE POLICY "public_read" ON honours_carousel_entries FOR SELECT TO anon, authenticated USING (published = true);
 DROP POLICY IF EXISTS "admin_all" ON honours_carousel_entries;
 CREATE POLICY "admin_all" ON honours_carousel_entries FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
+
+-- -----------------------------------------------------------------------------
+-- 15. homepage hero settings
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS homepage_hero_settings (
+  id               boolean PRIMARY KEY DEFAULT true,
+  eyebrow          text,
+  title_line_1     text,
+  title_line_2     text,
+  title_line_3     text,
+  body             text,
+  image_url        text,
+  left_stat_value  text,
+  left_stat_label  text,
+  right_stat_value text,
+  right_stat_label text,
+  published        boolean DEFAULT true,
+  updated_at       timestamptz DEFAULT now(),
+  CONSTRAINT homepage_hero_settings_singleton CHECK (id)
+);
+
+ALTER TABLE homepage_hero_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "public_read" ON homepage_hero_settings;
+CREATE POLICY "public_read" ON homepage_hero_settings
+  FOR SELECT TO anon, authenticated USING (published = true);
+DROP POLICY IF EXISTS "admin_all" ON homepage_hero_settings;
+CREATE POLICY "admin_all" ON homepage_hero_settings
+  FOR ALL TO authenticated USING (is_admin()) WITH CHECK (is_admin());
+
+INSERT INTO homepage_hero_settings (
+  id, eyebrow, title_line_1, title_line_2, title_line_3, body, image_url,
+  left_stat_value, left_stat_label, right_stat_value, right_stat_label, published
+) VALUES (
+  true,
+  'Vancouver - Since 2018',
+  'EMPOWER',
+  'CONNECT',
+  'SERVE',
+  'VIVA brings together passionate volunteers and community members across Vancouver - from shoreline cleanups to career fairs, senior care to youth mentorship.',
+  '',
+  '2,500+',
+  'Active Volunteers',
+  '120',
+  'Events / Year',
+  true
+) ON CONFLICT (id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------
 -- Supabase Storage bucket (run separately or via Supabase dashboard)
