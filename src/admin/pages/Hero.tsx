@@ -36,6 +36,15 @@ const EMPTY: HeroForm = {
   published: true,
 };
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs text-gray-500">{label}</label>
+      {children}
+    </div>
+  );
+}
+
 export default function AdminHero() {
   const [form, setForm] = useState<HeroForm>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -95,12 +104,6 @@ export default function AdminHero() {
   }
 
   const input = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400';
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="mb-1 block text-xs text-gray-500">{label}</label>
-      {children}
-    </div>
-  );
 
   if (loading) return <div className="p-8 animate-pulse"><div className="h-20 rounded-lg bg-gray-100" /></div>;
 
