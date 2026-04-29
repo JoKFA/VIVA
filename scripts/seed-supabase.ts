@@ -5,6 +5,7 @@
  * Requires: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in environment.
  */
 import { createClient } from '@supabase/supabase-js';
+import { createHash } from 'node:crypto';
 import {
   siteSettings,
   stats,
@@ -35,7 +36,7 @@ const sb = createClient(url, key);
 async function run() {
   console.log('Seeding Supabase from mockData...\n');
 
-  // 1. site_settings (single row — upsert by fixed id)
+  // 1. site_settings (single row, upsert by fixed id)
   const SETTINGS_ID = '00000000-0000-0000-0000-000000000001';
   await upsert('site_settings', [{
     id: SETTINGS_ID,
@@ -54,7 +55,7 @@ async function run() {
 
   // 2. stats
   await upsert('stats', stats.map((s, i) => ({
-    id: pad(s.id),
+    id: stableUuid(s.id),
     label: s.label,
     value: s.value,
     suffix: s.suffix ?? null,
@@ -65,18 +66,19 @@ async function run() {
 
   // 3. programs
   await upsert('programs', programs.map((p, i) => ({
-    id: pad(p.id),
+    id: stableUuid(p.id),
     title: p.title,
     description: p.description,
     icon: p.icon,
     link: p.link,
+    image_url: null,
     sort_order: i,
     published: true,
   })));
 
   // 4. events
   await upsert('events', events.map(e => ({
-    id: pad(e.id),
+    id: stableUuid(e.id),
     slug: e.slug,
     title: e.title,
     description: e.description,
@@ -103,7 +105,7 @@ async function run() {
   // 5. event_volunteer_contacts
   const contacts = Object.values(eventVolunteerContacts);
   await upsert('event_volunteer_contacts', contacts.map((c, i) => ({
-    id: pad(String(i + 1), 'evc'),
+    id: stableUuid(String(i + 1), 'evc'),
     event_slug: c.eventSlug,
     admin_name: c.adminName,
     admin_role: c.adminRole,
@@ -112,10 +114,21 @@ async function run() {
     admin_contact_note: c.adminContactNote ?? null,
     published: false,  // admin must explicitly publish each contact
   })));
+  if (contacts[0]) {
+    await upsert('event_volunteer_contact_settings', [{
+      id: true,
+      admin_name: contacts[0].adminName,
+      admin_role: contacts[0].adminRole,
+      admin_wechat_id: contacts[0].adminWechatId ?? null,
+      admin_wechat_qr_url: contacts[0].adminWechatQrUrl ?? null,
+      admin_contact_note: contacts[0].adminContactNote ?? null,
+      published: false,
+    }]);
+  }
 
   // 6. team_members
   await upsert('team_members', teamMembers.map(m => ({
-    id: pad(m.id, 'tm'),
+    id: stableUuid(m.id, 'tm'),
     name: m.name,
     role: m.role,
     bio: m.bio,
@@ -127,8 +140,8 @@ async function run() {
   })));
 
   // 7. awards
-  await upsert('awards', awards.map((a, i) => ({
-    id: pad(a.id, 'aw'),
+  await upsert('awards', awards.map(a => ({
+    id: stableUuid(a.id, 'aw'),
     name: a.name,
     years: a.years,
     description: a.description,
@@ -142,7 +155,7 @@ async function run() {
 
   // 8. annual_reports
   await upsert('annual_reports', annualReports.map(r => ({
-    id: pad(r.id, 'ar'),
+    id: stableUuid(r.id, 'ar'),
     year: r.year,
     title: r.title,
     highlights: r.highlights,
@@ -156,7 +169,7 @@ async function run() {
 
   // 9. volunteer_roles
   await upsert('volunteer_roles', volunteerRoles.map(v => ({
-    id: pad(v.id, 'vr'),
+    id: stableUuid(v.id, 'vr'),
     title: v.title,
     program: v.program,
     description: v.description,
@@ -168,7 +181,7 @@ async function run() {
 
   // 10. partners
   await upsert('partners', partners.map((p, i) => ({
-    id: pad(p.id, 'pt'),
+    id: stableUuid(p.id, 'pt'),
     name: p.name,
     logo_url: p.logoUrl,
     website_url: p.websiteUrl ?? null,
@@ -178,17 +191,16 @@ async function run() {
 
   // 11. testimonials
   await upsert('testimonials', testimonials.map(t => ({
-    id: pad(t.id, 'ts'),
+    id: stableUuid(t.id, 'ts'),
     quote: t.quote,
     author: t.author,
     role: t.role,
-    image_url: t.imageUrl ?? null,
     published: true,
   })));
 
   // 12. faqs
   await upsert('faqs', faqs.map((f, i) => ({
-    id: pad(f.id, 'fq'),
+    id: stableUuid(f.id, 'fq'),
     question: f.question,
     answer: f.answer,
     category: f.category ?? null,
@@ -198,7 +210,7 @@ async function run() {
 
   // 13. contact_info
   await upsert('contact_info', contactInfo.map((c, i) => ({
-    id: pad(c.id, 'ci'),
+    id: stableUuid(c.id, 'ci'),
     type: c.type,
     title: c.title,
     value: c.value,
@@ -209,7 +221,7 @@ async function run() {
 
   // 14. honours_carousel_entries
   await upsert('honours_carousel_entries', honours.map((h, i) => ({
-    id: pad(h.id, 'hc'),
+    id: stableUuid(h.id, 'hc'),
     name: h.name,
     title: h.title,
     organization: h.organization,
@@ -217,13 +229,28 @@ async function run() {
     initials: h.initials,
     accent: h.accent,
     quote: h.quote,
-    image_url: null,
     letter_image_url: h.letterImageUrl || null,
     year: null,
     description: null,
     sort_order: i,
     published: true,
   })));
+
+  // 15. homepage_hero_settings
+  await upsert('homepage_hero_settings', [{
+    id: true,
+    eyebrow: 'Vancouver - Since 2018',
+    title_line_1: 'EMPOWER',
+    title_line_2: 'CONNECT',
+    title_line_3: 'SERVE',
+    body: 'VIVA brings together passionate volunteers and community members across Vancouver - from shoreline cleanups to career fairs, senior care to youth mentorship.',
+    image_url: null,
+    left_stat_value: '2,500+',
+    left_stat_label: 'Active Volunteers',
+    right_stat_value: '120',
+    right_stat_label: 'Events / Year',
+    published: true,
+  }]);
 
   console.log('\nSeed complete.');
 }
@@ -237,10 +264,19 @@ async function upsert(table: string, rows: Record<string, unknown>[]) {
   }
 }
 
-// Convert short numeric IDs like '1' to stable UUID-like strings
-function pad(id: string, prefix = 'xx'): string {
-  const n = id.padStart(12, '0');
-  return `00000000-${prefix.padEnd(4,'0').slice(0,4)}-0000-0000-${n}`;
+function stableUuid(id: string, namespace = 'default'): string {
+  const hex = createHash('sha1')
+    .update(`${namespace}:${id}`)
+    .digest('hex')
+    .slice(0, 32);
+
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20, 32),
+  ].join('-');
 }
 
 run().catch(err => { console.error(err); process.exit(1); });

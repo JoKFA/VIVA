@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
 import { useEventWithContact } from '../hooks/useEventWithContact';
+import { SafeImage } from '../components/ui/SafeImage';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -56,15 +57,12 @@ export default function EventDetail() {
     <div>
       {/* Full-bleed image hero */}
       <div className="relative w-full h-[50vh] min-h-[340px] bg-warm-900 overflow-hidden">
-        {event.imageUrl ? (
-          <img src={event.imageUrl} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-        ) : (
-          <img
-            src={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
-            alt={event.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
-          />
-        )}
+        <SafeImage
+          src={event.imageUrl || `https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          fallbackSrc={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          alt={event.title}
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
         {/* overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-warm-900 via-warm-900/60 to-transparent" />
 

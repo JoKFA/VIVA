@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
 
 interface TeamRow {
   id: string;
@@ -64,7 +65,7 @@ export default function AdminTeam() {
         <div><label className="block text-xs text-gray-500 mb-1">Name</label><input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Role</label><input value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))} className={inp} /></div>
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Bio</label><textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} rows={2} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Image URL</label><input value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))} className={inp} /></div>
+        <MediaUpload label="Portrait Image" kind="image" folder="team" value={form.image_url} onChange={url => setForm(p => ({ ...p, image_url: url }))} previewAlt={form.name} />
         <div><label className="block text-xs text-gray-500 mb-1">LinkedIn URL</label><input value={form.linked_in_url} onChange={e => setForm(p => ({ ...p, linked_in_url: e.target.value }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Sort Order</label><input type="number" value={form.sort_order} onChange={e => setForm(p => ({ ...p, sort_order: Number(e.target.value) }))} className={inp} /></div>
         <div className="flex items-center gap-2 pt-5">

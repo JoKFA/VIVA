@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
 
 interface AwardRow {
   id: string;
@@ -77,7 +78,7 @@ export default function AdminAwards() {
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Eligibility</label><textarea value={form.eligibility} onChange={e => setForm(p => ({ ...p, eligibility: e.target.value }))} rows={2} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Timeline</label><input value={form.timeline} onChange={e => setForm(p => ({ ...p, timeline: e.target.value }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Application URL</label><input value={form.application_url} onChange={e => setForm(p => ({ ...p, application_url: e.target.value }))} className={inp} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">PDF URL</label><input value={form.pdf_url} onChange={e => setForm(p => ({ ...p, pdf_url: e.target.value }))} className={inp} /></div>
+        <MediaUpload label="Award PDF" kind="pdf" folder="awards/pdfs" value={form.pdf_url} onChange={url => setForm(p => ({ ...p, pdf_url: url }))} />
       </div>
       <div className="flex items-center gap-3">
         <PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} />

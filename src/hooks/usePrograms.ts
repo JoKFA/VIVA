@@ -14,7 +14,7 @@ export function usePrograms() {
       try {
         const { data: rows, error: err } = await supabase
           .from('programs')
-          .select('id, title, description, icon, link, sort_order')
+          .select('id, title, description, icon, link, image_url, sort_order')
           .eq('published', true)
           .order('sort_order');
         if (cancelled) return;
@@ -26,6 +26,7 @@ export function usePrograms() {
             description: r.description as string,
             icon: r.icon as string,
             link: r.link as string,
+            imageUrl: r.image_url as string | undefined,
           })));
         }
       } catch (e) {

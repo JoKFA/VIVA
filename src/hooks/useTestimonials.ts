@@ -14,7 +14,7 @@ export function useTestimonials() {
       try {
         const { data: rows, error: err } = await supabase
           .from('testimonials')
-          .select('id, quote, author, role, image_url')
+          .select('id, quote, author, role')
           .eq('published', true);
         if (cancelled) return;
         if (err) { setError(err.message); return; }
@@ -24,7 +24,6 @@ export function useTestimonials() {
             quote: r.quote as string,
             author: r.author as string,
             role: r.role as string,
-            imageUrl: r.image_url as string | undefined,
           })));
         }
       } catch (e) {

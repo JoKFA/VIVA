@@ -27,7 +27,7 @@ export interface Event {
 }
 
 export interface EventVolunteerContact {
-  eventSlug: string;
+  eventSlug?: string;
   adminName: string;
   adminRole: string;
   adminWechatId?: string;
@@ -114,7 +114,6 @@ export interface Testimonial {
   quote: string;
   author: string;
   role: string;
-  imageUrl?: string;
 }
 
 export interface FAQ {
@@ -171,4 +170,5 @@ export interface Program {
   description: string;
   icon: string;
   link: string;
+  imageUrl?: string;
 }

@@ -32,6 +32,7 @@ const AdminTestimonials = lazy(() => import('./admin/pages/Testimonials'));
 const AdminFaqs = lazy(() => import('./admin/pages/Faqs'));
 const AdminContactInfo = lazy(() => import('./admin/pages/ContactInfo'));
 const AdminStats = lazy(() => import('./admin/pages/Stats'));
+const AdminHero = lazy(() => import('./admin/pages/Hero'));
 const AdminPrograms = lazy(() => import('./admin/pages/Programs'));
 const AdminSettings = lazy(() => import('./admin/pages/Settings'));
 const AdminHonours = lazy(() => import('./admin/pages/Honours'));
@@ -85,6 +86,7 @@ function App() {
             <Route path="faqs" element={<S><AdminFaqs /></S>} />
             <Route path="contact-info" element={<S><AdminContactInfo /></S>} />
             <Route path="stats" element={<S><AdminStats /></S>} />
+            <Route path="hero" element={<S><AdminHero /></S>} />
             <Route path="programs" element={<S><AdminPrograms /></S>} />
             <Route path="settings" element={<S><AdminSettings /></S>} />
             <Route path="honours" element={<S><AdminHonours /></S>} />

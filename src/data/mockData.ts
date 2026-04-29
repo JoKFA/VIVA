@@ -611,21 +611,18 @@ export const testimonials: Testimonial[] = [
     quote: 'Volunteering with VIVA has been one of the most rewarding experiences of my life. I came to help others but ended up growing so much myself.',
     author: 'Sarah M.',
     role: 'Volunteer since 2022',
-    imageUrl: '/images/testimonials/sarah.jpg',
   },
   {
     id: '2',
     quote: 'As a newcomer to Canada, VIVA helped me feel welcomed and connected. Now I volunteer to help others have the same experience.',
     author: 'Ahmed K.',
     role: 'Newcomer Mentor',
-    imageUrl: '/images/testimonials/ahmed.jpg',
   },
   {
     id: '3',
     quote: 'The youth mentorship program gave me the confidence and skills I needed to succeed in university. I\'m forever grateful.',
     author: 'Emma L.',
     role: 'Former Mentee',
-    imageUrl: '/images/testimonials/emma.jpg',
   },
 ];
 

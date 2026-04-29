@@ -5,14 +5,26 @@
  *   VITE_SUPABASE_URL       https://<project>.supabase.co
  *   VITE_SUPABASE_ANON_KEY  eyJ...
  *
+ * The Vercel Supabase integration can prefix public variables with
+ * SUPABASE_VITE_. Those aliases are supported via vite.config.ts envPrefix.
+ *
  * Dev guard: throws immediately if vars are missing so the problem is
  * obvious. In production the app degrades gracefully — all hooks fall
  * back to mockData, so the public site still renders.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const env = import.meta.env as Record<string, string | undefined>;
+
+const url =
+  env.VITE_SUPABASE_URL ||
+  env.SUPABASE_VITE_SUPABASESUPABASE_URL;
+
+const key =
+  env.VITE_SUPABASE_ANON_KEY ||
+  env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  env.SUPABASE_VITE_SUPABASESUPABASE_ANON_KEY ||
+  env.SUPABASE_VITE_SUPABASESUPABASE_PUBLISHABLE_KEY;
 
 let supabase: SupabaseClient;
 
