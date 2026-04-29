@@ -122,7 +122,7 @@ async function run() {
       admin_wechat_id: contacts[0].adminWechatId ?? null,
       admin_wechat_qr_url: contacts[0].adminWechatQrUrl ?? null,
       admin_contact_note: contacts[0].adminContactNote ?? null,
-      published: false,
+      published: true,
     }]);
   }
 

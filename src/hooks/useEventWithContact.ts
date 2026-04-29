@@ -16,13 +16,14 @@ interface EventWithContact {
   contact: EventVolunteerContact | null;
 }
 
+const fallbackVolunteerContact = Object.values(eventVolunteerContacts)[0] ?? null;
+
 export function useEventWithContact(slug: string) {
   const mockEvent = mockEvents.find(e => e.slug === slug) ?? null;
-  const mockContact = Object.values(eventVolunteerContacts)[0] ?? null;
 
   const [data, setData] = useState<EventWithContact>({
     event: mockEvent,
-    contact: mockContact,
+    contact: fallbackVolunteerContact,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function useEventWithContact(slug: string) {
         const event = dbRowToEvent(eventRow);
 
         // Only fetch contact for upcoming events
-        let contact: EventVolunteerContact | null = null;
+        let contact: EventVolunteerContact | null = fallbackVolunteerContact;
         if (!event.isPast) {
           const { data: contactRow } = await supabase
             .from('event_volunteer_contact_settings')

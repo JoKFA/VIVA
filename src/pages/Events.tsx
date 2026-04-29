@@ -6,9 +6,11 @@ import { supabase } from '../lib/supabase';
 import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import { useEventYears } from '../hooks/useEventYears';
 import { useEventsByYear } from '../hooks/useEventsByYear';
-import type { Event } from '../types';
+import { eventVolunteerContacts } from '../data/mockData';
+import type { Event, EventVolunteerContact } from '../types';
 
 type EventItem = Event;
+const fallbackVolunteerContact = Object.values(eventVolunteerContacts)[0] as EventVolunteerContact | undefined;
 
 const FILTERS = [
   { key: 'all', label: 'All Events' },
@@ -340,8 +342,8 @@ export default function Events() {
   const [filter, setFilter] = useState('all');
   const [openYears, setOpenYears] = useState<Set<number>>(new Set());
   const [contactEvent, setContactEvent] = useState<EventItem | null>(null);
-  const [contactForSlug, setContactForSlug] = useState<import('../types').EventVolunteerContact | null>(null);
-  const [globalContact, setGlobalContact] = useState<import('../types').EventVolunteerContact | null>(null);
+  const [contactForSlug, setContactForSlug] = useState<EventVolunteerContact | null>(null);
+  const [globalContact, setGlobalContact] = useState<EventVolunteerContact | null>(fallbackVolunteerContact ?? null);
 
   const { data: upcomingEvents } = useUpcomingEvents();
   const { data: pastYears } = useEventYears();
@@ -385,9 +387,9 @@ export default function Events() {
     });
   };
 
-  function handleContactAdmin(event: EventItem, contact: import('../types').EventVolunteerContact | null) {
+  function handleContactAdmin(event: EventItem, contact: EventVolunteerContact | null) {
     setContactEvent(event);
-    setContactForSlug(contact);
+    setContactForSlug(contact ?? fallbackVolunteerContact ?? null);
   }
 
   return (
