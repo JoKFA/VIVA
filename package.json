@@ -30,6 +30,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.10.24",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
@@ -41,5 +42,10 @@
     "typescript-eslint": "^8.46.3",
     "vite": "^7.2.2",
     "vitest": "^4.1.5"
+  },
+  "overrides": {
+    "sucrase": {
+      "glob": "^12.0.0"
+    }
   }
 }
