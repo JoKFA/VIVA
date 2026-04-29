@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
+import { supabase } from '../lib/supabase';
 import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import { useEventYears } from '../hooks/useEventYears';
 import { useEventsByYear } from '../hooks/useEventsByYear';
@@ -340,9 +341,31 @@ export default function Events() {
   const [openYears, setOpenYears] = useState<Set<number>>(new Set());
   const [contactEvent, setContactEvent] = useState<EventItem | null>(null);
   const [contactForSlug, setContactForSlug] = useState<import('../types').EventVolunteerContact | null>(null);
+  const [globalContact, setGlobalContact] = useState<import('../types').EventVolunteerContact | null>(null);
 
   const { data: upcomingEvents } = useUpcomingEvents();
   const { data: pastYears } = useEventYears();
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadContact() {
+      const { data } = await supabase
+        .from('event_volunteer_contact_settings')
+        .select('*')
+        .eq('published', true)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setGlobalContact({
+        adminName: data.admin_name as string,
+        adminRole: data.admin_role as string,
+        adminWechatId: data.admin_wechat_id as string | undefined,
+        adminWechatQrUrl: data.admin_wechat_qr_url as string | undefined,
+        adminContactNote: data.admin_contact_note as string | undefined,
+      });
+    }
+    loadContact();
+    return () => { cancelled = true; };
+  }, []);
 
   const filteredUpcoming = upcomingEvents
     .sort((a, b) => parseEventDate(a.date).date.getTime() - parseEventDate(b.date).date.getTime())
@@ -410,7 +433,7 @@ export default function Events() {
             </div>
           ) : (
             <>
-              {featured && <FeaturedEvent event={featured} onContactAdmin={(ev) => handleContactAdmin(ev, null)} />}
+              {featured && <FeaturedEvent event={featured} onContactAdmin={(ev) => handleContactAdmin(ev, globalContact)} />}
               {rest.length > 0 && (
                 <div className="mt-8">
                   <h2 className="mb-0 font-display text-base font-bold uppercase tracking-widest text-warm-400">More Events</h2>
@@ -452,7 +475,7 @@ export default function Events() {
             <h2 className="font-display text-2xl font-extrabold text-white">Volunteer at our next event</h2>
             <p className="mt-1 text-sm text-white/70">No experience needed. Just your time and enthusiasm.</p>
           </div>
-          <button type="button" onClick={() => featured && handleContactAdmin(featured, null)} className="inline-flex flex-shrink-0 items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-primary-600 transition-all hover:-translate-y-0.5 hover:bg-warm-50">
+          <button type="button" onClick={() => featured && handleContactAdmin(featured, globalContact)} className="inline-flex flex-shrink-0 items-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-primary-600 transition-all hover:-translate-y-0.5 hover:bg-warm-50">
             Become a Volunteer
           </button>
         </div>

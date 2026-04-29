@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
 import { useEventWithContact } from '../hooks/useEventWithContact';
+import { SafeImage } from '../components/ui/SafeImage';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
@@ -39,9 +40,8 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-warm-50 pt-20">
         <div className="text-center">
-          <p className="font-impact text-[5rem] text-warm-200 leading-none">404</p>
-          <h1 className="font-display font-extrabold text-2xl text-warm-900 mb-3">Event Not Found</h1>
-          <p className="text-warm-600 mb-6 text-sm">The event you're looking for doesn't exist or has been removed.</p>
+          <h1 className="font-display font-extrabold text-2xl text-warm-900 mb-3">Event Not Currently Available</h1>
+          <p className="text-warm-600 mb-6 text-sm">This event is not visible on the public site right now.</p>
           <Link to="/events" className="btn-primary">View All Events</Link>
         </div>
       </div>
@@ -56,15 +56,12 @@ export default function EventDetail() {
     <div>
       {/* Full-bleed image hero */}
       <div className="relative w-full h-[50vh] min-h-[340px] bg-warm-900 overflow-hidden">
-        {event.imageUrl ? (
-          <img src={event.imageUrl} alt={event.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-        ) : (
-          <img
-            src={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
-            alt={event.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-40"
-          />
-        )}
+        <SafeImage
+          src={event.imageUrl || `https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          fallbackSrc={`https://picsum.photos/1400/600?grayscale&random=${event.id}`}
+          alt={event.title}
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
         {/* overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-warm-900 via-warm-900/60 to-transparent" />
 

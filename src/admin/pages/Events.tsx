@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
+import { MediaUpload } from '../components/MediaUpload';
 
 interface EventRow {
   id: string;
@@ -16,6 +17,24 @@ interface EventRow {
   recap: unknown;
   published: boolean;
 }
+
+interface GlobalContactForm {
+  admin_name: string;
+  admin_role: string;
+  admin_wechat_id: string;
+  admin_wechat_qr_url: string;
+  admin_contact_note: string;
+  published: boolean;
+}
+
+const EMPTY_CONTACT: GlobalContactForm = {
+  admin_name: '',
+  admin_role: 'Event Volunteer Coordinator',
+  admin_wechat_id: '',
+  admin_wechat_qr_url: '',
+  admin_contact_note: '',
+  published: true,
+};
 
 function isPastRow(r: EventRow): boolean {
   if (r.is_past_override !== null && r.is_past_override !== undefined) return r.is_past_override;
@@ -36,6 +55,8 @@ export default function AdminEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [contact, setContact] = useState<GlobalContactForm>(EMPTY_CONTACT);
+  const [contactSaving, setContactSaving] = useState(false);
 
   async function load() {
     setError(null);
@@ -52,7 +73,33 @@ export default function AdminEvents() {
     setRows((data ?? []) as EventRow[]);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  async function loadContact() {
+    const { data } = await supabase
+      .from('event_volunteer_contact_settings')
+      .select('*')
+      .maybeSingle();
+    if (data) {
+      setContact({
+        admin_name: String(data.admin_name ?? ''),
+        admin_role: String(data.admin_role ?? ''),
+        admin_wechat_id: String(data.admin_wechat_id ?? ''),
+        admin_wechat_qr_url: String(data.admin_wechat_qr_url ?? ''),
+        admin_contact_note: String(data.admin_contact_note ?? ''),
+        published: Boolean(data.published ?? true),
+      });
+    }
+  }
+  useEffect(() => { load(); loadContact(); }, []);
+
+  async function saveContact() {
+    setContactSaving(true);
+    setError(null);
+    const { error: err } = await supabase
+      .from('event_volunteer_contact_settings')
+      .upsert([{ id: true, ...contact }], { onConflict: 'id' });
+    setContactSaving(false);
+    if (err) setError(err.message);
+  }
 
   async function del(id: string) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
@@ -88,12 +135,46 @@ export default function AdminEvents() {
           </Link>
         }
       />
-      <div className="p-8">
+      <div className="p-8 space-y-6">
         {error && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Global Join-as-Volunteer Contact</h2>
+              <p className="text-xs text-gray-500 mt-0.5">Used by every upcoming event popup.</p>
+            </div>
+            <button onClick={saveContact} disabled={contactSaving} className="btn-admin-primary text-sm">
+              {contactSaving ? 'Saving...' : 'Save Contact'}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Name</label>
+              <input value={contact.admin_name} onChange={e => setContact(p => ({ ...p, admin_name: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Title</label>
+              <input value={contact.admin_role} onChange={e => setContact(p => ({ ...p, admin_role: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">WeChat ID</label>
+              <input value={contact.admin_wechat_id} onChange={e => setContact(p => ({ ...p, admin_wechat_id: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
+            </div>
+            <MediaUpload label="WeChat QR Code" kind="image" folder="event-contact" value={contact.admin_wechat_qr_url} onChange={url => setContact(p => ({ ...p, admin_wechat_qr_url: url }))} previewAlt="WeChat QR code" />
+            <div className="col-span-2">
+              <label className="block text-xs text-gray-500 mb-1">Contact Note</label>
+              <textarea value={contact.admin_contact_note} onChange={e => setContact(p => ({ ...p, admin_contact_note: e.target.value }))} rows={2} className="w-full border rounded px-2 py-1.5 text-sm" />
+            </div>
+            <div className="col-span-2 flex items-center gap-3">
+              <PublishToggle published={contact.published} onToggle={v => setContact(p => ({ ...p, published: v }))} />
+              <span className="text-xs text-gray-500">Show contact popup on upcoming events</span>
+            </div>
+          </div>
+        </section>
         {loading ? (
           <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />
         ) : (

@@ -4,8 +4,8 @@ import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
 
-interface TestimonialRow { id: string; quote: string; author: string; role: string; image_url: string; published: boolean; }
-const EMPTY: Omit<TestimonialRow, 'id'> = { quote: '', author: '', role: '', image_url: '', published: true };
+interface TestimonialRow { id: string; quote: string; author: string; role: string; published: boolean; }
+const EMPTY: Omit<TestimonialRow, 'id'> = { quote: '', author: '', role: '', published: true };
 
 export default function AdminTestimonials() {
   const [rows, setRows] = useState<TestimonialRow[]>([]);
@@ -39,7 +39,7 @@ export default function AdminTestimonials() {
 
   function startEdit(r: TestimonialRow) {
     setEditing(r.id);
-    setForm({ quote: r.quote, author: r.author, role: r.role, image_url: r.image_url, published: r.published });
+    setForm({ quote: r.quote, author: r.author, role: r.role, published: r.published });
   }
 
   const inp = "w-full border border-gray-200 rounded px-2 py-1.5 text-sm";
@@ -50,7 +50,6 @@ export default function AdminTestimonials() {
         <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Quote</label><textarea value={form.quote} onChange={e => setForm(p => ({ ...p, quote: e.target.value }))} rows={3} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Author</label><input value={form.author} onChange={e => setForm(p => ({ ...p, author: e.target.value }))} className={inp} /></div>
         <div><label className="block text-xs text-gray-500 mb-1">Role</label><input value={form.role} onChange={e => setForm(p => ({ ...p, role: e.target.value }))} className={inp} /></div>
-        <div className="col-span-2"><label className="block text-xs text-gray-500 mb-1">Image URL</label><input value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))} className={inp} /></div>
       </div>
       <div className="flex items-center gap-3">
         <PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} />
@@ -74,7 +73,6 @@ export default function AdminTestimonials() {
             {editing === r.id ? <FormFields /> : (
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  {r.image_url && <img src={r.image_url} alt={r.author} className="w-10 h-10 rounded-full object-cover bg-gray-100 shrink-0" />}
                   <div>
                     <div className="text-sm text-gray-700 italic line-clamp-2">"{r.quote}"</div>
                     <div className="text-xs text-gray-500 mt-0.5">{r.author} · {r.role}</div>
