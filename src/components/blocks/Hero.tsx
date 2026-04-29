@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 interface CTAButton {
@@ -17,7 +17,7 @@ interface HeroProps {
 export function Hero({ title, subtitle, description, ctaButtons = [] }: HeroProps) {
   const prefersReducedMotion = useReducedMotion();
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -28,19 +28,19 @@ export function Hero({ title, subtitle, description, ctaButtons = [] }: HeroProp
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: prefersReducedMotion ? 0 : 30 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: prefersReducedMotion ? 0 : 0.6,
-        ease: 'easeOut',
+        ease: 'easeOut' as const,
       },
     },
   };
 
-  const circleVariants = {
+  const circleVariants: Variants = {
     animate: {
       scale: prefersReducedMotion ? 1 : [1, 1.2, 1],
       x: prefersReducedMotion ? 0 : [0, 30, 0],
@@ -48,12 +48,12 @@ export function Hero({ title, subtitle, description, ctaButtons = [] }: HeroProp
       transition: {
         duration: 8,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
 
-  const circleVariants2 = {
+  const circleVariants2: Variants = {
     animate: {
       scale: prefersReducedMotion ? 1 : [1.2, 1, 1.2],
       x: prefersReducedMotion ? 0 : [0, -40, 0],
@@ -61,12 +61,12 @@ export function Hero({ title, subtitle, description, ctaButtons = [] }: HeroProp
       transition: {
         duration: 10,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
 
-  const circleVariants3 = {
+  const circleVariants3: Variants = {
     animate: {
       scale: prefersReducedMotion ? 1 : [1, 1.3, 1],
       x: prefersReducedMotion ? 0 : [0, 20, 0],
@@ -74,7 +74,7 @@ export function Hero({ title, subtitle, description, ctaButtons = [] }: HeroProp
       transition: {
         duration: 12,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
