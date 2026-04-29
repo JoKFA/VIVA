@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ScrollToTop from './components/layout/ScrollToTop';
+import { Analytics } from '@vercel/analytics/react';
 
 // Pages - lazy load to identify issues
 import { lazy, Suspense } from 'react';
@@ -22,6 +23,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <Analytics />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route
