@@ -68,3 +68,8 @@ test-results/
 *.trace.zip
 *.webm
 *.mp4
+.gstack/
+
+.env*.local
+.vercel/
+.mcp.json

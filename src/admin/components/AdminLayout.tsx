@@ -52,21 +52,21 @@ export default function AdminLayout() {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen flex bg-gray-50">
+      <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
         {/* Sidebar */}
-        <aside className="w-64 shrink-0 bg-gray-900 text-gray-100 flex flex-col">
-          <div className="px-6 py-5 border-b border-gray-700">
+        <aside className="w-full lg:w-64 lg:min-h-screen shrink-0 bg-gray-900 text-gray-100 flex flex-col">
+          <div className="px-4 sm:px-6 py-4 lg:py-5 border-b border-gray-700">
             <span className="font-bold text-lg tracking-wide text-white">VIVA Admin</span>
           </div>
 
-          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
+          <nav className="flex lg:flex-1 lg:flex-col gap-1 lg:gap-0 lg:space-y-0.5 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto py-3 lg:py-4 px-3 scrollbar-none">
             {NAV.map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  `flex shrink-0 items-center gap-2 lg:gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                     isActive
                       ? 'bg-primary-600 text-white'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -79,7 +79,7 @@ export default function AdminLayout() {
             ))}
           </nav>
 
-          <div className="px-3 pb-5 border-t border-gray-700 pt-4">
+          <div className="px-3 py-3 lg:pb-5 border-t border-gray-700 lg:pt-4">
             <button
               onClick={handleSignOut}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
@@ -91,7 +91,7 @@ export default function AdminLayout() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 min-w-0 overflow-auto">
           <Outlet />
         </main>
       </div>

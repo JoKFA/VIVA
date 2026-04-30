@@ -166,10 +166,7 @@ export default function Footer() {
             © {new Date().getFullYear()} VIVA. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-warm-600">
-            <a href="/faqs" className="hover:text-warm-400 transition-colors">FAQs</a>
-            <a href="/code-of-conduct" className="hover:text-warm-400 transition-colors">Code of Conduct</a>
-            <a href="/privacy" className="hover:text-warm-400 transition-colors">Privacy Policy</a>
-            <a href="/accessibility" className="hover:text-warm-400 transition-colors">Accessibility</a>
+            <Link to="/faqs" className="hover:text-warm-400 transition-colors">FAQs</Link>
           </div>
         </div>
       </div>

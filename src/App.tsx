@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Layout from './components/layout/Layout';
 import ScrollToTop from './components/layout/ScrollToTop';
+import { Analytics } from '@vercel/analytics/react';
 import { SiteSettingsProvider } from './contexts/SiteSettingsContext';
 import { PageLoadingSkeleton } from './components/ui/LoadingSkeleton';
 
@@ -17,6 +18,7 @@ const EventDetail = lazy(() => import('./pages/EventDetail'));
 const Volunteer = lazy(() => import('./pages/Volunteer'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Donate = lazy(() => import('./pages/Donate'));
+const Faqs = lazy(() => import('./pages/Faqs'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
@@ -48,6 +50,7 @@ function App() {
     <SiteSettingsProvider>
       <Router>
         <ScrollToTop />
+        <Analytics />
         <Routes>
 
           {/* ── Public site ──────────────────────────────────────────────── */}
@@ -69,6 +72,7 @@ function App() {
             <Route path="volunteer" element={<S><Volunteer /></S>} />
             <Route path="contact" element={<S><Contact /></S>} />
             <Route path="donate" element={<S><Donate /></S>} />
+            <Route path="faqs" element={<S><Faqs /></S>} />
             <Route path="*" element={<S><NotFound /></S>} />
           </Route>
 
