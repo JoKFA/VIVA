@@ -1,41 +1,49 @@
 /**
  * RequireAuth — wraps protected admin routes.
- * Redirects to /admin/login if no active Supabase session.
- * Shows a loading state while the session check is in flight.
+ * Redirects to /admin/login if there is no verified Supabase user.
+ * Shows a loading state while the user check is in flight.
  */
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import type { Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 
 interface RequireAuthProps {
   children: React.ReactNode;
 }
 
-function hasAdminClaim(session: Session | null | undefined) {
-  return session?.user?.app_metadata?.user_role === 'admin';
+function hasAdminClaim(user: User | null | undefined) {
+  return user?.app_metadata?.user_role === 'admin';
 }
 
 export function RequireAuth({ children }: RequireAuthProps) {
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
   const location = useLocation();
 
   useEffect(() => {
-    // Get current session synchronously if available
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
+    let active = true;
+
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (!active) return;
+      setUser(error ? null : data.user);
+    }
+
+    loadUser();
 
     // Subscribe to auth changes (login / logout / token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadUser();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Still checking
-  if (session === undefined) {
+  if (user === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-pulse text-gray-400">Checking session…</div>
@@ -44,11 +52,11 @@ export function RequireAuth({ children }: RequireAuthProps) {
   }
 
   // Not authenticated — redirect preserving intended path
-  if (!session) {
+  if (!user) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  if (!hasAdminClaim(session)) {
+  if (!hasAdminClaim(user)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
         <div className="max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">

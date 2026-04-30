@@ -18,8 +18,8 @@ import { RequireAuth } from './RequireAuth';
 // `const mockGetSession = vi.fn()` declarations aren't yet initialised when the
 // factory runs. vi.hoisted() evaluates its callback at hoist time, making the
 // returned fns available inside the factory without a TDZ error.
-const { mockGetSession, mockOnAuthStateChange, mockSignOut, mockUnsubscribe } = vi.hoisted(() => ({
-  mockGetSession: vi.fn(),
+const { mockGetUser, mockOnAuthStateChange, mockSignOut, mockUnsubscribe } = vi.hoisted(() => ({
+  mockGetUser: vi.fn(),
   mockOnAuthStateChange: vi.fn(),
   mockSignOut: vi.fn(),
   mockUnsubscribe: vi.fn(),
@@ -28,7 +28,7 @@ const { mockGetSession, mockOnAuthStateChange, mockSignOut, mockUnsubscribe } = 
 vi.mock('../../lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: mockGetSession,
+      getUser: mockGetUser,
       onAuthStateChange: mockOnAuthStateChange,
       signOut: mockSignOut,
     },
@@ -74,8 +74,8 @@ afterEach(() => {
 
 describe('RequireAuth', () => {
   it('shows loading indicator while session check is in-flight', () => {
-    // getSession returns a promise that never resolves (simulates slow network)
-    mockGetSession.mockReturnValue(new Promise(() => {}));
+    // getUser returns a promise that never resolves (simulates slow network)
+    mockGetUser.mockReturnValue(new Promise(() => {}));
 
     renderWithRouter();
 
@@ -85,7 +85,7 @@ describe('RequireAuth', () => {
   });
 
   it('redirects to /admin/login when there is no active session', async () => {
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
     renderWithRouter();
 
@@ -97,11 +97,8 @@ describe('RequireAuth', () => {
   });
 
   it('renders children when session is active', async () => {
-    const fakeSession = {
-      user: { id: 'user-1', email: 'admin@vivahq.ca', app_metadata: { user_role: 'admin' } },
-      access_token: 'fake-jwt-token',
-    };
-    mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
+    const fakeUser = { id: 'user-1', email: 'admin@vivahq.ca', app_metadata: { user_role: 'admin' } };
+    mockGetUser.mockResolvedValue({ data: { user: fakeUser }, error: null });
 
     renderWithRouter();
 
@@ -113,11 +110,8 @@ describe('RequireAuth', () => {
   });
 
   it('blocks authenticated users without the admin claim', async () => {
-    const fakeSession = {
-      user: { id: 'user-2', email: 'volunteer@vivahq.ca', app_metadata: { user_role: 'volunteer' } },
-      access_token: 'fake-jwt-token',
-    };
-    mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
+    const fakeUser = { id: 'user-2', email: 'volunteer@vivahq.ca', app_metadata: { user_role: 'volunteer' } };
+    mockGetUser.mockResolvedValue({ data: { user: fakeUser }, error: null });
 
     renderWithRouter();
 
@@ -131,8 +125,8 @@ describe('RequireAuth', () => {
 
   it('updates when onAuthStateChange fires a sign-out event', async () => {
     // Start authenticated
-    const fakeSession = { user: { id: 'u1', app_metadata: { user_role: 'admin' } }, access_token: 'tok' };
-    mockGetSession.mockResolvedValue({ data: { session: fakeSession } });
+    const fakeUser = { id: 'u1', app_metadata: { user_role: 'admin' } };
+    mockGetUser.mockResolvedValue({ data: { user: fakeUser }, error: null });
 
     // Capture the callback so we can fire it manually
     let authCallback: ((event: string, session: unknown) => void) | null = null;
@@ -149,6 +143,7 @@ describe('RequireAuth', () => {
     });
 
     // Fire a SIGNED_OUT event
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
     authCallback!('SIGNED_OUT', null);
 
     await waitFor(() => {
@@ -157,11 +152,11 @@ describe('RequireAuth', () => {
   });
 
   it('unsubscribes from auth changes on unmount', async () => {
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
     const { unmount } = renderWithRouter();
 
-    // Wait for getSession to resolve before unmounting
+    // Wait for getUser to resolve before unmounting
     await waitFor(() => screen.getByTestId('login-page'));
 
     unmount();
@@ -170,7 +165,7 @@ describe('RequireAuth', () => {
   });
 
   it('preserves the intended path in redirect state', async () => {
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
     let capturedState: unknown = undefined;
 

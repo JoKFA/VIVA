@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
+import { MediaUpload } from '../components/MediaUpload';
 import { PublishToggle } from '../components/PublishToggle';
 
 interface PartnerRow { id: string; name: string; logo_url: string; website_url?: string; sort_order: number; published: boolean; }
@@ -67,12 +68,17 @@ export default function AdminPartners() {
 
   const FormFields = () => (
     <div className="grid grid-cols-2 gap-3">
-      {(['name', 'logo_url', 'website_url'] as const).map(k => (
-        <div key={k}>
-          <label className="block text-xs text-gray-500 mb-1">{k.replace(/_/g, ' ')}</label>
-          <input value={String(form[k] ?? '')} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
-        </div>
-      ))}
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Name</label>
+        <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
+      </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Website URL</label>
+        <input type="url" value={form.website_url ?? ''} onChange={e => setForm(p => ({ ...p, website_url: e.target.value }))} className="w-full border rounded px-2 py-1.5 text-sm" />
+      </div>
+      <div className="col-span-2">
+        <MediaUpload label="Partner Logo" kind="image" folder="partners/logos" value={form.logo_url} onChange={url => setForm(p => ({ ...p, logo_url: url }))} previewAlt={form.name} />
+      </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">Sort Order</label>
         <input type="number" value={form.sort_order} onChange={e => setForm(p => ({ ...p, sort_order: Number(e.target.value) }))} className="w-full border rounded px-2 py-1.5 text-sm" />

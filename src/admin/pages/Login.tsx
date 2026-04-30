@@ -29,6 +29,15 @@ export default function Login() {
       return;
     }
 
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || userData.user?.app_metadata?.user_role !== 'admin') {
+      await supabase.auth.signOut();
+      setError('This account does not have admin access.');
+      setLoading(false);
+      return;
+    }
+
     navigate(from, { replace: true });
   }
 
