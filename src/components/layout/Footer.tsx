@@ -1,32 +1,50 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin, Mail, MapPin, Phone, Send } from 'lucide-react';
-import { siteSettings } from '../../data/mockData';
-
-const footerLinks = {
-  about: [
-    { name: 'Our Story', href: '/about' },
-    { name: 'Board of Executives', href: '/about/board' },
-    { name: 'Awards & Scholarships', href: '/about/awards' },
-    { name: 'Annual Reports', href: '/about/reports' },
-  ],
-  getInvolved: [
-    { name: 'Volunteer', href: '/volunteer' },
-    { name: 'Upcoming Events', href: '/events' },
-    { name: 'Donate', href: '/donate' },
-    { name: 'Contact Us', href: '/contact' },
-  ],
-};
+import { ExternalLink, Instagram, Linkedin, Mail, MapPin, Phone, Send } from 'lucide-react';
+import { useSiteSettings } from '../../contexts/SiteSettingsContext';
+import { sendContactEmail } from '../../lib/contactEmail';
 
 export default function Footer() {
+  const { settings: siteSettings } = useSiteSettings();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
+  const aboutLinks = [
+    { name: 'Our Story', href: '/about', visible: true },
+    { name: 'Board of Executives', href: '/about/board', visible: true },
+    { name: 'Awards & Scholarships', href: '/about/awards', visible: siteSettings.awardsPageVisible },
+    { name: 'Annual Reports', href: '/about/reports', visible: siteSettings.annualReportsPageVisible },
+  ].filter((link) => link.visible);
+  const socialLinks = [
+    { name: 'Instagram', href: siteSettings.socialLinks.instagram, icon: Instagram },
+    { name: 'LinkedIn', href: siteSettings.socialLinks.linkedin, icon: Linkedin },
+    { name: 'Facebook', href: siteSettings.socialLinks.facebook, icon: ExternalLink },
+    { name: 'Twitter', href: siteSettings.socialLinks.twitter, icon: ExternalLink },
+    { name: 'YouTube', href: siteSettings.socialLinks.youtube, icon: ExternalLink },
+  ].filter((link) => Boolean(link.href));
 
-  const subscribe = (event: React.FormEvent) => {
+  const subscribe = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!email.trim()) return;
-    setSubscribed(true);
-    setEmail('');
+
+    setIsSubscribing(true);
+    setSubscribeError('');
+
+    try {
+      await sendContactEmail({
+        source: 'newsletter',
+        email,
+        subject: 'Newsletter signup',
+        message: 'Please add this email address to the VIVA newsletter list.',
+      });
+      setSubscribed(true);
+      setEmail('');
+    } catch (error) {
+      setSubscribeError(error instanceof Error ? error.message : 'Subscription could not be sent right now.');
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   return (
@@ -48,31 +66,25 @@ export default function Footer() {
               with meaningful opportunities across BC since 2018.
             </p>
             <div className="flex items-center gap-3">
-              <a
-                href={siteSettings.socialLinks.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-4 h-4 text-white" />
-              </a>
-              <a
-                href={siteSettings.socialLinks.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-4 h-4 text-white" />
-              </a>
+              {socialLinks.map(({ name, href, icon: Icon }) => (
+                <a
+                  key={name}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 bg-warm-800 hover:bg-primary-600 rounded-lg transition-colors"
+                  aria-label={name}
+                >
+                  <Icon className="w-4 h-4 text-white" />
+                </a>
+              ))}
             </div>
           </div>
 
           <div>
             <h3 className="text-white font-semibold text-sm mb-4 tracking-wide">About</h3>
             <ul className="space-y-3">
-              {footerLinks.about.map((link) => (
+              {aboutLinks.map((link) => (
                 <li key={link.name}>
                   <Link to={link.href} className="text-sm hover:text-primary-300 transition-colors">
                     {link.name}
@@ -85,7 +97,12 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold text-sm mb-4 tracking-wide">Get Involved</h3>
             <ul className="space-y-3">
-              {footerLinks.getInvolved.map((link) => (
+              {[
+                { name: 'Volunteer', href: '/volunteer' },
+                { name: 'Upcoming Events', href: '/events' },
+                { name: 'Donate', href: '/donate' },
+                { name: 'Contact Us', href: '/contact' },
+              ].map((link) => (
                 <li key={link.name}>
                   <Link to={link.href} className="text-sm hover:text-primary-300 transition-colors">
                     {link.name}
@@ -118,6 +135,7 @@ export default function Footer() {
                 />
                 <button
                   type="submit"
+                  disabled={isSubscribing}
                   className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-3.5 text-white hover:bg-primary-700 transition-colors"
                   aria-label="Subscribe"
                 >
@@ -125,6 +143,7 @@ export default function Footer() {
                 </button>
               </form>
             )}
+            {subscribeError && <p className="mb-6 text-sm text-red-300">{subscribeError}</p>}
 
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3">

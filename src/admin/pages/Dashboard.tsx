@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Users, Trophy, FileText, AlertCircle, ExternalLink } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { localDateKey } from '../../utils/date';
 
 interface DashboardCounts {
   events: number;
@@ -25,7 +26,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function load() {
-      const today = new Date().toISOString().split('T')[0];
+      const today = localDateKey();
 
       const [eventsRes, teamRes, awardsRes, reportsRes, recapRes] = await Promise.all([
         supabase.from('events').select('id', { count: 'exact', head: true }),

@@ -8,6 +8,7 @@ import type { Event } from '../types';
 import { supabase } from '../lib/supabase';
 import { events as mockEvents } from '../data/mockData';
 import { dbRowToEvent } from './eventUtils';
+import { localDateKey } from '../utils/date';
 
 export function useEventsByYear(year: number, enabled = false) {
   const mockFallback = mockEvents.filter(
@@ -27,7 +28,7 @@ export function useEventsByYear(year: number, enabled = false) {
       try {
         const startDate = `${year}-01-01`;
         const endDate = `${year}-12-31`;
-        const today = new Date().toISOString().split('T')[0];
+        const today = localDateKey();
 
         const { data: rows, error: err } = await supabase
           .from('events')

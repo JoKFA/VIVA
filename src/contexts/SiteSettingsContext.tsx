@@ -41,20 +41,24 @@ interface SiteSettingsRow {
   email: string;
   media_email?: string;
   territory_acknowledgement: string;
+  awards_page_visible?: boolean;
+  annual_reports_page_visible?: boolean;
 }
 
 function rowToSettings(row: SiteSettingsRow): SiteSettings {
   return {
-    organizationName: row.organization_name,
-    tagline: row.tagline,
-    donationUrl: row.donation_url,
-    volunteerFormUrl: row.volunteer_form_url,
-    socialLinks: row.social_links,
-    address: row.address,
-    phone: row.phone,
-    email: row.email,
-    mediaEmail: row.media_email,
-    territoryAcknowledgement: row.territory_acknowledgement,
+    organizationName: row.organization_name ?? mockSiteSettings.organizationName,
+    tagline: row.tagline ?? mockSiteSettings.tagline,
+    donationUrl: row.donation_url ?? mockSiteSettings.donationUrl,
+    volunteerFormUrl: row.volunteer_form_url ?? mockSiteSettings.volunteerFormUrl,
+    socialLinks: { ...mockSiteSettings.socialLinks, ...row.social_links },
+    address: { ...mockSiteSettings.address, ...row.address },
+    phone: row.phone ?? mockSiteSettings.phone,
+    email: row.email ?? mockSiteSettings.email,
+    mediaEmail: row.media_email ?? mockSiteSettings.mediaEmail,
+    territoryAcknowledgement: row.territory_acknowledgement ?? mockSiteSettings.territoryAcknowledgement,
+    awardsPageVisible: row.awards_page_visible ?? true,
+    annualReportsPageVisible: row.annual_reports_page_visible ?? true,
   };
 }
 

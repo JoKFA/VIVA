@@ -6,6 +6,7 @@ import { Hero } from '../components/blocks/Hero';
 import Button from '../components/ui/Button';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
+import { parseDateOnly } from '../utils/date';
 import type { Event } from '../types';
 
 const typeColors: Record<Event['type'], string> = {
@@ -47,7 +48,8 @@ export default function EventsCalendar() {
   const eventsByDate = useMemo(() => {
     const grouped: Record<string, Event[]> = {};
     events.forEach((event) => {
-      const eventDate = new Date(event.date);
+      const eventDate = parseDateOnly(event.date);
+      if (!eventDate) return;
       if (
         eventDate.getMonth() === currentMonth &&
         eventDate.getFullYear() === currentYear

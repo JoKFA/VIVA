@@ -4,17 +4,18 @@ import { Calendar, MapPin, Users, Mail, Phone, ArrowLeft, CheckCircle } from 'lu
 import EventAdminContactModal from '../components/events/EventAdminContactModal';
 import { useEventWithContact } from '../hooks/useEventWithContact';
 import { SafeImage } from '../components/ui/SafeImage';
+import { formatDateOnly, parseDateOnly } from '../utils/date';
 
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 function formatLong(dateStr: string) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return formatDateOnly(dateStr, 'en-CA', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function parseDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return { day: d.getUTCDate(), month: MONTHS[d.getUTCMonth()], year: d.getUTCFullYear() };
+  const d = parseDateOnly(dateStr);
+  if (!d) return { day: '--', month: 'TBD', year: '' };
+  return { day: String(d.getDate()), month: MONTHS[d.getMonth()], year: String(d.getFullYear()) };
 }
 
 const STATUS_LABEL: Record<string, string> = {

@@ -37,14 +37,25 @@ export default function AdminAwards() {
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(toFormState(EMPTY));
   const [error, setError] = useState<string | null>(null);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [pageToggleBusy, setPageToggleBusy] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
 
   async function load() {
-    const { data, error: err } = await supabase.from('awards').select('*');
+    const [awardsRes, settingsRes] = await Promise.all([
+      supabase.from('awards').select('*'),
+      supabase.from('site_settings').select('id, awards_page_visible').maybeSingle(),
+    ]);
+    const { data, error: err } = awardsRes;
     if (err) {
       setError(err.message);
       setRows([]);
       setLoading(false);
       return;
+    }
+    if (!settingsRes.error && settingsRes.data) {
+      setSettingsId(String(settingsRes.data.id));
+      setPageVisible(Boolean(settingsRes.data.awards_page_visible ?? true));
     }
     setRows((data ?? []) as AwardRow[]);
     setLoading(false);
@@ -85,6 +96,22 @@ export default function AdminAwards() {
     load();
   }
 
+  async function togglePageVisible(v: boolean) {
+    setPageToggleBusy(true);
+    setError(null);
+    const payload = { awards_page_visible: v, updated_at: new Date().toISOString() };
+    const { data, error: err } = settingsId
+      ? await supabase.from('site_settings').update(payload).eq('id', settingsId).select('id').single()
+      : await supabase.from('site_settings').insert([{ ...payload, published: true }]).select('id').single();
+    setPageToggleBusy(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    if (data) setSettingsId(String(data.id));
+    setPageVisible(v);
+  }
+
   function startEdit(r: AwardRow) {
     setEditing(r.id);
     setForm(toFormState({ name: r.name, years: r.years, description: r.description, eligibility: r.eligibility, timeline: r.timeline, application_url: r.application_url, pdf_url: r.pdf_url, published: r.published }));
@@ -119,6 +146,18 @@ export default function AdminAwards() {
       } />
       <div className="p-8 space-y-3">
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        <section className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Public Awards Page</h2>
+            <p className="mt-0.5 text-xs text-gray-500">Controls navigation visibility and direct access for Awards & Scholarships.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <PublishToggle published={pageVisible} disabled={pageToggleBusy} onToggle={togglePageVisible} />
+            <span className={`text-xs font-medium ${pageVisible ? 'text-green-700' : 'text-gray-400'}`}>
+              {pageVisible ? 'Shown' : 'Hidden'}
+            </span>
+          </div>
+        </section>
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
         {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
         {rows.map(r => (

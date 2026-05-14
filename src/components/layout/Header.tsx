@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Heart, Menu, X } from 'lucide-react';
+import { useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 const ANNOUNCEMENTS = [
   { label: 'Next Event', text: 'VIVA EG Shoreline Cleanup — Apr 18', cta: 'Register →', href: '/events' },
@@ -9,7 +10,7 @@ const ANNOUNCEMENTS = [
   { label: 'Coming Up', text: 'BMO Vancouver Marathon — May 3', cta: 'Learn More →', href: '/events' },
 ];
 
-const navigation = [
+const baseNavigation = [
   { name: 'Home', href: '/' },
   {
     name: 'About',
@@ -35,6 +36,7 @@ const navigation = [
 ];
 
 export default function Header() {
+  const { settings } = useSiteSettings();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -65,6 +67,17 @@ export default function Header() {
   }, [annDismissed]);
 
   const ann = ANNOUNCEMENTS[annIdx];
+  const navigation = baseNavigation.map((item) => {
+    if (item.name !== 'About' || !item.children) return item;
+    return {
+      ...item,
+      children: item.children.filter((child) => {
+        if (child.href === '/about/awards') return settings.awardsPageVisible;
+        if (child.href === '/about/reports') return settings.annualReportsPageVisible;
+        return true;
+      }),
+    };
+  });
   const closeNavigation = () => {
     setIsMobileMenuOpen(false);
     setOpenDropdown(null);

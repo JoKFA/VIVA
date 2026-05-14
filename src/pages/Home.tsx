@@ -10,6 +10,7 @@ import { useHonours, type HonourEntry } from '../hooks/useHonours';
 import { useTestimonials } from '../hooks/useTestimonials';
 import { useHeroSettings } from '../hooks/useHeroSettings';
 import { SafeImage } from '../components/ui/SafeImage';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 import type { Event, Testimonial } from '../types';
 
 const fadeUp = (delay = 0) => ({
@@ -400,6 +401,7 @@ function HomeEventRow({ ev }: { ev: Event }) {
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
+  const { settings: siteSettings } = useSiteSettings();
   const { data: upcomingEvents } = useUpcomingEvents();
   const { data: stats } = useStats();
   const { data: programRows } = usePrograms();
@@ -596,7 +598,7 @@ export default function Home() {
               <div className="py-12 text-center text-warm-500">
                 No upcoming events right now — follow{' '}
                 <a
-                  href="https://instagram.com/viva_hq"
+                  href={siteSettings.socialLinks.instagram || '/contact'}
                   className="text-primary-600 font-medium"
                   target="_blank"
                   rel="noopener noreferrer"

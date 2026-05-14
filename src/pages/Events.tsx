@@ -7,7 +7,9 @@ import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 import { useEventYears } from '../hooks/useEventYears';
 import { useEventsByYear } from '../hooks/useEventsByYear';
 import { eventVolunteerContacts } from '../data/mockData';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 import type { Event, EventVolunteerContact } from '../types';
+import { formatDateOnly, localDateKey } from '../utils/date';
 
 type EventItem = Event;
 const fallbackVolunteerContact = Object.values(eventVolunteerContacts)[0] as EventVolunteerContact | undefined;
@@ -80,7 +82,7 @@ function formatToday() {
 }
 
 function formatLongDate(dateStr: string) {
-  return new Date(`${dateStr}T00:00:00`).toLocaleDateString('en-US', {
+  return formatDateOnly(dateStr, 'en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -366,6 +368,7 @@ function YearSection({ year, isOpen, onToggle }: { year: number; isOpen: boolean
 }
 
 export default function Events() {
+  const { settings: siteSettings } = useSiteSettings();
   const [filter, setFilter] = useState('all');
   const [openYears, setOpenYears] = useState<Set<number>>(new Set());
   const [contactEvent, setContactEvent] = useState<EventItem | null>(null);
@@ -466,7 +469,7 @@ export default function Events() {
             <div className="border border-dashed border-warm-200 bg-warm-50 px-6 py-14 text-center">
               <h2 className="mb-2 font-display text-lg font-bold text-warm-900">No events in this category right now</h2>
               <p className="text-sm text-warm-500">
-                Follow <a href="https://instagram.com/viva_hq" className="font-semibold text-primary-600">@viva_hq</a> for announcements.
+                Follow <a href={siteSettings.socialLinks.instagram || '/contact'} className="font-semibold text-primary-600">@viva_hq</a> for announcements.
               </p>
             </div>
           ) : (
@@ -531,7 +534,7 @@ export default function Events() {
         </div>
       </section>
 
-      <span className="sr-only">Dates are derived from event date fields. Today is {formatLongDate(new Date().toISOString().slice(0, 10))}.</span>
+      <span className="sr-only">Dates are derived from event date fields. Today is {formatLongDate(localDateKey())}.</span>
       {contactEvent && contactForSlug && (
         <EventAdminContactModal
           event={contactEvent}

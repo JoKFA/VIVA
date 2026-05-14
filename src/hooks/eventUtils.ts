@@ -2,14 +2,15 @@
  * Shared utility: convert a Supabase events row to the frontend Event type.
  */
 import type { Event } from '../types';
+import { localDateKey } from '../utils/date';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function dbRowToEvent(r: Record<string, any>): Event {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateKey();
   const isPast =
     r.is_past_override !== null && r.is_past_override !== undefined
       ? Boolean(r.is_past_override)
-      : (r.date as string) < today;
+      : Boolean(r.date) && (r.date as string) < today;
 
   return {
     id: r.id as string,

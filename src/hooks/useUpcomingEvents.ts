@@ -10,6 +10,7 @@ import type { Event } from '../types';
 import { supabase } from '../lib/supabase';
 import { events as mockEvents } from '../data/mockData';
 import { dbRowToEvent } from './eventUtils';
+import { localDateKey } from '../utils/date';
 
 export function useUpcomingEvents() {
   const [data, setData] = useState<Event[]>(
@@ -22,7 +23,7 @@ export function useUpcomingEvents() {
     let cancelled = false;
     async function fetch() {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = localDateKey();
         const { data: rows, error: err } = await supabase
           .from('events')
           .select('*')

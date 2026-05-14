@@ -6,6 +6,7 @@ import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
 import { MediaUpload } from '../components/MediaUpload';
 import { SafeImage } from '../../components/ui/SafeImage';
+import { localDateKey } from '../../utils/date';
 
 interface EventForm {
   slug: string;
@@ -101,6 +102,16 @@ export default function AdminEventEdit() {
   async function save() {
     setSaving(true);
     setError(null);
+    if (!form.title.trim()) {
+      setError('Title is required.');
+      setSaving(false);
+      return;
+    }
+    if (!form.date && form.is_past_override !== 'auto') {
+      setError('A date is required before forcing an event to upcoming or past.');
+      setSaving(false);
+      return;
+    }
     const override = form.is_past_override === 'auto' ? null
       : form.is_past_override === 'true';
 
@@ -150,7 +161,7 @@ export default function AdminEventEdit() {
   if (loading) return <div className="p-8 animate-pulse"><div className="h-20 bg-gray-100 rounded-lg" /></div>;
 
   const isPast = form.is_past_override === 'true'
-    || (form.is_past_override === 'auto' && form.date < new Date().toISOString().split('T')[0]);
+    || (form.is_past_override === 'auto' && Boolean(form.date) && form.date < localDateKey());
 
   const F = ({ label, children }: { label: string; children: React.ReactNode }) => (
     <div>

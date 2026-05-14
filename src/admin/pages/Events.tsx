@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
 import { MediaUpload } from '../components/MediaUpload';
+import { localDateKey } from '../../utils/date';
 
 interface EventRow {
   id: string;
@@ -38,7 +39,7 @@ const EMPTY_CONTACT: GlobalContactForm = {
 
 function isPastRow(r: EventRow): boolean {
   if (r.is_past_override !== null && r.is_past_override !== undefined) return r.is_past_override;
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateKey();
   return r.date < today;
 }
 

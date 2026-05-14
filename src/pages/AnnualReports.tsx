@@ -1,10 +1,12 @@
 import { Download } from 'lucide-react';
 import { useAnnualReports } from '../hooks/useAnnualReports';
 import { SafeImage } from '../components/ui/SafeImage';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 
 const REPORT_FALLBACK = 'https://picsum.photos/180/240?grayscale&random=reports';
 
 export default function AnnualReports() {
+  const { settings: siteSettings } = useSiteSettings();
   const { data: annualReports } = useAnnualReports();
   const sorted = [...annualReports].sort((a, b) => b.year - a.year);
 
@@ -116,7 +118,7 @@ export default function AnnualReports() {
           <p className="text-warm-600 text-sm">
             Need financial statements or additional data for grant applications?
           </p>
-          <a href="mailto:info.vivahq@gmail.com"
+          <a href={`mailto:${siteSettings.email}`}
             className="text-sm font-semibold text-primary-600 hover:text-primary-700 whitespace-nowrap">
             Email us →
           </a>

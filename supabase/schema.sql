@@ -31,9 +31,13 @@ CREATE TABLE IF NOT EXISTS site_settings (
   email                    text,
   media_email              text,
   territory_acknowledgement text,
+  awards_page_visible      boolean DEFAULT true,
+  annual_reports_page_visible boolean DEFAULT true,
   published                boolean DEFAULT true,
   updated_at               timestamptz DEFAULT now()
 );
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS awards_page_visible boolean DEFAULT true;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS annual_reports_page_visible boolean DEFAULT true;
 
 -- Enforce exactly one row at DB level
 CREATE UNIQUE INDEX IF NOT EXISTS site_settings_singleton

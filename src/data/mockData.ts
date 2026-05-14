@@ -38,6 +38,8 @@ export const siteSettings: SiteSettings = {
   mediaEmail: 'media.vivahq@gmail.com',
   territoryAcknowledgement:
     'VIVA respectfully acknowledges that our main operations are located on the traditional, ancestral, and unceded territories of the Musqueam, Squamish, and Tsleil-Waututh Nations. As our volunteer work and impact span across British Columbia, we also recognize the territories of more than 200 First Nations, as well as the Metis and Inuit peoples who live in our communities. We are deeply grateful for the opportunity to live, work, and serve on these lands.',
+  awardsPageVisible: true,
+  annualReportsPageVisible: true,
 };
 
 export const stats: Stat[] = [

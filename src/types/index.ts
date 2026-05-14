@@ -154,6 +154,8 @@ export interface SiteSettings {
   email: string;
   mediaEmail?: string;
   territoryAcknowledgement: string;
+  awardsPageVisible: boolean;
+  annualReportsPageVisible: boolean;
 }
 
 export interface Stat {

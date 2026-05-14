@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 import Layout from './components/layout/Layout';
 import ScrollToTop from './components/layout/ScrollToTop';
 import { Analytics } from '@vercel/analytics/react';
-import { SiteSettingsProvider } from './contexts/SiteSettingsContext';
+import { SiteSettingsProvider, useSiteSettings } from './contexts/SiteSettingsContext';
 import { PageLoadingSkeleton } from './components/ui/LoadingSkeleton';
 
 // ── Public pages ──────────────────────────────────────────────────────────────
@@ -45,10 +45,15 @@ const S = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<PageLoadingSkeleton />}>{children}</Suspense>
 );
 
-function App() {
+function PublicFeatureGate({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+  return enabled ? <>{children}</> : <NotFound />;
+}
+
+function AppRoutes() {
+  const { settings } = useSiteSettings();
+
   return (
-    <SiteSettingsProvider>
-      <Router>
+    <Router>
         <ScrollToTop />
         <Analytics />
         <Routes>
@@ -60,8 +65,8 @@ function App() {
             {/* About */}
             <Route path="about" element={<S><About /></S>} />
             <Route path="about/board" element={<S><BoardOfExecutives /></S>} />
-            <Route path="about/awards" element={<S><Awards /></S>} />
-            <Route path="about/reports" element={<S><AnnualReports /></S>} />
+            <Route path="about/awards" element={<S><PublicFeatureGate enabled={settings.awardsPageVisible}><Awards /></PublicFeatureGate></S>} />
+            <Route path="about/reports" element={<S><PublicFeatureGate enabled={settings.annualReportsPageVisible}><AnnualReports /></PublicFeatureGate></S>} />
 
             {/* Events */}
             <Route path="events" element={<S><Events /></S>} />
@@ -102,6 +107,13 @@ function App() {
           <Route path="*" element={<S><NotFound /></S>} />
         </Routes>
       </Router>
+  );
+}
+
+function App() {
+  return (
+    <SiteSettingsProvider>
+      <AppRoutes />
     </SiteSettingsProvider>
   );
 }
