@@ -161,9 +161,9 @@ export default function AdminEventEdit() {
     } else {
       let query = supabase.from('events').update(payload).eq('id', id!);
       if (loadedAt) query = query.eq('updated_at', loadedAt);
-      const { error: err, count } = await query.select('id', { count: 'exact', head: true });
+      const { error: err, data: updated } = await query.select('id');
       if (err) { setError(err.message); setSaving(false); return; }
-      if (count === 0) {
+      if (!updated || updated.length === 0) {
         setError('This event was edited by another admin while you were working — reload to see the latest version.');
         setSaving(false);
         return;
