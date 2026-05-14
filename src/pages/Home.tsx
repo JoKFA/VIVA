@@ -72,8 +72,13 @@ function HonoursMarquee({ honours }: { honours: HonourEntry[] }) {
   const measure = useCallback(() => {
     if (!wrapRef.current) return;
     const w = wrapRef.current.offsetWidth;
-    // 2 cards visible with 24px gap between them
-    setCardW(Math.floor((w - 24) / 2));
+    if (w < 640) {
+      // 1 card on mobile, full width minus small padding
+      setCardW(Math.floor(w - 16));
+    } else {
+      // 2 cards visible with 24px gap between them
+      setCardW(Math.floor((w - 24) / 2));
+    }
   }, []);
 
   useEffect(() => {
@@ -87,7 +92,7 @@ function HonoursMarquee({ honours }: { honours: HonourEntry[] }) {
     <section className="bg-warm-50 py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto mb-10">
         <p className="eyebrow">Honours & Recognition</p>
-        <div className="flex items-end justify-between gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-6">
           <div className="home-hero-copy">
             <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-2">
               Recognized by Canada's Leaders
@@ -98,7 +103,7 @@ function HonoursMarquee({ honours }: { honours: HonourEntry[] }) {
           </div>
           <Link
             to="/about"
-            className="flex-shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1 group"
+            className="flex-shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1 group self-start sm:self-auto"
           >
             View all letters
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
