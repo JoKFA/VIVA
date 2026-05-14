@@ -1,181 +1,222 @@
-# VIVA - Volunteer Impact & Vitality Alliance
+# VIVA — Volunteer Impact & Vitality Alliance
 
-A community-focused volunteer organization website built with React, TypeScript, and Tailwind CSS.
+Official website for VIVA, a Vancouver-based nonprofit organization connecting volunteers with community service opportunities. The site serves as the organization's public face and includes a password-protected admin panel for the internal team to manage all content without writing code.
+
+**Live site:** [vivahq.org](https://vivahq.org)
+
+---
+
+## What This Project Is
+
+A full website built for VIVA — public-facing pages for visitors plus a content management system (CMS) for the VIVA team. Everything visible on the website (events, team members, awards, volunteer roles, site stats, and more) is managed through the admin panel and stored in a database. No code changes are needed for day-to-day content updates.
+
+---
+
+## Public Website
+
+The site visitors see, organized by page:
+
+| Page | Path | What it shows |
+|---|---|---|
+| Home | `/` | Hero, programs overview, upcoming events, volunteer CTA |
+| About | `/about` | Mission, organization history, honours wall |
+| Board | `/about/board` | Executive team with photos and bios |
+| Awards | `/about/awards` | Annual scholarship and award recipients |
+| Annual Reports | `/about/reports` | Downloadable PDF reports by year |
+| Events | `/events` | Upcoming and past events with filters |
+| Calendar | `/events/calendar` | Monthly calendar view of events |
+| Event Detail | `/events/:slug` | Full event page with registration info |
+| Volunteer | `/volunteer` | Volunteer roles and application form |
+| Contact | `/contact` | Contact form, address, phone, email |
+| Donate | `/donate` | Donation page with external payment link |
+| FAQs | `/faqs` | Frequently asked questions |
+
+---
+
+## Admin Panel
+
+The admin panel lives at `/admin` and is only accessible with a VIVA team login. It lets the team manage all website content through a simple interface — no technical knowledge required for everyday tasks.
+
+**What admins can manage:**
+
+- **Events** — Create, edit, publish/unpublish events. Add recap stats after an event wraps up.
+- **Team Members** — Add or update board member photos, bios, and LinkedIn links.
+- **Awards** — Record annual award and scholarship recipients.
+- **Annual Reports** — Upload PDF reports for each year.
+- **Volunteer Roles** — Edit the roles shown on the Volunteer page.
+- **Partners** — Manage partner/sponsor logos and links.
+- **Testimonials** — Add quotes displayed on the site.
+- **FAQs** — Edit the frequently asked questions page.
+- **Contact Info** — Update the organization's phone, email, and address.
+- **Stats** — Set the impact numbers shown on the homepage.
+- **Homepage Hero** — Edit the homepage headline, subtext, and stats.
+- **Programs** — Edit the program sections on the homepage.
+- **Honours** — Manage the honours/recognition wall.
+- **Site Settings** — Organization name, donation link, social media URLs, and page visibility toggles.
+
+All admin actions require a verified VIVA team account. Unauthenticated visitors are redirected to the login page.
+
+---
 
 ## Tech Stack
 
-- **React 19** with TypeScript
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS 3** - Utility-first CSS framework
-- **Framer Motion** - Animation library (respects prefers-reduced-motion)
-- **React Router 7** - Client-side routing
-- **Lucide React** - Beautiful icon library
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + TypeScript |
+| Build tool | Vite |
+| Styling | Tailwind CSS |
+| Routing | React Router 7 |
+| Database & Auth | Supabase (PostgreSQL + Row-Level Security) |
+| File storage | Supabase Storage |
+| Email (contact forms) | Resend API |
+| Hosting | Vercel |
+| Analytics | Vercel Analytics |
 
-## Quick Start
-
-### Prerequisites
-
-- **Node.js** (v18 or higher recommended)
-- **npm** (v9 or higher)
-
-### Setup Instructions
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd VIVACodebase
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in browser**
-   - Local: http://localhost:5173
-   - The terminal will show the exact URL
-
-   If port 5173 is in use, Vite will automatically use the next available port (5174, 5175, etc.)
-
-5. **To expose on network** (for testing on other devices)
-   ```bash
-   npm run dev -- --host
-   ```
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-Preview the production build:
-```bash
-npm run preview
-```
+---
 
 ## Project Structure
 
 ```
-src/
-├── components/
-│   ├── blocks/          # Reusable page sections (Hero, StatCard, etc.)
-│   ├── layout/          # Layout components (Header, Footer, Layout)
-│   └── ui/              # UI primitives (Button, Card, Badge, etc.)
-├── data/
-│   └── mockData.ts      # Mock data for all pages
-├── hooks/
-│   └── useReducedMotion.ts  # Accessibility hook
-├── pages/               # Route pages
-│   ├── Home.tsx
-│   ├── About.tsx
-│   ├── Events.tsx
-│   ├── Volunteer.tsx
-│   ├── Contact.tsx
-│   ├── Donate.tsx
-│   └── ...
-├── types/
-│   └── index.ts         # TypeScript interfaces
-├── App.tsx              # Main app with routing
-└── main.tsx             # Entry point
+VIVACodebase/
+├── api/
+│   └── contact.ts          # Serverless function — handles all contact form emails
+├── src/
+│   ├── admin/
+│   │   ├── components/     # Admin UI (layout, auth guard, media uploader)
+│   │   └── pages/          # One file per admin section (Events, Team, Settings, …)
+│   ├── components/
+│   │   ├── blocks/         # Reusable page sections (hero, stat cards, etc.)
+│   │   ├── events/         # Event-specific components
+│   │   ├── layout/         # Header, footer, page layout wrapper
+│   │   └── ui/             # Low-level UI pieces (buttons, cards, badges, etc.)
+│   ├── contexts/           # React context (site settings loaded from DB)
+│   ├── data/               # Fallback mock data (used when DB is unavailable)
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Supabase client setup
+│   ├── pages/              # Public-facing route pages
+│   ├── types/              # Shared TypeScript types
+│   └── utils/              # Utility functions (dates, formatting, etc.)
+├── supabase/
+│   └── schema.sql          # Full database schema — run this to set up a new project
+├── DESIGN.md               # Design system reference (colors, typography, layouts)
+├── TODO.md                 # Known tasks and deferred work
+└── vercel.json             # Vercel deployment config
 ```
 
-## Available Routes
+---
 
-- `/` - Home page
-- `/about` - About VIVA
-- `/about/board` - Board of Executives
-- `/about/awards` - Awards & Scholarships
-- `/about/reports` - Annual Reports
-- `/events` - Upcoming events
-- `/events/calendar` - Calendar view
-- `/events/past` - Past events
-- `/events/:slug` - Event detail page
-- `/volunteer` - Volunteer information and application
-- `/contact` - Contact information
-- `/donate` - Donation page
+## Developer Setup
 
-## Design System
+These steps are for the VIVA IT team or anyone setting up a local development environment.
 
-### Colors
-- **Primary**: Green/Teal (`primary-50` to `primary-950`)
-- **Accent**: Orange/Amber (`accent-50` to `accent-950`)
-- **Neutrals**: Gray scale
+### 1. Prerequisites
 
-### Components
-- Glassmorphism cards (`.glass-card`)
-- Gradient heroes (`.gradient-hero`)
-- Soft shadows (`.shadow-soft`, `.shadow-soft-lg`)
-- Responsive grid layouts
+- Node.js v18 or higher
+- npm v9 or higher
+- A Supabase project ([supabase.com](https://supabase.com)) — free tier is enough for development
 
-### Typography
-- **Sans**: Inter
-- **Display**: Manrope
-- Custom display sizes for large headings
+### 2. Clone and install
 
-## Development Guidelines
+```bash
+git clone <repository-url>
+cd VIVACodebase
+npm install
+```
 
-### Adding a New Page
+### 3. Configure environment variables
 
-1. Create the page component in `src/pages/`
-2. Add the route in `src/App.tsx`
-3. Update navigation in `src/components/layout/Header.tsx` if needed
+Create a `.env.local` file in the project root:
 
-### Adding Mock Data
+```
+VITE_SUPABASE_URL=https://<your-project>.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+```
 
-1. Define TypeScript interface in `src/types/index.ts`
-2. Add mock data in `src/data/mockData.ts`
-3. Import and use in your components
+Get these values from your Supabase project: **Project Settings → API → Project URL and anon key**.
 
-### Styling
+> If these variables are missing, the dev server will show an error overlay. The variables must be set before the site will load locally.
 
-- Use Tailwind utility classes
-- Custom classes are in `src/index.css`
-- Follow existing patterns for consistency
-- Always respect `prefers-reduced-motion` for animations
+### 4. Set up the database
 
-### Code Style
+Run `supabase/schema.sql` against your Supabase project. You can do this from the Supabase dashboard under **SQL Editor**, or using the Supabase CLI:
 
-- ESLint configured for React + TypeScript
-- Run `npm run lint` to check for issues
-- Use default exports for pages
-- Use named exports for utility components
+```bash
+supabase db push
+```
 
-## Common Issues
+### 5. Create an admin user
 
-### White/Blank Page
-- Check browser console (F12) for JavaScript errors
-- Ensure all imports use correct export types (`default` vs `named`)
-- TypeScript types should use `import type` syntax
+In the Supabase dashboard:
+1. Go to **Authentication → Users → Invite user** and create a team email account.
+2. In the **SQL Editor**, run:
 
-### Styles Not Applying
-- Make sure Tailwind classes are in the `content` array in `tailwind.config.cjs`
-- Restart the dev server after config changes
-- Check for typos in class names
+```sql
+update auth.users
+set raw_app_meta_data = raw_app_meta_data || '{"user_role": "admin"}'::jsonb
+where email = 'your-team-email@example.com';
+```
 
-### Port Already in Use
-- Vite will automatically find an available port
-- Or manually specify: `npm run dev -- --port 3000`
+This grants admin access to that account. Without this step, the account can log in but will be rejected by the admin panel.
 
-## Scripts
+### 6. Configure email (contact forms)
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+The contact form emails are sent via [Resend](https://resend.com). You need:
 
-## Contributing
+- A Resend API key
+- A verified sending domain (or use the Resend sandbox for testing)
 
-1. Create a feature branch
-2. Make your changes
-3. Test locally with `npm run dev`
-4. Run `npm run lint` to check for issues
-5. Submit a pull request
+For Vercel deployment, set these in the Vercel project environment variables:
+
+```
+RESEND_API_KEY=re_...
+CONTACT_FROM_EMAIL=noreply@yourdomain.com
+CONTACT_TO_EMAIL=admin@vivahq.org
+```
+
+For local testing of the contact API, set these in `.env.local` as well.
+
+### 7. Start the development server
+
+```bash
+npm run dev
+```
+
+Opens at `http://localhost:5173`.
+
+---
+
+## Deployment
+
+The site deploys automatically to Vercel on every push to the `main` branch.
+
+Environment variables are set in the Vercel project dashboard — the same Supabase and Resend keys as listed above. The Vercel Supabase integration can inject them automatically if enabled under the project's integrations settings.
+
+To deploy manually:
+
+```bash
+npm run build    # Build for production
+npm run preview  # Preview the production build locally
+```
+
+---
+
+## Available Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build locally
+npm run lint     # Run ESLint
+```
+
+---
+
+## Design Reference
+
+See [`DESIGN.md`](DESIGN.md) for the full design system: colors, typography, component patterns, and page layout specifications. All visual decisions are documented there — follow it when building or modifying any UI.
+
+---
 
 ## License
 
-This project is proprietary to VIVA organization.
+Proprietary. This codebase is owned by the VIVA organization.

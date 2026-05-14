@@ -56,6 +56,7 @@ export default function AdminEventEdit() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [loadedAt, setLoadedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (isNew) return;
@@ -64,6 +65,7 @@ export default function AdminEventEdit() {
       if (err || !data) { setError(err?.message ?? 'Not found'); setLoading(false); return; }
       const r = data as Record<string, unknown>;
       const recap = r.recap as Record<string, unknown> | null;
+      setLoadedAt(String(r.updated_at ?? ''));
       setForm({
         slug: String(r.slug ?? ''),
         title: String(r.title ?? ''),
@@ -107,6 +109,12 @@ export default function AdminEventEdit() {
       setSaving(false);
       return;
     }
+    const resolvedSlug = form.slug || slugify(form.title);
+    if (!resolvedSlug) {
+      setError('Slug is required. Enter a title or a custom slug.');
+      setSaving(false);
+      return;
+    }
     if (!form.date && form.is_past_override !== 'auto') {
       setError('A date is required before forcing an event to upcoming or past.');
       setSaving(false);
@@ -116,7 +124,7 @@ export default function AdminEventEdit() {
       : form.is_past_override === 'true';
 
     const payload: Record<string, unknown> = {
-      slug: form.slug || slugify(form.title),
+      slug: resolvedSlug,
       title: form.title,
       description: form.description,
       date: form.date || null,
@@ -147,14 +155,20 @@ export default function AdminEventEdit() {
       published: form.published,
     };
 
-    let err;
     if (isNew) {
-      ({ error: err } = await supabase.from('events').insert([payload]));
+      const { error: err } = await supabase.from('events').insert([payload]);
+      if (err) { setError(err.message); setSaving(false); return; }
     } else {
-      ({ error: err } = await supabase.from('events').update(payload).eq('id', id!));
+      let query = supabase.from('events').update(payload).eq('id', id!);
+      if (loadedAt) query = query.eq('updated_at', loadedAt);
+      const { error: err, count } = await query.select('id', { count: 'exact', head: true });
+      if (err) { setError(err.message); setSaving(false); return; }
+      if (count === 0) {
+        setError('This event was edited by another admin while you were working — reload to see the latest version.');
+        setSaving(false);
+        return;
+      }
     }
-
-    if (err) { setError(err.message); setSaving(false); return; }
     navigate('/admin/events');
   }
 

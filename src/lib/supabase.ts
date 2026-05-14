@@ -38,9 +38,10 @@ if (!url || !key) {
       'Get these from: Supabase Dashboard → Project Settings → API'
     );
   }
-  // Production: create a stub client that will fail all queries gracefully.
+  // Production with missing env vars: use a localhost URL so all queries fail
+  // immediately with a network error instead of hitting a third-party domain.
   // Hooks catch errors and fall back to mockData, so the public site renders.
-  supabase = createClient('https://placeholder.supabase.co', 'placeholder');
+  supabase = createClient('http://localhost:0', 'placeholder');
 } else {
   supabase = createClient(url, key);
 }

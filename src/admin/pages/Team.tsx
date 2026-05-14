@@ -27,6 +27,7 @@ export default function AdminTeam() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<TeamRow, 'id'>>(EMPTY);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -43,14 +44,23 @@ export default function AdminTeam() {
   useEffect(() => { load(); }, []);
 
   async function save() {
+    if (saving) return;
+    setSaving(true);
     setError(null);
+    if (form.linked_in_url && !form.linked_in_url.startsWith('https://')) {
+      setError('LinkedIn URL must start with https://');
+      setSaving(false);
+      return;
+    }
     let err;
     if (editing === 'new') ({ error: err } = await supabase.from('team_members').insert([form]));
     else if (editing) ({ error: err } = await supabase.from('team_members').update(form).eq('id', editing));
     if (err) {
       setError(err.message);
+      setSaving(false);
       return;
     }
+    setSaving(false);
     setEditing(null); setForm(EMPTY); load();
   }
 
@@ -99,7 +109,7 @@ export default function AdminTeam() {
       <div className="flex items-center gap-3">
         <PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} />
         <span className="text-xs text-gray-500">Published</span>
-        <button onClick={save} className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg"><Check size={14} />Save</button>
+        <button onClick={save} disabled={saving} className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg disabled:opacity-60"><Check size={14} />{saving ? 'Saving…' : 'Save'}</button>
         <button onClick={() => setEditing(null)} className="flex items-center gap-1 px-3 py-1.5 text-gray-600 text-sm rounded-lg hover:bg-gray-100"><X size={14} />Cancel</button>
       </div>
     </div>

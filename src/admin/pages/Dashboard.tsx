@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, Users, Trophy, FileText, AlertCircle, ExternalLink } from 'lucide-react';
+import { CalendarDays, Users, Trophy, FileText, AlertCircle, ExternalLink, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { localDateKey } from '../../utils/date';
 
@@ -23,6 +23,7 @@ const EMPTY: DashboardCounts = {
 export default function Dashboard() {
   const [counts, setCounts] = useState<DashboardCounts>(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -42,6 +43,13 @@ export default function Dashboard() {
           .order('date', { ascending: false })
           .limit(10),
       ]);
+
+      const firstError = [eventsRes, teamRes, awardsRes, reportsRes, recapRes].find(r => r.error)?.error;
+      if (firstError) {
+        setLoadError(firstError.message);
+        setLoading(false);
+        return;
+      }
 
       setCounts({
         events: eventsRes.count ?? 0,
@@ -66,6 +74,12 @@ export default function Dashboard() {
     <div className="p-8 max-w-5xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
 
+      {loadError && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+          <XCircle size={16} className="shrink-0" />
+          Failed to load dashboard stats: {loadError}
+        </div>
+      )}
       {loading ? (
         <div className="animate-pulse space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

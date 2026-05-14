@@ -80,10 +80,31 @@ export default function AdminSettings() {
     load();
   }, []);
 
+  function requireHttps(label: string, value: string): string | null {
+    if (!value) return null;
+    if (!value.startsWith('https://')) return `${label} must start with https://`;
+    return null;
+  }
+
   async function save() {
     setSaving(true);
     setSaved(false);
     setError(null);
+
+    const urlFields: [string, string][] = [
+      ['Donation URL', form.donation_url],
+      ['Volunteer Form URL', form.volunteer_form_url],
+      ['Facebook URL', form.social_facebook],
+      ['Instagram URL', form.social_instagram],
+      ['Twitter URL', form.social_twitter],
+      ['LinkedIn URL', form.social_linkedin],
+      ['YouTube URL', form.social_youtube],
+    ];
+    for (const [label, value] of urlFields) {
+      const urlErr = requireHttps(label, value);
+      if (urlErr) { setError(urlErr); setSaving(false); return; }
+    }
+
     const payload = {
       organization_name: form.organization_name,
       tagline: form.tagline,
@@ -110,14 +131,35 @@ export default function AdminSettings() {
       updated_at: new Date().toISOString(),
     };
 
+    let finalRowId = rowId;
     let err;
-    if (rowId) {
-      ({ error: err } = await supabase.from('site_settings').update(payload).eq('id', rowId));
+
+    if (finalRowId) {
+      ({ error: err } = await supabase.from('site_settings').update(payload).eq('id', finalRowId));
     } else {
-      const { data, error: insertError } = await supabase.from('site_settings').insert([payload]).select('id').single();
-      err = insertError;
-      if (data) setRowId((data as Record<string, unknown>).id as string);
+      const { data, error: insertError } = await supabase
+        .from('site_settings').insert([payload]).select('id').single();
+      if (insertError) {
+        // Unique-constraint violation: another admin already created the row.
+        // Fetch the existing row's id and update it instead.
+        if (insertError.code === '23505') {
+          const { data: existing } = await supabase.from('site_settings').select('id').maybeSingle();
+          finalRowId = existing ? (existing as Record<string, unknown>).id as string : null;
+          if (finalRowId) {
+            setRowId(finalRowId);
+            ({ error: err } = await supabase.from('site_settings').update(payload).eq('id', finalRowId));
+          } else {
+            err = insertError;
+          }
+        } else {
+          err = insertError;
+        }
+      } else if (data) {
+        finalRowId = (data as Record<string, unknown>).id as string;
+        setRowId(finalRowId);
+      }
     }
+
     setSaving(false);
     if (err) {
       setError(err.message);

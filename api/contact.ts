@@ -55,6 +55,10 @@ const SOURCE_DETAILS: Record<ContactSource, { headline: string; purpose: string;
     accent: '#6d28d9',
   },
 };
+// NOTE: in-memory rate limiting only. On Vercel serverless each cold start resets
+// this Map, and concurrent warm instances each maintain their own counter. A
+// determined attacker can bypass limits by triggering multiple instances. For this
+// low-traffic site the risk is acceptable; replace with Upstash Redis if abuse occurs.
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 
 function sendJson(response: ServerResponse, statusCode: number, body: unknown) {
@@ -172,7 +176,7 @@ function readBody(request: IncomingMessage) {
     request.on('data', (chunk: Buffer) => {
       body += chunk.toString('utf8');
       if (Buffer.byteLength(body, 'utf8') > MAX_BODY_BYTES) {
-        reject(new Error('Request body is too large.'));
+        reject(Object.assign(new Error('Request body is too large.'), { statusCode: 413 }));
         request.destroy();
       }
     });
@@ -421,6 +425,7 @@ export default async function handler(request: IncomingMessage, response: Server
     sendJson(response, 200, { ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Invalid request.';
-    sendJson(response, 400, { error: message });
+    const status = (error as { statusCode?: number }).statusCode ?? 400;
+    sendJson(response, status, { error: message });
   }
 }
