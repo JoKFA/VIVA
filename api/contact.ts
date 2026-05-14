@@ -46,8 +46,15 @@ function escapeHtml(value: string) {
 }
 
 function envValue(name: string) {
-  const value = process.env[name]?.trim();
+  let value = process.env[name]?.trim();
   if (!value) return '';
+
+  const assignmentPrefix = `${name}=`;
+  if (value.startsWith(assignmentPrefix)) {
+    value = value.slice(assignmentPrefix.length).trim();
+  }
+
+  value = value.replace(/\\"/g, '"').replace(/\\'/g, "'");
 
   const quote = value[0];
   if ((quote === '"' || quote === "'") && value[value.length - 1] === quote) {
