@@ -45,6 +45,18 @@ function escapeHtml(value: string) {
     .replace(/'/g, '&#039;');
 }
 
+function envValue(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) return '';
+
+  const quote = value[0];
+  if ((quote === '"' || quote === "'") && value[value.length - 1] === quote) {
+    return value.slice(1, -1).trim();
+  }
+
+  return value;
+}
+
 function readBody(request: IncomingMessage) {
   return new Promise<string>((resolve, reject) => {
     let body = '';
@@ -158,9 +170,9 @@ export default async function handler(request: IncomingMessage, response: Server
       return;
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.CONTACT_FROM_EMAIL;
-    const to = process.env.CONTACT_TO_EMAIL;
+    const apiKey = envValue('RESEND_API_KEY');
+    const from = envValue('CONTACT_FROM_EMAIL');
+    const to = envValue('CONTACT_TO_EMAIL');
 
     if (!apiKey || !from || !to) {
       sendJson(response, 500, { error: 'Email service is not configured.' });
