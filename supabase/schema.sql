@@ -12,6 +12,7 @@
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS boolean
 LANGUAGE sql STABLE
+SET search_path = ''
 AS $$
   SELECT coalesce(auth.jwt() -> 'app_metadata' ->> 'user_role', '') = 'admin'
 $$;
@@ -135,8 +136,11 @@ CREATE POLICY "admin_all" ON events FOR ALL TO authenticated USING (is_admin()) 
 
 -- Auto-update updated_at
 CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN NEW.updated_at = now(); RETURN NEW; END;
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN NEW.updated_at = pg_catalog.now(); RETURN NEW; END;
 $$;
 DROP TRIGGER IF EXISTS events_updated_at ON events;
 CREATE TRIGGER events_updated_at BEFORE UPDATE ON events FOR EACH ROW EXECUTE FUNCTION set_updated_at();
@@ -155,6 +159,7 @@ CREATE TABLE IF NOT EXISTS event_volunteer_contacts (
   admin_contact_note  text,
   published           boolean DEFAULT false  -- admin explicitly enables per event
 );
+CREATE INDEX IF NOT EXISTS event_volunteer_contacts_event_slug_idx ON event_volunteer_contacts(event_slug);
 
 ALTER TABLE event_volunteer_contacts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "public_read" ON event_volunteer_contacts;
@@ -430,9 +435,6 @@ VALUES ('viva-media', 'viva-media', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 
 DROP POLICY IF EXISTS "viva_media_public_read" ON storage.objects;
-CREATE POLICY "viva_media_public_read" ON storage.objects
-  FOR SELECT TO anon, authenticated
-  USING (bucket_id = 'viva-media');
 
 DROP POLICY IF EXISTS "viva_media_admin_insert" ON storage.objects;
 CREATE POLICY "viva_media_admin_insert" ON storage.objects
