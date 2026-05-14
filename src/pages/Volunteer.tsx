@@ -4,17 +4,12 @@ import { Clock, CheckCircle, Send, Upload, ArrowRight, ChevronRight } from 'luci
 import { useVolunteerRoles } from '../hooks/useVolunteerRoles';
 import { useFaqs } from '../hooks/useFaqs';
 import { sendContactEmail } from '../lib/contactEmail';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 
-const WHY_ITEMS = [
-  { num: '01', title: 'Real Impact', body: 'See direct results of your efforts — from students finding jobs to communities restored after a cleanup.' },
-  { num: '02', title: 'Grow Your Skills', body: 'Leadership, event management, communications, environmental science — every role builds something real.' },
-  { num: '03', title: 'Build Your Network', body: 'Connect with 2,500+ volunteers, partner organizations, and professionals across Metro Vancouver.' },
-  { num: '04', title: 'Official Recognition', body: 'Receive documented volunteer hours and a reference letter — valuable for academic and career applications.' },
-];
 
 const PROCESS_STEPS = [
   { n: 1, title: 'Submit Application', body: 'Fill out the form below. Takes about 5 minutes.' },
-  { n: 2, title: 'Team Review', body: 'We review applications within 5–7 business days.' },
+  { n: 2, title: 'Team Review', body: 'We review applications within 5-7 business days.' },
   { n: 3, title: 'Match & Interview', body: 'We contact you to discuss the best role fit.' },
   { n: 4, title: 'Orientation', body: 'Complete a short onboarding session.' },
   { n: 5, title: 'Start Volunteering', body: "You're in. Make your first impact." },
@@ -51,6 +46,7 @@ const EMPTY: FormData = { firstName: '', lastName: '', email: '', phone: '', ava
 export default function Volunteer() {
   const { data: volunteerRoles } = useVolunteerRoles();
   const { data: faqs } = useFaqs();
+  const { settings: siteSettings } = useSiteSettings();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,7 +124,7 @@ export default function Volunteer() {
 
   return (
     <div>
-      {/* Page Header — Option 2 */}
+      {/* Page Header - Option 2 */}
       <div className="page-header pt-28">
         <div className="page-header-inner">
           <div className="page-header-bar" />
@@ -141,33 +137,23 @@ export default function Volunteer() {
         </div>
       </div>
 
-      {/* Why volunteer — split image / reasons (NOT 3-col icon grid) */}
+      {/* Why volunteer - split image / reasons (NOT 3-col icon grid) */}
       <section className="bg-white">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2">
           {/* Image */}
           <div className="img-placeholder min-h-[400px] relative">
-            <img src="https://picsum.photos/640/480?grayscale&random=80" alt="VIVA volunteers" />
+            <img src={siteSettings.volunteerWhyImageUrl || 'https://picsum.photos/640/480?grayscale&random=80'} alt="VIVA volunteers" />
           </div>
           {/* Reasons */}
           <div className="px-12 py-16">
             <p className="eyebrow">Why Volunteer</p>
-            <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-8">More than giving back</h2>
-            <div className="space-y-7">
-              {WHY_ITEMS.map((w) => (
-                <div key={w.num} className="flex gap-5">
-                  <p className="font-impact text-[2.5rem] text-warm-200 leading-none flex-shrink-0 w-12">{w.num}</p>
-                  <div>
-                    <h3 className="font-display font-bold text-warm-900 mb-1">{w.title}</h3>
-                    <p className="text-warm-600 text-sm leading-relaxed">{w.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-5">{siteSettings.volunteerWhyHeading}</h2>
+            <p className="text-warm-600 text-base leading-relaxed">{siteSettings.volunteerWhyBody}</p>
           </div>
         </div>
       </section>
 
-      {/* Open Roles — horizontal scroll track (like honours) */}
+      {/* Open Roles - horizontal scroll track (like honours) */}
       {volunteerRoles.length > 0 && (
         <section className="bg-warm-50 py-20 px-8">
           <div className="max-w-7xl mx-auto">
@@ -228,7 +214,7 @@ export default function Volunteer() {
         </section>
       )}
 
-      {/* How it works — numbered steps (vertical line, not circles in a row) */}
+      {/* How it works - numbered steps (vertical line, not circles in a row) */}
       <section className="bg-white py-20 px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
@@ -253,13 +239,14 @@ export default function Volunteer() {
             </div>
           </div>
 
-          {/* FAQ accordion — right col */}
+          {/* FAQ accordion - right col */}
           <div>
             <p className="eyebrow">FAQ</p>
             <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-8">
               Common Questions
             </h2>
             {faqs.length > 0 ? (
+              <>
               <div className="space-y-0 border-t border-warm-200">
                 {faqs.slice(0, 6).map((faq) => (
                   <div key={faq.id} className="border-b border-warm-200 overflow-hidden">
@@ -283,6 +270,11 @@ export default function Volunteer() {
                   </div>
                 ))}
               </div>
+              <Link to="/faqs" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700">
+                View full FAQ
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              </>
             ) : (
               <p className="text-warm-400 text-sm">FAQ coming soon.</p>
             )}
@@ -290,7 +282,7 @@ export default function Volunteer() {
         </div>
       </section>
 
-      {/* Application Form — 3-step */}
+      {/* Application Form - 3-step */}
       <section id="apply" className="bg-warm-50 py-20 px-8">
         <div className="max-w-3xl mx-auto">
           <p className="eyebrow">Apply</p>
@@ -304,7 +296,7 @@ export default function Volunteer() {
               <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
               <h3 className="font-display font-extrabold text-xl text-warm-900 mb-2">Application Submitted</h3>
               <p className="text-warm-600 text-sm max-w-sm mx-auto">
-                Thank you! Our team will review your application and reach out within 5–7 business days.
+                Thank you! Our team will review your application and reach out within 5-7 business days.
               </p>
             </div>
           ) : (
@@ -407,7 +399,7 @@ export default function Volunteer() {
                     {errors.availability && <p className="text-red-500 text-xs mt-1">{errors.availability}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Resume / CV <span className="text-warm-400 font-normal">(optional)</span></label>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Resume / CV <span className="text-warm-400 font-normal">(if applicable)</span></label>
                     <div className="border-2 border-dashed border-warm-300 rounded-lg p-5 text-center hover:border-primary-400 transition-colors">
                       <Upload className="w-7 h-7 text-warm-400 mx-auto mb-2" />
                       <input type="file" id="resume" accept=".pdf,.doc,.docx" className="hidden"
@@ -416,7 +408,7 @@ export default function Volunteer() {
                         <span className="text-primary-600 font-medium">Click to upload</span>
                         <span className="text-warm-500"> or drag and drop</span>
                       </label>
-                      <p className="text-xs text-warm-400 mt-1">PDF, DOC, DOCX — max 5 MB</p>
+                      <p className="text-xs text-warm-400 mt-1">PDF, DOC, DOCX - max 5 MB</p>
                       {form.resume && <p className="text-xs text-green-600 mt-1">{form.resume.name}</p>}
                     </div>
                   </div>
@@ -454,14 +446,14 @@ export default function Volunteer() {
                     {errors.interests && <p className="text-red-500 text-xs mt-1">{errors.interests}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Relevant Experience <span className="text-warm-400 font-normal">(optional)</span></label>
+                    <label className="block text-xs font-semibold text-warm-700 mb-1.5">Relevant Experience <span className="text-warm-400 font-normal">(if applicable)</span></label>
                     <textarea value={form.experience} onChange={(e) => field('experience', e.target.value)} rows={3}
-                      className={inputCls('experience')} placeholder="Volunteer, work, or educational experience…" />
+                      className={inputCls('experience')} placeholder="Volunteer, work, or educational experience..." />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-warm-700 mb-1.5">Why do you want to volunteer with VIVA? *</label>
                     <textarea value={form.motivation} onChange={(e) => field('motivation', e.target.value)} rows={4}
-                      className={inputCls('motivation')} placeholder="Tell us what motivates you…" />
+                      className={inputCls('motivation')} placeholder="Tell us what motivates you..." />
                     {errors.motivation && <p className="text-red-500 text-xs mt-1">{errors.motivation}</p>}
                   </div>
                   <div className="flex items-center justify-between pt-2">
@@ -488,7 +480,7 @@ export default function Volunteer() {
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <CheckCircle className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
           <p className="text-warm-600 text-sm leading-relaxed">
-            All VIVA volunteers are expected to uphold our Code of Conduct — treating everyone with respect,
+            All VIVA volunteers are expected to uphold our Code of Conduct - treating everyone with respect,
             maintaining confidentiality, and representing VIVA positively in all interactions.{' '}
             <Link to="/contact" className="text-primary-600 hover:text-primary-700 font-medium">
               Questions? Contact us <ArrowRight className="inline w-3 h-3" />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { PublishToggle } from '../components/PublishToggle';
@@ -60,6 +60,20 @@ export default function AdminFaqs() {
     load();
   }
 
+  async function move(id: string, direction: -1 | 1) {
+    const index = rows.findIndex(r => r.id === id);
+    const swapWith = index + direction;
+    if (index < 0 || swapWith < 0 || swapWith >= rows.length) return;
+    setError(null);
+    const current = rows[index];
+    const other = rows[swapWith];
+    const { error: firstErr } = await supabase.from('faqs').update({ sort_order: other.sort_order }).eq('id', current.id);
+    if (firstErr) { setError(firstErr.message); return; }
+    const { error: secondErr } = await supabase.from('faqs').update({ sort_order: current.sort_order }).eq('id', other.id);
+    if (secondErr) { setError(secondErr.message); return; }
+    load();
+  }
+
   function startEdit(r: FaqRow) {
     setEditing(r.id);
     setForm({ question: r.question, answer: r.answer, category: r.category, sort_order: r.sort_order, published: r.published });
@@ -91,18 +105,23 @@ export default function AdminFaqs() {
       } />
       <div className="p-8 space-y-3">
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          The Volunteer page only shows the first six published FAQs by sort order. Use the arrows or Sort Order field to control which questions appear there.
+        </div>
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
-        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
-        {rows.map(r => (
+        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50">{FormFields()}</div>}
+        {rows.map((r, index) => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
-            {editing === r.id ? <FormFields /> : (
+            {editing === r.id ? FormFields() : (
               <div className="flex items-start justify-between gap-4">
                 <div>
                   {r.category && <div className="text-xs font-medium text-primary-600 mb-0.5">{r.category}</div>}
-                  <div className="font-semibold text-sm text-gray-900">{r.question}</div>
+                  <div className="font-semibold text-sm text-gray-900">#{r.sort_order} {r.question}</div>
                   <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">{r.answer}</div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => move(r.id, -1)} disabled={index === 0} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30"><ArrowUp size={14} /></button>
+                  <button onClick={() => move(r.id, 1)} disabled={index === rows.length - 1} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded disabled:opacity-30"><ArrowDown size={14} /></button>
                   <PublishToggle published={r.published} onToggle={v => togglePublish(r.id, v)} />
                   <button onClick={() => startEdit(r)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"><Pencil size={14} /></button>
                   <button onClick={() => del(r.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 size={14} /></button>

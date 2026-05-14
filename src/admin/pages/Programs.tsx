@@ -149,7 +149,7 @@ export default function AdminPrograms() {
         {editing === 'new' && (
           <div className="border border-blue-200 rounded-xl p-5 bg-blue-50 space-y-3">
             <h3 className="font-semibold text-sm text-gray-800">New Program</h3>
-            <FormFields />
+            {FormFields()}
             <div className="flex items-center gap-3 pt-1">
               <PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} />
               <span className="text-xs text-gray-500">Published</span>
@@ -162,7 +162,7 @@ export default function AdminPrograms() {
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
             {editing === r.id ? (
               <div className="space-y-3">
-                <FormFields />
+                {FormFields()}
                 <div className="flex items-center gap-3">
                   <PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} />
                   <span className="text-xs text-gray-500">Published</span>

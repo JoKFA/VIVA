@@ -1,7 +1,16 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
 
 interface SettingsForm {
   organization_name: string;
@@ -12,6 +21,12 @@ interface SettingsForm {
   email: string;
   media_email: string;
   territory_acknowledgement: string;
+  footer_description: string;
+  footer_cta_heading: string;
+  footer_cta_body: string;
+  volunteer_why_heading: string;
+  volunteer_why_body: string;
+  volunteer_why_image_url: string;
   // social_links
   social_facebook: string;
   social_instagram: string;
@@ -29,6 +44,8 @@ interface SettingsForm {
 const EMPTY: SettingsForm = {
   organization_name: '', tagline: '', donation_url: '', volunteer_form_url: '',
   phone: '', email: '', media_email: '', territory_acknowledgement: '',
+  footer_description: '', footer_cta_heading: '', footer_cta_body: '',
+  volunteer_why_heading: '', volunteer_why_body: '', volunteer_why_image_url: '',
   social_facebook: '', social_instagram: '', social_twitter: '', social_linkedin: '', social_youtube: '',
   addr_street: '', addr_city: '', addr_province: '', addr_postal: '', addr_country: 'Canada',
 };
@@ -63,6 +80,12 @@ export default function AdminSettings() {
           email: String(r.email ?? ''),
           media_email: String(r.media_email ?? ''),
           territory_acknowledgement: String(r.territory_acknowledgement ?? ''),
+          footer_description: String(r.footer_description ?? ''),
+          footer_cta_heading: String(r.footer_cta_heading ?? ''),
+          footer_cta_body: String(r.footer_cta_body ?? ''),
+          volunteer_why_heading: String(r.volunteer_why_heading ?? ''),
+          volunteer_why_body: String(r.volunteer_why_body ?? ''),
+          volunteer_why_image_url: String(r.volunteer_why_image_url ?? ''),
           social_facebook: String(sl.facebook ?? ''),
           social_instagram: String(sl.instagram ?? ''),
           social_twitter: String(sl.twitter ?? ''),
@@ -114,6 +137,12 @@ export default function AdminSettings() {
       email: form.email,
       media_email: form.media_email || null,
       territory_acknowledgement: form.territory_acknowledgement,
+      footer_description: form.footer_description,
+      footer_cta_heading: form.footer_cta_heading,
+      footer_cta_body: form.footer_cta_body,
+      volunteer_why_heading: form.volunteer_why_heading,
+      volunteer_why_body: form.volunteer_why_body,
+      volunteer_why_image_url: form.volunteer_why_image_url || null,
       social_links: {
         facebook: form.social_facebook || undefined,
         instagram: form.social_instagram || undefined,
@@ -172,9 +201,6 @@ export default function AdminSettings() {
   if (loading) return <div className="p-8 animate-pulse"><div className="h-40 bg-gray-100 rounded-lg" /></div>;
 
   const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400";
-  const F = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div><label className="block text-xs text-gray-500 mb-1">{label}</label>{children}</div>
-  );
   const s = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm(p => ({ ...p, [k]: e.target.value }));
 
@@ -187,33 +213,47 @@ export default function AdminSettings() {
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Organization</h2>
           <div className="grid grid-cols-2 gap-4">
-            <F label="Organization Name"><input value={form.organization_name} onChange={s('organization_name')} className={inp} /></F>
-            <F label="Tagline"><input value={form.tagline} onChange={s('tagline')} className={inp} /></F>
-            <F label="Donation URL"><input value={form.donation_url} onChange={s('donation_url')} className={inp} /></F>
-            <F label="Volunteer Form URL"><input value={form.volunteer_form_url} onChange={s('volunteer_form_url')} className={inp} /></F>
+            <Field label="Organization Name"><input value={form.organization_name} onChange={s('organization_name')} className={inp} /></Field>
+            <Field label="Tagline"><input value={form.tagline} onChange={s('tagline')} className={inp} /></Field>
+            <Field label="Donation URL"><input value={form.donation_url} onChange={s('donation_url')} className={inp} /></Field>
+            <Field label="Volunteer Form URL"><input value={form.volunteer_form_url} onChange={s('volunteer_form_url')} className={inp} /></Field>
           </div>
-          <F label="Territory Acknowledgement">
+          <Field label="Territory Acknowledgement">
             <textarea value={form.territory_acknowledgement} onChange={s('territory_acknowledgement')} rows={3} className={inp} />
-          </F>
+          </Field>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Footer & CTA Copy</h2>
+          <Field label="Footer Organization Description">
+            <textarea value={form.footer_description} onChange={s('footer_description')} rows={4} className={inp} />
+          </Field>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="CTA Heading"><input value={form.footer_cta_heading} onChange={s('footer_cta_heading')} className={inp} /></Field>
+            <Field label="CTA Body"><input value={form.footer_cta_body} onChange={s('footer_cta_body')} className={inp} /></Field>
+          </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contact</h2>
+          <p className="text-xs text-gray-500">
+            These fields power the footer, contact page sidebar, and site-wide defaults. The separate Contact Info CMS page controls optional ordered contact rows for contact-specific content.
+          </p>
           <div className="grid grid-cols-3 gap-4">
-            <F label="Phone"><input value={form.phone} onChange={s('phone')} className={inp} /></F>
-            <F label="Email"><input value={form.email} onChange={s('email')} className={inp} /></F>
-            <F label="Media Email"><input value={form.media_email} onChange={s('media_email')} className={inp} /></F>
+            <Field label="Phone"><input value={form.phone} onChange={s('phone')} className={inp} /></Field>
+            <Field label="Email"><input value={form.email} onChange={s('email')} className={inp} /></Field>
+            <Field label="Media Email"><input value={form.media_email} onChange={s('media_email')} className={inp} /></Field>
           </div>
         </section>
 
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Address</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2"><F label="Street"><input value={form.addr_street} onChange={s('addr_street')} className={inp} /></F></div>
-            <F label="City"><input value={form.addr_city} onChange={s('addr_city')} className={inp} /></F>
-            <F label="Province"><input value={form.addr_province} onChange={s('addr_province')} className={inp} /></F>
-            <F label="Postal Code"><input value={form.addr_postal} onChange={s('addr_postal')} className={inp} /></F>
-            <F label="Country"><input value={form.addr_country} onChange={s('addr_country')} className={inp} /></F>
+            <div className="col-span-2"><Field label="Street"><input value={form.addr_street} onChange={s('addr_street')} className={inp} /></Field></div>
+            <Field label="City"><input value={form.addr_city} onChange={s('addr_city')} className={inp} /></Field>
+            <Field label="Province"><input value={form.addr_province} onChange={s('addr_province')} className={inp} /></Field>
+            <Field label="Postal Code"><input value={form.addr_postal} onChange={s('addr_postal')} className={inp} /></Field>
+            <Field label="Country"><input value={form.addr_country} onChange={s('addr_country')} className={inp} /></Field>
           </div>
         </section>
 
@@ -221,16 +261,16 @@ export default function AdminSettings() {
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Social Links</h2>
           <div className="grid grid-cols-2 gap-4">
             {(['facebook', 'instagram', 'twitter', 'linkedin', 'youtube'] as const).map(net => (
-              <F key={net} label={net.charAt(0).toUpperCase() + net.slice(1)}>
+              <Field key={net} label={net.charAt(0).toUpperCase() + net.slice(1)}>
                 <input value={form[`social_${net}` as keyof SettingsForm]} onChange={s(`social_${net}` as keyof SettingsForm)} className={inp} />
-              </F>
+              </Field>
             ))}
           </div>
         </section>
 
         <div className="flex items-center gap-4 pt-2 border-t border-gray-100">
           <button onClick={save} disabled={saving} className="ml-auto btn-admin-primary flex items-center gap-1.5">
-            <Check size={14} />{saving ? 'Saving…' : 'Save Settings'}
+            <Check size={14} />{saving ? 'Saving...' : 'Save Settings'}
           </button>
           {saved && <span className="text-green-600 text-sm font-medium">Saved!</span>}
         </div>

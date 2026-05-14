@@ -39,6 +39,12 @@ CREATE TABLE IF NOT EXISTS site_settings (
 );
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS awards_page_visible boolean DEFAULT true;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS annual_reports_page_visible boolean DEFAULT true;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_description text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_cta_heading text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_cta_body text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_heading text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_body text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_image_url text;
 
 -- Enforce exactly one row at DB level
 CREATE UNIQUE INDEX IF NOT EXISTS site_settings_singleton

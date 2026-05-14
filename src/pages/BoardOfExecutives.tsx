@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Linkedin, ArrowRight } from 'lucide-react';
 import { useTeamMembers } from '../hooks/useTeamMembers';
 
 function Avatar({ src, alt, size = 56 }: { src: string; alt: string; size?: number }) {
   const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    setErr(false);
+  }, [src]);
+
   if (err) return (
     <div className="img-placeholder" style={{ width: size, height: size, flexShrink: 0 }} />
   );

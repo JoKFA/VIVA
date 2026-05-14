@@ -154,6 +154,12 @@ export interface SiteSettings {
   email: string;
   mediaEmail?: string;
   territoryAcknowledgement: string;
+  footerDescription: string;
+  footerCtaHeading: string;
+  footerCtaBody: string;
+  volunteerWhyHeading: string;
+  volunteerWhyBody: string;
+  volunteerWhyImageUrl?: string;
   awardsPageVisible: boolean;
   annualReportsPageVisible: boolean;
 }

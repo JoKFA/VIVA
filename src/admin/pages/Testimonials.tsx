@@ -91,10 +91,10 @@ export default function AdminTestimonials() {
       <div className="p-8 space-y-3">
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
-        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
+        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50">{FormFields()}</div>}
         {rows.map(r => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
-            {editing === r.id ? <FormFields /> : (
+            {editing === r.id ? FormFields() : (
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div>

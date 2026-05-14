@@ -97,11 +97,14 @@ export default function AdminContactInfo() {
       } />
       <div className="p-8 space-y-3">
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Site Settings controls the canonical address, phone, email, media email, and social links used across the site. This page is for optional ordered contact rows; keep duplicate values in sync when both are used.
+        </div>
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
-        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
+        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50">{FormFields()}</div>}
         {rows.map(r => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
-            {editing === r.id ? <FormFields /> : (
+            {editing === r.id ? FormFields() : (
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2">

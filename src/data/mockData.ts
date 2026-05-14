@@ -37,7 +37,15 @@ export const siteSettings: SiteSettings = {
   email: 'info.vivahq@gmail.com',
   mediaEmail: 'media.vivahq@gmail.com',
   territoryAcknowledgement:
-    'VIVA respectfully acknowledges that our main operations are located on the traditional, ancestral, and unceded territories of the Musqueam, Squamish, and Tsleil-Waututh Nations. As our volunteer work and impact span across British Columbia, we also recognize the territories of more than 200 First Nations, as well as the Metis and Inuit peoples who live in our communities. We are deeply grateful for the opportunity to live, work, and serve on these lands.',
+    'VIVA respectfully acknowledges that our main operations are located on the traditional, ancestral, and unceded territories of the xʷməθkʷəy̓əm (Musqueam Indian Band), Sḵwx̱wú7mesh Úxwumixw (Squamish Nation), and səlilwətaɬ (Tsleil-Waututh Nation). We recognize the enduring relationship that these Nations have with these lands and are grateful for the opportunity to live, work, gather, and serve in this place. As our volunteer activities may take place across British Columbia, we also acknowledge the many Indigenous territories and communities connected to the lands where we operate.',
+  footerDescription:
+    'Vancouver International Volunteer Association (VIVA) is dedicated to creating meaningful and inclusive community experiences across Vancouver. Through community involvement events and programs, VIVA brings people together to connect, learn, and contribute to stronger communities.',
+  footerCtaHeading: 'Ready to make a difference?',
+  footerCtaBody: 'Join the VIVA volunteer team and make a real impact in the community together.',
+  volunteerWhyHeading: 'Why Volunteer with VIVA',
+  volunteerWhyBody:
+    'Volunteering with VIVA allows you to create real impact by supporting those who need it most while actively shaping a stronger community. You will gain hands-on experience, connect with diverse cultures in Canada, and grow as a globally minded young leader. Together, we turn action into positive change and stories worth telling.',
+  volunteerWhyImageUrl: '',
   awardsPageVisible: true,
   annualReportsPageVisible: true,
 };

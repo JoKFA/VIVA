@@ -96,14 +96,14 @@ export default function AdminPartners() {
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
         {editing === 'new' && (
           <div className="border border-blue-200 rounded-xl p-5 bg-blue-50 space-y-3">
-            <FormFields />
+            {FormFields()}
             <div className="flex items-center gap-3"><PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} /><span className="text-xs text-gray-500">Published</span><button onClick={save} className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg"><Check size={14} />Save</button><button onClick={() => setEditing(null)} className="flex items-center gap-1 px-3 py-1.5 text-gray-600 text-sm rounded-lg hover:bg-gray-100"><X size={14} />Cancel</button></div>
           </div>
         )}
         {rows.map(r => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
             {editing === r.id ? (
-              <div className="space-y-3"><FormFields /><div className="flex items-center gap-3"><PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} /><span className="text-xs text-gray-500">Published</span><button onClick={save} className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg"><Check size={14} />Save</button><button onClick={() => setEditing(null)} className="flex items-center gap-1 px-3 py-1.5 text-gray-600 text-sm rounded-lg hover:bg-gray-100"><X size={14} />Cancel</button></div></div>
+              <div className="space-y-3">{FormFields()}<div className="flex items-center gap-3"><PublishToggle published={form.published} onToggle={v => setForm(p => ({ ...p, published: v }))} /><span className="text-xs text-gray-500">Published</span><button onClick={save} className="ml-auto flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg"><Check size={14} />Save</button><button onClick={() => setEditing(null)} className="flex items-center gap-1 px-3 py-1.5 text-gray-600 text-sm rounded-lg hover:bg-gray-100"><X size={14} />Cancel</button></div></div>
             ) : (
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">

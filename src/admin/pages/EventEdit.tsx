@@ -8,6 +8,15 @@ import { MediaUpload } from '../components/MediaUpload';
 import { SafeImage } from '../../components/ui/SafeImage';
 import { localDateKey } from '../../utils/date';
 
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
+
 interface EventForm {
   slug: string;
   title: string;
@@ -26,6 +35,7 @@ interface EventForm {
   lead_contact_name: string;
   lead_contact_email: string;
   lead_contact_phone: string;
+  what_you_will_do: string;
   is_past_override: string; // 'auto' | 'true' | 'false'
   recap_summary: string;
   recap_volunteers: number;
@@ -39,6 +49,7 @@ const EMPTY: EventForm = {
   location: '', address: '', type: 'workshop', tags: '', capacity: 0,
   registered: 0, status: 'open', image_url: '',
   lead_contact_name: '', lead_contact_email: '', lead_contact_phone: '',
+  what_you_will_do: '',
   is_past_override: 'auto', recap_summary: '', recap_volunteers: 0,
   recap_hours: 0, recap_beneficiaries: 0, published: true,
 };
@@ -84,6 +95,7 @@ export default function AdminEventEdit() {
         lead_contact_name: String((r.lead_contact as Record<string, unknown>)?.name ?? ''),
         lead_contact_email: String((r.lead_contact as Record<string, unknown>)?.email ?? ''),
         lead_contact_phone: String((r.lead_contact as Record<string, unknown>)?.phone ?? ''),
+        what_you_will_do: ((r.what_you_will_do as string[]) ?? []).join('\n'),
         is_past_override: r.is_past_override === null || r.is_past_override === undefined
           ? 'auto' : r.is_past_override ? 'true' : 'false',
         recap_summary: String(recap?.summary ?? ''),
@@ -143,6 +155,9 @@ export default function AdminEventEdit() {
         email: form.lead_contact_email,
         phone: form.lead_contact_phone || undefined,
       } : null,
+      what_you_will_do: form.what_you_will_do
+        ? form.what_you_will_do.split('\n').map(item => item.trim()).filter(Boolean)
+        : [],
       is_past_override: override,
       recap: form.recap_summary ? {
         summary: form.recap_summary,
@@ -177,12 +192,6 @@ export default function AdminEventEdit() {
   const isPast = form.is_past_override === 'true'
     || (form.is_past_override === 'auto' && Boolean(form.date) && form.date < localDateKey());
 
-  const F = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div>
-      <label className="block text-xs text-gray-500 mb-1">{label}</label>
-      {children}
-    </div>
-  );
   const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400";
 
   return (
@@ -202,20 +211,20 @@ export default function AdminEventEdit() {
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Basic Info</h2>
           <div className="grid grid-cols-2 gap-4">
-            <F label="Title *"><input value={form.title} onChange={e => { set('title', e.target.value); if (isNew) set('slug', slugify(e.target.value)); }} className={inp} /></F>
-            <F label="Slug *"><input value={form.slug} onChange={e => set('slug', e.target.value)} className={inp} /></F>
+            <Field label="Title *"><input value={form.title} onChange={e => { set('title', e.target.value); if (isNew) set('slug', slugify(e.target.value)); }} className={inp} /></Field>
+            <Field label="Slug *"><input value={form.slug} onChange={e => set('slug', e.target.value)} className={inp} /></Field>
           </div>
-          <F label="Description">
+          <Field label="Description">
             <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3} className={inp} />
-          </F>
+          </Field>
           <div className="grid grid-cols-3 gap-4">
-            <F label="Date"><input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={inp} /></F>
-            <F label="End Date"><input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} className={inp} /></F>
-            <F label="Time"><input value={form.time} onChange={e => set('time', e.target.value)} placeholder="e.g. 10:00 AM" className={inp} /></F>
+            <Field label="Date"><input type="date" value={form.date} onChange={e => set('date', e.target.value)} className={inp} /></Field>
+            <Field label="End Date"><input type="date" value={form.end_date} onChange={e => set('end_date', e.target.value)} className={inp} /></Field>
+            <Field label="Time"><input value={form.time} onChange={e => set('time', e.target.value)} placeholder="e.g. 10:00 AM" className={inp} /></Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <F label="Location"><input value={form.location} onChange={e => set('location', e.target.value)} className={inp} /></F>
-            <F label="Address"><input value={form.address} onChange={e => set('address', e.target.value)} className={inp} /></F>
+            <Field label="Location"><input value={form.location} onChange={e => set('location', e.target.value)} className={inp} /></Field>
+            <Field label="Address"><input value={form.address} onChange={e => set('address', e.target.value)} className={inp} /></Field>
           </div>
         </section>
 
@@ -223,32 +232,32 @@ export default function AdminEventEdit() {
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Classification</h2>
           <div className="grid grid-cols-3 gap-4">
-            <F label="Type">
+            <Field label="Type">
               <select value={form.type} onChange={e => set('type', e.target.value)} className={inp}>
                 {['workshop', 'community-service', 'career', 'social', 'fundraiser'].map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
-            </F>
-            <F label="Status">
+            </Field>
+            <Field label="Status">
               <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
                 {['open', 'waitlist', 'closed'].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-            </F>
-            <F label="Past Override">
+            </Field>
+            <Field label="Past Override">
               <select value={form.is_past_override} onChange={e => set('is_past_override', e.target.value)} className={inp}>
                 <option value="auto">Auto (from date)</option>
                 <option value="false">Force Upcoming</option>
                 <option value="true">Force Past</option>
               </select>
-            </F>
+            </Field>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <F label="Tags (comma-separated)">
+            <Field label="Tags (comma-separated)">
               <input value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="volunteer, fundraiser" className={inp} />
-            </F>
-            <F label="Capacity"><input type="number" value={form.capacity} onChange={e => set('capacity', Number(e.target.value))} className={inp} /></F>
-            <F label="Registered"><input type="number" value={form.registered} onChange={e => set('registered', Number(e.target.value))} className={inp} /></F>
+            </Field>
+            <Field label="Capacity"><input type="number" value={form.capacity} onChange={e => set('capacity', Number(e.target.value))} className={inp} /></Field>
+            <Field label="Registered"><input type="number" value={form.registered} onChange={e => set('registered', Number(e.target.value))} className={inp} /></Field>
           </div>
           <MediaUpload label="Event Image" kind="image" folder="events" value={form.image_url} onChange={url => set('image_url', url)} previewAlt={form.title} />
         </section>
@@ -257,23 +266,30 @@ export default function AdminEventEdit() {
         <section className="space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Lead Contact</h2>
           <div className="grid grid-cols-3 gap-4">
-            <F label="Name"><input value={form.lead_contact_name} onChange={e => set('lead_contact_name', e.target.value)} className={inp} /></F>
-            <F label="Email"><input value={form.lead_contact_email} onChange={e => set('lead_contact_email', e.target.value)} className={inp} /></F>
-            <F label="Phone"><input value={form.lead_contact_phone} onChange={e => set('lead_contact_phone', e.target.value)} className={inp} /></F>
+            <Field label="Name"><input value={form.lead_contact_name} onChange={e => set('lead_contact_name', e.target.value)} className={inp} /></Field>
+            <Field label="Email"><input value={form.lead_contact_email} onChange={e => set('lead_contact_email', e.target.value)} className={inp} /></Field>
+            <Field label="Phone"><input value={form.lead_contact_phone} onChange={e => set('lead_contact_phone', e.target.value)} className={inp} /></Field>
           </div>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Volunteer Details</h2>
+          <Field label={"What You'll Do (one item per line)"}>
+            <textarea value={form.what_you_will_do} onChange={e => set('what_you_will_do', e.target.value)} rows={4} className={inp} />
+          </Field>
         </section>
 
         {/* Recap (shown when event is past) */}
         {isPast && (
           <section className="space-y-4 border border-amber-200 rounded-xl p-5 bg-amber-50">
             <h2 className="text-xs font-bold text-amber-600 uppercase tracking-widest">Event Recap</h2>
-            <F label="Summary">
+            <Field label="Summary">
               <textarea value={form.recap_summary} onChange={e => set('recap_summary', e.target.value)} rows={3} className={inp} />
-            </F>
+            </Field>
             <div className="grid grid-cols-3 gap-4">
-              <F label="Volunteers Count"><input type="number" value={form.recap_volunteers} onChange={e => set('recap_volunteers', Number(e.target.value))} className={inp} /></F>
-              <F label="Hours Served"><input type="number" value={form.recap_hours} onChange={e => set('recap_hours', Number(e.target.value))} className={inp} /></F>
-              <F label="Beneficiaries"><input type="number" value={form.recap_beneficiaries} onChange={e => set('recap_beneficiaries', Number(e.target.value))} className={inp} /></F>
+              <Field label="Volunteers Count"><input type="number" value={form.recap_volunteers} onChange={e => set('recap_volunteers', Number(e.target.value))} className={inp} /></Field>
+              <Field label="Hours Served"><input type="number" value={form.recap_hours} onChange={e => set('recap_hours', Number(e.target.value))} className={inp} /></Field>
+              <Field label="Beneficiaries"><input type="number" value={form.recap_beneficiaries} onChange={e => set('recap_beneficiaries', Number(e.target.value))} className={inp} /></Field>
             </div>
           </section>
         )}
@@ -346,6 +362,16 @@ export default function AdminEventEdit() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+                  {form.what_you_will_do && (
+                    <div className="border border-warm-200 bg-white p-6">
+                      <h4 className="mb-3 font-display text-lg font-extrabold text-warm-900">What You'll Do</h4>
+                      <ul className="space-y-2">
+                        {form.what_you_will_do.split('\n').map(item => item.trim()).filter(Boolean).map(item => (
+                          <li key={item} className="text-sm leading-relaxed text-warm-600">{item}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </section>

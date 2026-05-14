@@ -132,10 +132,10 @@ export default function AdminHonours() {
       <div className="p-8 space-y-3">
         {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
-        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
+        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50">{FormFields()}</div>}
         {rows.map(r => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
-            {editing === r.id ? <FormFields /> : (
+            {editing === r.id ? FormFields() : (
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: r.accent }}>

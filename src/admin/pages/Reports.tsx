@@ -164,10 +164,10 @@ export default function AdminReports() {
           </div>
         </section>
         {loading && <div className="animate-pulse h-20 bg-gray-100 rounded-lg" />}
-        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50"><FormFields /></div>}
+        {editing === 'new' && <div className="border border-blue-200 rounded-xl p-5 bg-blue-50">{FormFields()}</div>}
         {rows.map(r => (
           <div key={r.id} className="border border-gray-200 rounded-xl p-5 bg-white">
-            {editing === r.id ? <FormFields /> : (
+            {editing === r.id ? FormFields() : (
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   {r.cover_image_url && <img src={r.cover_image_url} alt={r.title} className="h-14 w-10 object-cover rounded bg-gray-100" />}

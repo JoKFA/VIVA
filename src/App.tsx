@@ -19,6 +19,7 @@ const Volunteer = lazy(() => import('./pages/Volunteer'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Donate = lazy(() => import('./pages/Donate'));
 const Faqs = lazy(() => import('./pages/Faqs'));
+const PolicyPage = lazy(() => import('./pages/PolicyPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
@@ -78,6 +79,9 @@ function AppRoutes() {
             <Route path="contact" element={<S><Contact /></S>} />
             <Route path="donate" element={<S><Donate /></S>} />
             <Route path="faqs" element={<S><Faqs /></S>} />
+            <Route path="code-of-conduct" element={<S><PolicyPage /></S>} />
+            <Route path="privacy" element={<S><PolicyPage /></S>} />
+            <Route path="accessibility" element={<S><PolicyPage /></S>} />
             <Route path="*" element={<S><NotFound /></S>} />
           </Route>
 

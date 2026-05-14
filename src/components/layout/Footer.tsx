@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Instagram, Linkedin, Mail, MapPin, Phone, Send } from 'lucide-react';
 import { useSiteSettings } from '../../contexts/SiteSettingsContext';
@@ -62,8 +62,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-sm leading-relaxed max-w-sm mb-6">
-              Vancouver International Volunteer Association connects passionate volunteers
-              with meaningful opportunities across BC since 2018.
+              {siteSettings.footerDescription}
             </p>
             <div className="flex items-center gap-3">
               {socialLinks.map(({ name, href, icon: Icon }) => (
@@ -114,9 +113,7 @@ export default function Footer() {
 
           <div>
             <h3 className="text-white font-semibold text-sm mb-4 tracking-wide">Stay Connected</h3>
-            <p className="text-sm leading-relaxed mb-5">
-              Get event announcements, volunteer openings, and community updates.
-            </p>
+            <p className="text-sm leading-relaxed mb-5">{siteSettings.footerCtaBody}</p>
 
             {subscribed ? (
               <div className="rounded-xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-200">
@@ -182,10 +179,13 @@ export default function Footer() {
       <div className="border-t border-warm-800">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[11px] text-warm-600">
-            © {new Date().getFullYear()} VIVA. All rights reserved.
+            &copy; {new Date().getFullYear()} VIVA. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-warm-600">
             <Link to="/faqs" className="hover:text-warm-400 transition-colors">FAQs</Link>
+            <Link to="/code-of-conduct" className="hover:text-warm-400 transition-colors">Code of Conduct</Link>
+            <Link to="/privacy" className="hover:text-warm-400 transition-colors">Privacy Policy</Link>
+            <Link to="/accessibility" className="hover:text-warm-400 transition-colors">Accessibility</Link>
           </div>
         </div>
       </div>

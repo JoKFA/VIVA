@@ -41,6 +41,12 @@ interface SiteSettingsRow {
   email: string;
   media_email?: string;
   territory_acknowledgement: string;
+  footer_description?: string;
+  footer_cta_heading?: string;
+  footer_cta_body?: string;
+  volunteer_why_heading?: string;
+  volunteer_why_body?: string;
+  volunteer_why_image_url?: string;
   awards_page_visible?: boolean;
   annual_reports_page_visible?: boolean;
 }
@@ -57,6 +63,12 @@ function rowToSettings(row: SiteSettingsRow): SiteSettings {
     email: row.email ?? mockSiteSettings.email,
     mediaEmail: row.media_email ?? mockSiteSettings.mediaEmail,
     territoryAcknowledgement: row.territory_acknowledgement ?? mockSiteSettings.territoryAcknowledgement,
+    footerDescription: row.footer_description ?? mockSiteSettings.footerDescription,
+    footerCtaHeading: row.footer_cta_heading ?? mockSiteSettings.footerCtaHeading,
+    footerCtaBody: row.footer_cta_body ?? mockSiteSettings.footerCtaBody,
+    volunteerWhyHeading: row.volunteer_why_heading ?? mockSiteSettings.volunteerWhyHeading,
+    volunteerWhyBody: row.volunteer_why_body ?? mockSiteSettings.volunteerWhyBody,
+    volunteerWhyImageUrl: row.volunteer_why_image_url ?? mockSiteSettings.volunteerWhyImageUrl,
     awardsPageVisible: row.awards_page_visible ?? true,
     annualReportsPageVisible: row.annual_reports_page_visible ?? true,
   };

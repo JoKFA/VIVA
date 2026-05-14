@@ -639,10 +639,10 @@ export default function Home() {
               Get Involved
             </p>
             <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.5rem)] text-white leading-tight mb-3">
-              Ready to make a difference?
+              {siteSettings.footerCtaHeading}
             </h2>
             <p className="text-white/80 text-[0.9375rem] max-w-md leading-relaxed">
-              Join 2,500+ volunteers across Vancouver. Flexible roles, real impact, lasting friendships.
+              {siteSettings.footerCtaBody}
             </p>
           </div>
           <div className="flex gap-3 flex-shrink-0 flex-wrap">
