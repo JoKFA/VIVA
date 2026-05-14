@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, LockKeyhole, Mail, MapPin, MessageSquare, Users, X } from 'lucide-react';
 import type { Event, EventVolunteerContact } from '../../types';
+import { sendContactEmail } from '../../lib/contactEmail';
 
 interface EventAdminContactModalProps {
   event: Event;
@@ -44,10 +45,43 @@ function QrDisplay({ src, alt }: { src?: string; alt: string }) {
 export default function EventAdminContactModal({ event, contact, onClose }: EventAdminContactModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const submit = (formEvent: React.FormEvent) => {
+  const submit = async (formEvent: React.FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
-    setSubmitted(true);
+    const data = new FormData(formEvent.currentTarget);
+    const contactValue = String(data.get('contact') || '').trim();
+    const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)
+      ? contactValue
+      : 'contact@vivahq.org';
+
+    setIsSending(true);
+    setSubmitError('');
+
+    try {
+      await sendContactEmail({
+        source: 'event-volunteer',
+        name: String(data.get('name') || ''),
+        email,
+        subject: event.title,
+        message: String(data.get('message') || 'I would like to contact the event volunteer coordinator.'),
+        metadata: {
+          contact: contactValue,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventTime: event.time,
+          eventLocation: event.location,
+          adminName: contact.adminName,
+          adminRole: contact.adminRole,
+        },
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Message could not be sent right now.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const close = () => {
@@ -192,10 +226,12 @@ export default function EventAdminContactModal({ event, contact, onClose }: Even
 
                   <button
                     type="submit"
+                    disabled={isSending}
                     className="mt-1 w-full rounded-lg border-[1.5px] border-primary-600 bg-white px-5 py-2.5 text-sm font-extrabold text-primary-700 transition-colors hover:bg-primary-600 hover:text-white"
                   >
-                    Send to admin
+                    {isSending ? 'Sending...' : 'Send to admin'}
                   </button>
+                  {submitError && <p className="text-xs text-red-500">{submitError}</p>}
                 </form>
               )}
             </article>

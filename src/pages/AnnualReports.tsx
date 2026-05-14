@@ -1,7 +1,13 @@
 import { Download } from 'lucide-react';
-import { annualReports } from '../data/mockData';
+import { useAnnualReports } from '../hooks/useAnnualReports';
+import { SafeImage } from '../components/ui/SafeImage';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
+
+const REPORT_FALLBACK = 'https://picsum.photos/180/240?grayscale&random=reports';
 
 export default function AnnualReports() {
+  const { settings: siteSettings } = useSiteSettings();
+  const { data: annualReports } = useAnnualReports();
   const sorted = [...annualReports].sort((a, b) => b.year - a.year);
 
   return (
@@ -36,11 +42,19 @@ export default function AnnualReports() {
             <div className="border-t border-warm-200">
               {sorted.map((report) => (
                 <div key={report.id}
-                  className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] items-start gap-6 py-8 border-b border-warm-200 bg-white px-6">
+                  className="grid grid-cols-1 md:grid-cols-[auto_auto_1fr_auto] items-start gap-6 py-8 border-b border-warm-200 bg-white px-6">
                   {/* Year */}
                   <div className="text-center md:text-left w-20 flex-shrink-0">
                     <p className="font-impact text-[3rem] text-primary-600 leading-none">{report.year}</p>
                   </div>
+
+                  <SafeImage
+                    src={report.coverImageUrl || REPORT_FALLBACK}
+                    fallbackSrc={REPORT_FALLBACK}
+                    alt={`${report.title} cover`}
+                    className="h-28 w-20 rounded bg-warm-100 object-cover"
+                    loading="lazy"
+                  />
 
                   {/* Info */}
                   <div>
@@ -76,10 +90,16 @@ export default function AnnualReports() {
 
                   {/* Download */}
                   <div className="flex-shrink-0">
-                    <a href={report.pdfUrl || '#'} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 border border-warm-300 text-warm-700 text-sm font-semibold rounded-lg hover:bg-warm-100 hover:border-warm-400 transition-colors">
-                      <Download className="w-4 h-4" /> Download PDF
-                    </a>
+                    {report.pdfUrl ? (
+                      <a href={report.pdfUrl} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-warm-300 text-warm-700 text-sm font-semibold rounded-lg hover:bg-warm-100 hover:border-warm-400 transition-colors">
+                        <Download className="w-4 h-4" /> Download PDF
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 px-5 py-2.5 border border-warm-200 text-warm-400 text-sm font-semibold rounded-lg">
+                        PDF unavailable
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -98,7 +118,7 @@ export default function AnnualReports() {
           <p className="text-warm-600 text-sm">
             Need financial statements or additional data for grant applications?
           </p>
-          <a href="mailto:info.vivahq@gmail.com"
+          <a href={`mailto:${siteSettings.email}`}
             className="text-sm font-semibold text-primary-600 hover:text-primary-700 whitespace-nowrap">
             Email us →
           </a>

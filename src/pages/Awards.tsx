@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Download, ArrowRight } from 'lucide-react';
-import { awards } from '../data/mockData';
+import { useAwards } from '../hooks/useAwards';
 
 export default function Awards() {
+  const { data: awards } = useAwards();
   return (
     <div>
       {/* Page Header — Option 2 */}

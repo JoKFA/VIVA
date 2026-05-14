@@ -1,14 +1,25 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle } from 'lucide-react';
-import { siteSettings } from '../data/mockData';
+import { Mail, Phone, MapPin, Instagram, Linkedin, Send, CheckCircle, ExternalLink } from 'lucide-react';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
+import { sendContactEmail } from '../lib/contactEmail';
 
 interface FormData { firstName: string; lastName: string; email: string; subject: string; message: string; }
 const EMPTY: FormData = { firstName: '', lastName: '', email: '', subject: '', message: '' };
 
 export default function Contact() {
+  const { settings: siteSettings } = useSiteSettings();
+  const socialLinks = [
+    { name: 'Instagram', href: siteSettings.socialLinks.instagram, icon: Instagram },
+    { name: 'LinkedIn', href: siteSettings.socialLinks.linkedin, icon: Linkedin },
+    { name: 'Facebook', href: siteSettings.socialLinks.facebook, icon: ExternalLink },
+    { name: 'Twitter', href: siteSettings.socialLinks.twitter, icon: ExternalLink },
+    { name: 'YouTube', href: siteSettings.socialLinks.youtube, icon: ExternalLink },
+  ].filter((link) => Boolean(link.href));
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const field = (k: keyof FormData, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));
@@ -27,9 +38,27 @@ export default function Contact() {
     return Object.keys(e).length === 0;
   };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (!validate()) return;
+
+    setIsSending(true);
+    setSubmitError('');
+
+    try {
+      await sendContactEmail({
+        source: 'contact',
+        name: `${form.firstName} ${form.lastName}`,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Message could not be sent right now.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const inputCls = (k: string) =>
@@ -98,16 +127,18 @@ export default function Contact() {
             <div>
               <p className="text-xs font-bold tracking-widest uppercase text-warm-400 mb-3">Follow Us</p>
               <div className="flex gap-3">
-                <a href={siteSettings.socialLinks.instagram} target="_blank" rel="noopener noreferrer"
-                  className="p-2.5 bg-warm-100 hover:bg-primary-600 hover:text-white rounded-lg text-warm-600 transition-colors"
-                  aria-label="Instagram">
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a href={siteSettings.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
-                  className="p-2.5 bg-warm-100 hover:bg-primary-600 hover:text-white rounded-lg text-warm-600 transition-colors"
-                  aria-label="LinkedIn">
-                  <Linkedin className="w-4 h-4" />
-                </a>
+                {socialLinks.map(({ name, href, icon: Icon }) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 bg-warm-100 hover:bg-primary-600 hover:text-white rounded-lg text-warm-600 transition-colors"
+                    aria-label={name}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
               </div>
             </div>
 
@@ -191,9 +222,11 @@ export default function Contact() {
                 </div>
 
                 <button type="submit"
+                  disabled={isSending}
                   className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
-                  <Send className="w-4 h-4" /> Send Message
+                  <Send className="w-4 h-4" /> {isSending ? 'Sending...' : 'Send Message'}
                 </button>
+                {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
               </form>
             )}
           </div>

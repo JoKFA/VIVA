@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, CheckCircle, Send, Upload, ArrowRight, ChevronRight } from 'lucide-react';
-import { volunteerRoles, faqs } from '../data/mockData';
+import { useVolunteerRoles } from '../hooks/useVolunteerRoles';
+import { useFaqs } from '../hooks/useFaqs';
+import { sendContactEmail } from '../lib/contactEmail';
 
 const WHY_ITEMS = [
   { num: '01', title: 'Real Impact', body: 'See direct results of your efforts — from students finding jobs to communities restored after a cleanup.' },
@@ -47,10 +49,14 @@ interface FormData {
 const EMPTY: FormData = { firstName: '', lastName: '', email: '', phone: '', availability: '', resume: null, interests: [], experience: '', motivation: '' };
 
 export default function Volunteer() {
+  const { data: volunteerRoles } = useVolunteerRoles();
+  const { data: faqs } = useFaqs();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [hoveredRole, setHoveredRole] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
@@ -87,9 +93,34 @@ export default function Volunteer() {
   const next = () => { if (validateStep(step)) setStep((s) => s + 1); };
   const back = () => { setErrors({}); setStep((s) => s - 1); };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (validateStep(3)) setSubmitted(true);
+    if (!validateStep(3)) return;
+
+    setIsSending(true);
+    setSubmitError('');
+
+    try {
+      await sendContactEmail({
+        source: 'volunteer',
+        name: `${form.firstName} ${form.lastName}`,
+        email: form.email,
+        subject: 'Volunteer application',
+        message: form.motivation,
+        metadata: {
+          phone: form.phone,
+          availability: form.availability,
+          interests: form.interests,
+          experience: form.experience,
+          resumeFileName: form.resume?.name,
+        },
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Application could not be sent right now.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const inputCls = (k: string) =>
@@ -439,10 +470,12 @@ export default function Volunteer() {
                       Back
                     </button>
                     <button type="submit"
+                      disabled={isSending}
                       className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500">
-                      <Send className="w-4 h-4" /> Submit Application
+                      <Send className="w-4 h-4" /> {isSending ? 'Sending...' : 'Submit Application'}
                     </button>
                   </div>
+                  {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
                 </form>
               )}
             </>

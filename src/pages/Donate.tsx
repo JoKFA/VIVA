@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { Send, CheckCircle, Heart } from 'lucide-react';
-import { siteSettings } from '../data/mockData';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
+import { sendContactEmail } from '../lib/contactEmail';
 
 interface FormData { name: string; email: string; message: string; }
 const EMPTY: FormData = { name: '', email: '', message: '' };
 
 export default function Donate() {
+  const { settings: siteSettings } = useSiteSettings();
   const [form, setForm] = useState<FormData>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const field = (k: keyof FormData, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));
@@ -25,9 +29,27 @@ export default function Donate() {
     return Object.keys(e).length === 0;
   };
 
-  const submit = (ev: React.FormEvent) => {
+  const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (!validate()) return;
+
+    setIsSending(true);
+    setSubmitError('');
+
+    try {
+      await sendContactEmail({
+        source: 'donation',
+        name: form.name,
+        email: form.email,
+        subject: 'Donation inquiry',
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Inquiry could not be sent right now.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const inputCls = (k: string) =>
@@ -124,10 +146,12 @@ export default function Donate() {
 
                 <button
                   type="submit"
+                  disabled={isSending}
                   className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary-600 text-white font-semibold text-sm rounded-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <Send className="w-4 h-4" /> Send Inquiry
+                  <Send className="w-4 h-4" /> {isSending ? 'Sending...' : 'Send Inquiry'}
                 </button>
+                {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
               </form>
             )}
           </div>

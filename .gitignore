@@ -41,6 +41,7 @@ Thumbs.db
 .codex/
 .cursor/
 .windsurf/
+supabase/.temp/
 CLAUDE.md
 claude*.md
 codex*.md
@@ -67,3 +68,8 @@ test-results/
 *.trace.zip
 *.webm
 *.mp4
+.gstack/
+
+.env*.local
+.vercel/
+.mcp.json
