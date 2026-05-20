@@ -162,6 +162,12 @@ export interface SiteSettings {
   volunteerWhyImageUrl?: string;
   awardsPageVisible: boolean;
   annualReportsPageVisible: boolean;
+  popupMode: 'auto' | 'selected_event' | 'hidden';
+  popupEventSlug?: string;
+  popupTitle?: string;
+  popupBody?: string;
+  popupCtaLabel?: string;
+  popupCtaUrl?: string;
 }
 
 export interface Stat {

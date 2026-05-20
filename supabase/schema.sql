@@ -45,6 +45,12 @@ ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS footer_cta_body text;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_heading text;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_body text;
 ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS volunteer_why_image_url text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_mode text DEFAULT 'auto';
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_event_slug text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_title text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_body text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_cta_label text;
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS popup_cta_url text;
 
 -- Enforce exactly one row at DB level
 CREATE UNIQUE INDEX IF NOT EXISTS site_settings_singleton

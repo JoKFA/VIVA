@@ -2,6 +2,7 @@
 import { Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdminPageHeader } from '../components/AdminPageHeader';
+import { localDateKey } from '../../utils/date';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -39,6 +40,18 @@ interface SettingsForm {
   addr_province: string;
   addr_postal: string;
   addr_country: string;
+  popup_mode: 'auto' | 'selected_event' | 'hidden';
+  popup_event_slug: string;
+  popup_title: string;
+  popup_body: string;
+  popup_cta_label: string;
+  popup_cta_url: string;
+}
+
+interface EventOption {
+  slug: string;
+  title: string;
+  date: string;
 }
 
 const EMPTY: SettingsForm = {
@@ -48,6 +61,7 @@ const EMPTY: SettingsForm = {
   volunteer_why_heading: '', volunteer_why_body: '', volunteer_why_image_url: '',
   social_facebook: '', social_instagram: '', social_twitter: '', social_linkedin: '', social_youtube: '',
   addr_street: '', addr_city: '', addr_province: '', addr_postal: '', addr_country: 'Canada',
+  popup_mode: 'auto', popup_event_slug: '', popup_title: '', popup_body: '', popup_cta_label: '', popup_cta_url: '',
 };
 
 export default function AdminSettings() {
@@ -57,19 +71,36 @@ export default function AdminSettings() {
   const [saved, setSaved] = useState(false);
   const [rowId, setRowId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [eventOptions, setEventOptions] = useState<EventOption[]>([]);
 
   useEffect(() => {
     async function load() {
-      const { data, error: err } = await supabase.from('site_settings').select('*').maybeSingle();
+      const today = localDateKey();
+      const [settingsRes, eventsRes] = await Promise.all([
+        supabase.from('site_settings').select('*').maybeSingle(),
+        supabase
+          .from('events')
+          .select('slug,title,date')
+          .eq('published', true)
+          .or(`is_past_override.eq.false,and(is_past_override.is.null,date.gte.${today})`)
+          .order('date', { ascending: true }),
+      ]);
+      const { data, error: err } = settingsRes;
       if (err) {
         setError(err.message);
         setLoading(false);
         return;
       }
+      if (!eventsRes.error && eventsRes.data) {
+        setEventOptions(eventsRes.data as EventOption[]);
+      }
       if (data) {
         const r = data as Record<string, unknown>;
         const sl = (r.social_links as Record<string, string>) ?? {};
         const addr = (r.address as Record<string, string>) ?? {};
+        const popupMode = ['auto', 'selected_event', 'hidden'].includes(String(r.popup_mode))
+          ? String(r.popup_mode) as SettingsForm['popup_mode']
+          : 'auto';
         setRowId(r.id as string);
         setForm({
           organization_name: String(r.organization_name ?? ''),
@@ -96,6 +127,12 @@ export default function AdminSettings() {
           addr_province: String(addr.province ?? ''),
           addr_postal: String(addr.postalCode ?? ''),
           addr_country: String(addr.country ?? 'Canada'),
+          popup_mode: popupMode,
+          popup_event_slug: String(r.popup_event_slug ?? ''),
+          popup_title: String(r.popup_title ?? ''),
+          popup_body: String(r.popup_body ?? ''),
+          popup_cta_label: String(r.popup_cta_label ?? ''),
+          popup_cta_url: String(r.popup_cta_url ?? ''),
         });
       }
       setLoading(false);
@@ -107,6 +144,12 @@ export default function AdminSettings() {
     if (!value) return null;
     if (!value.startsWith('https://')) return `${label} must start with https://`;
     return null;
+  }
+
+  function requireInternalOrHttps(label: string, value: string): string | null {
+    if (!value) return null;
+    if (value.startsWith('/') || value.startsWith('https://')) return null;
+    return `${label} must start with / or https://`;
   }
 
   async function save() {
@@ -127,6 +170,8 @@ export default function AdminSettings() {
       const urlErr = requireHttps(label, value);
       if (urlErr) { setError(urlErr); setSaving(false); return; }
     }
+    const popupUrlErr = requireInternalOrHttps('Popup Button URL', form.popup_cta_url);
+    if (popupUrlErr) { setError(popupUrlErr); setSaving(false); return; }
 
     const payload = {
       organization_name: form.organization_name,
@@ -157,6 +202,12 @@ export default function AdminSettings() {
         postalCode: form.addr_postal,
         country: form.addr_country,
       },
+      popup_mode: form.popup_mode,
+      popup_event_slug: form.popup_event_slug || null,
+      popup_title: form.popup_title || null,
+      popup_body: form.popup_body || null,
+      popup_cta_label: form.popup_cta_label || null,
+      popup_cta_url: form.popup_cta_url || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -201,8 +252,9 @@ export default function AdminSettings() {
   if (loading) return <div className="p-8 animate-pulse"><div className="h-40 bg-gray-100 rounded-lg" /></div>;
 
   const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400";
-  const s = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+  const s = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(p => ({ ...p, [k]: e.target.value }));
+  const selectedEvent = eventOptions.find((event) => event.slug === form.popup_event_slug);
 
   return (
     <div>
@@ -220,6 +272,64 @@ export default function AdminSettings() {
           </div>
           <Field label="Territory Acknowledgement">
             <textarea value={form.territory_acknowledgement} onChange={s('territory_acknowledgement')} rows={3} className={inp} />
+          </Field>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Popup Settings</h2>
+          <p className="text-xs text-gray-500">
+            Auto uses the next upcoming events. Selected Event lets the team feature one event with custom announcement copy.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Popup Mode">
+              <select value={form.popup_mode} onChange={s('popup_mode')} className={inp}>
+                <option value="auto">Auto</option>
+                <option value="selected_event">Selected Event</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </Field>
+            <Field label="Event">
+              <select
+                value={form.popup_event_slug}
+                onChange={(e) => {
+                  const slug = e.target.value;
+                  const event = eventOptions.find((item) => item.slug === slug);
+                  setForm((p) => ({
+                    ...p,
+                    popup_event_slug: slug,
+                    popup_cta_url: p.popup_cta_url || (event ? `/events/${event.slug}` : ''),
+                  }));
+                }}
+                disabled={form.popup_mode !== 'selected_event'}
+                className={inp}
+              >
+                <option value="">Select an upcoming event</option>
+                {eventOptions.map((event) => (
+                  <option key={event.slug} value={event.slug}>
+                    {event.date} - {event.title}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          {form.popup_mode === 'selected_event' && selectedEvent && (
+            <p className="text-xs text-gray-500">
+              Selected: {selectedEvent.title} on {selectedEvent.date}. If this event expires, the public site falls back to Auto.
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Popup Title">
+              <input value={form.popup_title} onChange={s('popup_title')} className={inp} placeholder={selectedEvent?.title ?? 'Optional custom title'} />
+            </Field>
+            <Field label="Button Text">
+              <input value={form.popup_cta_label} onChange={s('popup_cta_label')} className={inp} placeholder="Learn More" />
+            </Field>
+          </div>
+          <Field label="Popup Body">
+            <textarea value={form.popup_body} onChange={s('popup_body')} rows={2} className={inp} placeholder="Short text shown in the top announcement bar" />
+          </Field>
+          <Field label="Button URL">
+            <input value={form.popup_cta_url} onChange={s('popup_cta_url')} className={inp} placeholder={selectedEvent ? `/events/${selectedEvent.slug}` : '/events'} />
           </Field>
         </section>
 

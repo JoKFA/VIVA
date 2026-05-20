@@ -4,11 +4,11 @@ import { ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHonours } from '../hooks/useHonours';
 
 const timeline = [
-  { year: '2018', label: 'Founded', body: 'VIVA established in Burnaby, BC with a founding team of 12 volunteers.' },
-  { year: '2019', label: 'First Cohort', body: 'Launched Youth Mentorship program — 40 students in the inaugural cohort.' },
-  { year: '2021', label: 'VIVA EG', body: 'Environmental Group branch formed; first shoreline cleanup draws 200+ volunteers.' },
-  { year: '2023', label: 'UBC Partnership', body: 'Formalized VIVA × UBC CLP partnership for the annual Career Fair.' },
-  { year: '2026', label: 'Today', body: '2,500+ active volunteers, 120+ events annually, recognized by federal and provincial governments.' },
+  { year: '2018', label: 'Founded', body: 'VIVA was established in Burnaby, BC with a founding team of 12 volunteers.' },
+  { year: '2018', label: 'VIVA Care For Seniors', body: 'Since 2018, VIVA Volunteers have stepped into retirement communities, offering companionship and love to more than 1,000 seniors.' },
+  { year: '2022', label: 'VIVA EG', body: 'VIVA EG Environmental Guardian Program launched in 2022, engaging over 1,000 attendees across Greater Vancouver to date.' },
+  { year: '2024', label: 'VIVA Vancouver Career Fair (VCF)', body: 'Launched in 2024, the VCF has supported over 4,000 students and job seekers.' },
+  { year: '2026', label: 'Today', body: '2,500+ active volunteers, 300+ events annually, recognized by municipal, provincial, and federal governments, as well as community partners.' },
 ];
 
 export default function About() {
@@ -22,7 +22,7 @@ export default function About() {
 
   return (
     <div>
-      {/* Page Header — Option 2 */}
+      {/* Page Header - Option 2 */}
       <div className="page-header pt-28">
         <div className="page-header-inner">
           <div className="page-header-bar" />
@@ -39,13 +39,13 @@ export default function About() {
       <section className="bg-warm-900 py-16 px-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="font-impact text-[clamp(1.5rem,3vw,2.25rem)] text-white leading-relaxed tracking-wide">
-            "We exist to connect passionate people with meaningful work — and to prove that community is built one volunteer at a time."
+            "Rooted in our Two Wings principle, we balance meaning and enjoyment in every volunteer experience, building lasting impact through small, collective actions."
           </p>
           <p className="text-warm-500 text-sm mt-6 tracking-widest uppercase font-semibold">VIVA Founding Principle</p>
         </div>
       </section>
 
-      {/* Mission + Vision — split, NOT equal floating cards */}
+      {/* Mission + Vision - split, NOT equal floating cards */}
       <section className="bg-white py-20 px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-0 border border-warm-200">
           <div className="p-12 border-b lg:border-b-0 lg:border-r border-warm-200">
@@ -53,8 +53,8 @@ export default function About() {
             <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-5">Why We Exist</h2>
             <p className="text-warm-600 text-[0.9375rem] leading-relaxed">
               To connect passionate volunteers with meaningful opportunities that address critical community
-              needs, foster personal growth, and build stronger, more resilient neighbourhoods across
-              Metro Vancouver and British Columbia.
+              needs, foster personal growth, and build stronger, more resilient communities locally, across
+              Canada, and as part of a global citizen community.
             </p>
           </div>
           <div className="p-12">
@@ -62,14 +62,14 @@ export default function About() {
             <h2 className="font-display font-extrabold text-2xl text-warm-900 mb-5">Where We're Going</h2>
             <p className="text-warm-600 text-[0.9375rem] leading-relaxed">
               A thriving, inclusive community where every person has the opportunity to contribute their
-              unique talents — where newcomers are welcomed, youth are empowered, and collective action
-              drives sustainable change for generations to come.
+              unique talents, where youth are empowered, newcomers are welcomed, and collective action
+              drives sustainable, long-term change.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Timeline — horizontal on desktop, vertical on mobile */}
+      {/* Timeline - horizontal on desktop, vertical on mobile */}
       <section className="bg-warm-50 py-20 px-8">
         <div className="max-w-7xl mx-auto">
           <p className="eyebrow">Our Journey</p>
@@ -82,7 +82,7 @@ export default function About() {
             {/* connecting line */}
             <div className="absolute top-[28px] left-[5%] right-[5%] h-px bg-warm-300" />
             {timeline.map((item, i) => (
-              <div key={item.year} className="flex-1 relative px-4 text-center">
+              <div key={`${item.year}-${item.label}`} className="flex-1 relative px-4 text-center">
                 <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10 border-2
                   ${i === timeline.length - 1 ? 'bg-primary-600 border-primary-600' : 'bg-white border-warm-300'}`}>
                   <span className={`font-impact text-sm tracking-wide ${i === timeline.length - 1 ? 'text-white' : 'text-warm-600'}`}>
@@ -98,7 +98,7 @@ export default function About() {
           {/* Mobile: vertical */}
           <div className="md:hidden space-y-0 border-l-2 border-warm-300 ml-6">
             {timeline.map((item, i) => (
-              <div key={item.year} className="relative pl-8 pb-10">
+              <div key={`${item.year}-${item.label}`} className="relative pl-8 pb-10">
                 <div className={`absolute -left-[17px] w-8 h-8 rounded-full flex items-center justify-center
                   ${i === timeline.length - 1 ? 'bg-primary-600' : 'bg-white border-2 border-warm-300'}`}>
                   <span className={`font-impact text-[10px] ${i === timeline.length - 1 ? 'text-white' : 'text-warm-600'}`}>
@@ -114,15 +114,16 @@ export default function About() {
         </div>
       </section>
 
-      {/* Honours — A4 letter gallery */}
+      {/* Honours - A4 letter gallery */}
       <section className="bg-white py-20 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
           <p className="eyebrow">Recognition</p>
           <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-3">
-            Recognized by Canada's Leaders
+            Recognized by Canadian Government Institutions
           </h2>
           <p className="text-warm-600 text-[0.9375rem] mb-10 max-w-lg">
-            VIVA's impact has been acknowledged at the highest levels of government and academia. Click any letter to read in full.
+            VIVA is grateful for the recognition and support from government, community partners and sponsors.
+            Click any letter to read in full.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">

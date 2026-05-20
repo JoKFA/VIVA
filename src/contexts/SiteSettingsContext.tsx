@@ -49,9 +49,19 @@ interface SiteSettingsRow {
   volunteer_why_image_url?: string;
   awards_page_visible?: boolean;
   annual_reports_page_visible?: boolean;
+  popup_mode?: SiteSettings['popupMode'];
+  popup_event_slug?: string;
+  popup_title?: string;
+  popup_body?: string;
+  popup_cta_label?: string;
+  popup_cta_url?: string;
 }
 
 function rowToSettings(row: SiteSettingsRow): SiteSettings {
+  const popupMode = ['auto', 'selected_event', 'hidden'].includes(String(row.popup_mode))
+    ? row.popup_mode!
+    : mockSiteSettings.popupMode;
+
   return {
     organizationName: row.organization_name ?? mockSiteSettings.organizationName,
     tagline: row.tagline ?? mockSiteSettings.tagline,
@@ -71,6 +81,12 @@ function rowToSettings(row: SiteSettingsRow): SiteSettings {
     volunteerWhyImageUrl: row.volunteer_why_image_url ?? mockSiteSettings.volunteerWhyImageUrl,
     awardsPageVisible: row.awards_page_visible ?? true,
     annualReportsPageVisible: row.annual_reports_page_visible ?? true,
+    popupMode,
+    popupEventSlug: row.popup_event_slug ?? mockSiteSettings.popupEventSlug,
+    popupTitle: row.popup_title ?? mockSiteSettings.popupTitle,
+    popupBody: row.popup_body ?? mockSiteSettings.popupBody,
+    popupCtaLabel: row.popup_cta_label ?? mockSiteSettings.popupCtaLabel,
+    popupCtaUrl: row.popup_cta_url ?? mockSiteSettings.popupCtaUrl,
   };
 }
 

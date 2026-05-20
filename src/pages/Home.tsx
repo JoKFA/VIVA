@@ -95,10 +95,12 @@ function HonoursMarquee({ honours }: { honours: HonourEntry[] }) {
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-6">
           <div className="home-hero-copy">
             <h2 className="font-display font-extrabold text-[clamp(1.75rem,3vw,2.25rem)] text-warm-900 mb-2">
-              Recognized by Canada's Leaders
+              Highly Recognized for Community Impact
             </h2>
             <p className="text-warm-600 text-[0.9375rem] max-w-lg">
-              VIVA's impact has been acknowledged at the highest levels of government.
+              VIVA's contributions to volunteerism and community impact have been recognized by government institutions,
+              community organizations, and valued partners who share our commitment to service, collaboration, and
+              positive social change.
             </p>
           </div>
           <Link

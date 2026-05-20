@@ -48,6 +48,12 @@ export const siteSettings: SiteSettings = {
   volunteerWhyImageUrl: '',
   awardsPageVisible: true,
   annualReportsPageVisible: true,
+  popupMode: 'auto',
+  popupEventSlug: '',
+  popupTitle: '',
+  popupBody: '',
+  popupCtaLabel: '',
+  popupCtaUrl: '',
 };
 
 export const stats: Stat[] = [

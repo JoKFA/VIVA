@@ -3,12 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Heart, Menu, X } from 'lucide-react';
 import { useSiteSettings } from '../../contexts/SiteSettingsContext';
-
-const ANNOUNCEMENTS = [
-  { label: 'Next Event', text: 'VIVA EG Shoreline Cleanup — Apr 18', cta: 'Register →', href: '/events' },
-  { label: 'Now Open', text: 'Volunteer applications for 2026 are open', cta: 'Apply →', href: '/volunteer' },
-  { label: 'Coming Up', text: 'BMO Vancouver Marathon — May 3', cta: 'Learn More →', href: '/events' },
-];
+import { useUpcomingEvents } from '../../hooks/useUpcomingEvents';
+import type { Event } from '../../types';
 
 const baseNavigation = [
   { name: 'Home', href: '/' },
@@ -35,8 +31,39 @@ const baseNavigation = [
   { name: 'Contact', href: '/contact' },
 ];
 
+interface Announcement {
+  label: string;
+  text: string;
+  cta: string;
+  href: string;
+}
+
+function formatEventDate(date: string) {
+  const d = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function eventAnnouncement(event: Event, overrides?: Partial<Announcement>): Announcement {
+  const date = formatEventDate(event.date);
+  const fallbackText = [event.title, date].filter(Boolean).join(' - ');
+
+  return {
+    label: overrides?.label || 'Upcoming Event',
+    text: overrides?.text || fallbackText,
+    cta: overrides?.cta || 'Learn More',
+    href: overrides?.href || `/events/${event.slug}`,
+  };
+}
+
+function popupText(title?: string, body?: string) {
+  if (title && body) return `${title}: ${body}`;
+  return title || body;
+}
+
 export default function Header() {
   const { settings } = useSiteSettings();
+  const { data: upcomingEvents } = useUpcomingEvents();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -47,6 +74,26 @@ export default function Header() {
 
   const isHome = location.pathname === '/';
   const isDark = isHome && !isScrolled && !isMobileMenuOpen;
+  const selectedPopupEvent = upcomingEvents.find((event) => event.slug === settings.popupEventSlug);
+  const automaticAnnouncements = upcomingEvents.slice(0, 3).map((event) => eventAnnouncement(event));
+  const fallbackAnnouncements: Announcement[] = [
+    { label: 'Now Open', text: 'Volunteer applications for 2026 are open', cta: 'Apply', href: '/volunteer' },
+  ];
+  const announcements =
+    settings.popupMode === 'hidden'
+      ? []
+      : settings.popupMode === 'selected_event' && selectedPopupEvent
+        ? [
+            eventAnnouncement(selectedPopupEvent, {
+              label: 'Featured Event',
+              text: popupText(settings.popupTitle, settings.popupBody),
+              cta: settings.popupCtaLabel || undefined,
+              href: settings.popupCtaUrl || undefined,
+            }),
+          ]
+        : automaticAnnouncements.length > 0
+          ? automaticAnnouncements
+          : fallbackAnnouncements;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -55,18 +102,22 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (annDismissed) return;
+    if (annDismissed || announcements.length <= 1) return;
     const timer = setInterval(() => {
       setAnnVisible(false);
       setTimeout(() => {
-        setAnnIdx((idx) => (idx + 1) % ANNOUNCEMENTS.length);
+        setAnnIdx((idx) => (idx + 1) % announcements.length);
         setAnnVisible(true);
       }, 300);
     }, 4500);
     return () => clearInterval(timer);
-  }, [annDismissed]);
+  }, [annDismissed, announcements.length]);
 
-  const ann = ANNOUNCEMENTS[annIdx];
+  useEffect(() => {
+    setAnnIdx(0);
+  }, [settings.popupMode, settings.popupEventSlug]);
+
+  const ann = announcements[annIdx % Math.max(announcements.length, 1)];
   const navigation = baseNavigation.map((item) => {
     if (item.name !== 'About' || !item.children) return item;
     return {
@@ -85,7 +136,7 @@ export default function Header() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      {!annDismissed && (
+      {!annDismissed && ann && (
         <div
           className="relative flex items-center justify-center gap-3 px-4 py-1.5 text-white text-xs"
           style={{ background: '#c1272d', transition: 'opacity 0.3s', opacity: annVisible ? 1 : 0 }}
